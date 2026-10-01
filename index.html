@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WB Travel · Заметки + Напоминания</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lav-50:  #f1ebfb;
+    --lav-100: #e4d9f5;
+    --lav-200: #d3c2ee;
+    --lav-300: #bda5e5;
+    --lav-400: #a488e3;
+    --lav-500: #8b64d6;
+    --lav-600: #7c4ecf;
+    --lav-700: #6d3fd6;
+    --lav-800: #5a2fb8;
+    --text:    #2f2350;
+    --text-soft:#5b4b85;
+    --line:    #d3c2ee;
+    --green:   #16a34a;
+    --red:     #e11d48;
+    --amber:   #d97706;
+    --shadow:  0 8px 28px rgba(109,63,214,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Nunito',sans-serif;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #e2d3fa 0%, transparent 60%),
+      radial-gradient(1000px 500px at 110% 110%, #d4c0f5 0%, transparent 55%),
+      repeating-linear-gradient(90deg,#e4d9f5,#e4d9f5 45px,#dccff2 45px,#dccff2 90px);
+    min-height:100vh;padding:24px;color:var(--text);
+  }
+  .app-container{
+    max-width:1400px;margin:0 auto;background:rgba(255,255,255,.86);
+    backdrop-filter:blur(10px);border-radius:24px;padding:26px;
+    box-shadow:var(--shadow);border:1px solid var(--line);
+  }
+  .header{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:20px;border-bottom:2px solid var(--lav-300);
+    padding-bottom:14px;flex-wrap:wrap;gap:12px;}
+  .header-left{display:flex;align-items:center;gap:18px;flex-wrap:wrap;flex:1;min-width:0;}
+  .logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:800;
+    color:var(--lav-700);white-space:nowrap;}
+  .logo i{color:var(--lav-600);}
+  .motivation{
+    font-style:italic;font-size:14px;color:var(--text-soft);
+    line-height:1.35;max-width:680px;
+    border-left:3px solid var(--lav-300);padding-left:12px;
+  }
+  .actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{background:var(--lav-500);color:#fff;border:none;padding:10px 20px;
+    border-radius:50px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+    gap:8px;transition:.2s;box-shadow:0 4px 12px rgba(139,100,214,.35);font-size:14px;}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(109,63,214,.4);
+    background:var(--lav-600);}
+  .btn-outline{background:#fff;border:2px solid var(--lav-400);
+    color:var(--lav-700);box-shadow:none;}
+  .btn-outline:hover{background:var(--lav-100);color:var(--lav-800);}
+  .main-tabs{display:flex;gap:6px;background:#fff;padding:6px;border-radius:14px;
+    margin-bottom:18px;box-shadow:0 2px 10px rgba(109,63,214,.1);flex-wrap:wrap;
+    border:1px solid var(--line);}
+  .main-tab{flex:1;min-width:130px;padding:12px 16px;border-radius:10px;border:none;
+    background:transparent;cursor:pointer;font-size:14px;font-weight:800;
+    color:var(--text-soft);transition:.15s;display:flex;align-items:center;
+    justify-content:center;gap:8px;}
+  .main-tab:hover{background:var(--lav-50);color:var(--lav-700);}
+  .main-tab.active{background:var(--lav-600);color:#fff;
+    box-shadow:0 4px 12px rgba(109,63,214,.4);}
+  .main-tab .tab-count{background:rgba(109,63,214,.15);padding:3px 10px;border-radius:12px;
+    font-size:12px;font-weight:800;min-width:24px;text-align:center;color:var(--lav-700);}
+  .main-tab.active .tab-count{background:rgba(255,255,255,.35);color:#fff;}
+  .main-tab .tab-count.alarm{background:var(--red)!important;color:#fff!important;
+    animation:badgePulse 1s infinite;}
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+  .card{background:#fff;border-radius:16px;padding:18px;
+    box-shadow:0 4px 12px rgba(109,63,214,.1);
+    border-left:6px solid var(--lav-500);position:relative;transition:.2s;
+    border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .card:hover{transform:translateY(-5px);box-shadow:0 10px 24px rgba(109,63,214,.2);}
+  .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .card h3{font-size:17px;color:var(--text);margin-right:20px;}
+  .card-actions{display:flex;gap:8px;opacity:0;transition:.2s;}
+  .card:hover .card-actions{opacity:1;}
+  .icon-btn{background:none;border:none;color:#a488e3;cursor:pointer;font-size:14px;transition:.2s;}
+  .icon-btn:hover{color:var(--lav-700);}
+  .icon-btn.delete:hover{color:var(--red);}
+  .card p{color:var(--text-soft);font-size:13px;margin-bottom:8px;line-height:1.4;}
+  .card a{color:var(--lav-700);text-decoration:none;font-size:12px;
+    display:flex;align-items:center;gap:5px;word-break:break-all;}
+  .card a:hover{text-decoration:underline;color:var(--lav-800);}
+  .card .cat-tag{display:inline-block;background:var(--lav-100);color:var(--lav-700);
+    padding:3px 9px;border-radius:10px;font-size:11px;font-weight:800;
+    text-transform:uppercase;margin-bottom:8px;letter-spacing:.4px;}
+  .empty-state{grid-column:1/-1;text-align:center;color:var(--text-soft);padding:50px 20px;}
+  .empty-state i{font-size:40px;margin-bottom:15px;display:block;color:var(--lav-300);}
+  .notepad-wrap{display:flex;flex-direction:column;gap:14px;}
+  .notepad-toolbar{display:flex;justify-content:space-between;align-items:center;
+    gap:10px;flex-wrap:wrap;}
+  .notepad-toolbar h3{font-size:18px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .notepad-toolbar h3 i{color:var(--lav-600);}
+  .notepad-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .notepad-page-info{display:flex;align-items:center;gap:10px;font-size:14px;
+    font-weight:700;color:var(--text-soft);}
+  .notepad-page-info button{width:34px;height:34px;border-radius:8px;
+    border:1px solid var(--line);background:#fff;cursor:pointer;font-size:14px;
+    color:var(--lav-700);display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .notepad-page-info button:hover:not(:disabled){background:var(--lav-600);
+    color:#fff;border-color:var(--lav-600);}
+  .notepad-page-info button:disabled{opacity:.4;cursor:not-allowed;}
+  .notepad-pages{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+  .page-dot{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;font-size:13px;font-weight:700;
+    color:var(--text-soft);transition:.15s;}
+  .page-dot:hover{background:var(--lav-100);}
+  .page-dot.active{background:var(--lav-600);color:#fff;border-color:var(--lav-600);}
+  .notepad-paper{
+    background:#fbf9ff;border:1px solid var(--line);border-radius:12px;
+    padding:18px;position:relative;
+    background-image:repeating-linear-gradient(to bottom,transparent,transparent 23px,#dccff2 23px,#dccff2 24px);
+  }
+  .notepad-paper textarea{
+    width:100%;height:480px;max-height:70vh;
+    border:none;outline:none;background:transparent;
+    font-size:15px;line-height:24px;resize:vertical;
+    font-family:'Nunito',sans-serif;color:var(--text);padding:0 4px;
+    overflow-y:auto;
+  }
+  .notepad-footer{display:flex;justify-content:space-between;align-items:center;
+    font-size:12px;color:var(--text-soft);flex-wrap:wrap;gap:8px;}
+  .notepad-footer .lines-counter{font-weight:800;color:var(--lav-700);}
+  .notepad-footer .lines-counter.full{color:var(--amber);}
+  .saved-badge{background:#e4d9f5;color:var(--lav-700);padding:4px 10px;
+    border-radius:10px;font-weight:700;font-size:11px;transition:.3s;}
+  .saved-badge.dirty{background:#fef3c7;color:#92400e;}
+  .section-divider{
+    margin:26px 0 20px;display:flex;align-items:center;gap:14px;
+  }
+  .section-divider::before,.section-divider::after{
+    content:'';flex:1;height:2px;
+    background:linear-gradient(90deg,transparent,var(--lav-300),transparent);
+  }
+  .section-divider span{
+    font-weight:800;color:var(--lav-700);font-size:13px;
+    letter-spacing:2px;text-transform:uppercase;
+    padding:6px 16px;background:var(--lav-100);border-radius:20px;
+    border:1px solid var(--lav-200);
+  }
+  .reminder-section{display:flex;flex-direction:column;gap:14px;}
+  .reminder-title{display:flex;align-items:center;gap:10px;font-size:20px;
+    font-weight:800;color:var(--lav-700);margin-bottom:4px;}
+  .reminder-title i{color:var(--lav-600);}
+  #alarmBanner{display:none;background:var(--red);color:#fff;padding:14px 18px;
+    border-radius:12px;font-weight:800;font-size:15px;text-align:center;
+    animation:bannerPulse .8s infinite alternate;}
+  #alarmBanner.show{display:block;}
+  @keyframes bannerPulse{from{background:#e11d48;box-shadow:0 0 0 0 rgba(225,29,72,.7);}
+    to{background:#be123c;box-shadow:0 0 0 14px rgba(225,29,72,0);}}
+  @keyframes badgePulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.8);}
+    70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+  .reminder-card{background:#fff;padding:18px;border-radius:14px;
+    box-shadow:0 2px 10px rgba(109,63,214,.1);border:1px solid var(--line);}
+  .grid-form{display:grid;grid-template-columns:1.2fr .9fr 1.6fr 1.2fr 1fr 1.8fr;gap:10px;}
+  @media(max-width:1100px){.grid-form{grid-template-columns:1fr 1fr 1fr;}
+    .grid-form .col-time{grid-column:span 3;}}
+  @media(max-width:720px){.grid-form{grid-template-columns:1fr 1fr;}
+    .grid-form .col-wait,.grid-form .col-sound,.grid-form .col-repeat,
+    .grid-form .col-time{grid-column:1/-1;}}
+  .col-time .time-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .grid-form label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;
+    color:var(--text-soft);}
+  .grid-form input,.grid-form select{width:100%;padding:10px;border:1px solid var(--line);
+    border-radius:8px;font-size:15px;background:var(--lav-50);color:var(--text);}
+  .grid-form input:focus,.grid-form select:focus{outline:2px solid var(--lav-500);
+    border-color:transparent;background:#fff;}
+  .voice-row{display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap;}
+  .voice-btn{background:#e4d9f5;color:var(--lav-700);border:2px solid var(--lav-300);
+    padding:8px 14px;border-radius:30px;cursor:pointer;font-weight:800;
+    font-size:13px;display:flex;align-items:center;gap:6px;transition:.15s;}
+  .voice-btn:hover{background:#d3c2ee;border-color:var(--lav-400);}
+  .voice-btn.recording{background:var(--red);color:#fff;border-color:var(--red);
+    animation:micPulse 1.4s infinite;}
+  .voice-btn-cancel{background:#fff;color:var(--red);border:2px solid #fecaca;
+    padding:8px 14px;border-radius:30px;cursor:pointer;font-weight:800;
+    font-size:13px;display:none;align-items:center;gap:6px;transition:.15s;}
+  .voice-btn-cancel:hover{background:#fee2e2;}
+  .voice-btn-cancel.show{display:inline-flex;}
+  @keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.55);}
+    70%{box-shadow:0 0 0 12px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+  .voice-hint{font-size:12px;color:var(--text-soft);font-style:italic;line-height:1.4;}
+  .voice-status{display:none;align-items:center;gap:8px;margin-top:8px;
+    font-size:13px;color:var(--red);font-weight:800;}
+  .voice-status.show{display:flex;}
+  .pulse-dot{width:10px;height:10px;border-radius:50%;background:var(--red);
+    animation:pulseDot 1s infinite;}
+  @keyframes pulseDot{0%{opacity:.4;}50%{opacity:1;}100%{opacity:.4;}}
+  .voice-transcript{margin-top:10px;padding:10px 14px;background:var(--lav-50);
+    border-left:4px solid var(--lav-500);border-radius:8px;font-size:13px;
+    color:var(--lav-800);min-height:36px;display:none;line-height:1.5;}
+  .voice-transcript.show{display:block;}
+  button.primary{background:var(--lav-600);color:#fff;border:none;padding:12px;
+    border-radius:10px;cursor:pointer;font-size:15px;font-weight:800;
+    width:100%;margin-top:12px;transition:.15s;
+    box-shadow:0 4px 12px rgba(109,63,214,.35);}
+  button.primary:hover{background:var(--lav-700);transform:translateY(-1px);}
+  .tabs{display:flex;gap:6px;background:#fff;padding:6px;border-radius:12px;
+    box-shadow:0 2px 10px rgba(109,63,214,.1);border:1px solid var(--line);}
+  .tab{flex:1;padding:12px;border-radius:8px;border:none;background:transparent;
+    cursor:pointer;font-size:14px;font-weight:800;color:var(--text-soft);
+    transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .tab:hover{background:var(--lav-50);color:var(--lav-700);}
+  .tab.active{background:var(--lav-600);color:#fff;
+    box-shadow:0 4px 12px rgba(109,63,214,.4);}
+  .tab .tab-count{background:rgba(109,63,214,.15);padding:4px 12px;border-radius:12px;
+    font-size:14px;font-weight:800;min-width:30px;text-align:center;color:var(--lav-700);}
+  .tab.active .tab-count{background:rgba(255,255,255,.35);color:#fff;}
+  .tab-count.alarm{background:var(--red)!important;color:#fff!important;
+    animation:badgePulse 1s infinite;}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .filter-btn{border:2px solid transparent;background:var(--lav-50);
+    color:var(--text-soft);padding:8px 14px;border-radius:20px;cursor:pointer;
+    font-size:13px;font-weight:700;transition:.15s;display:flex;align-items:center;gap:6px;}
+  .filter-btn:hover{background:var(--lav-100);}
+  .filter-btn.active{background:var(--lav-600);color:#fff;}
+  .filter-btn .count{background:rgba(109,63,214,.15);padding:1px 7px;border-radius:10px;
+    font-size:11px;min-width:20px;text-align:center;color:var(--lav-700);}
+  .filter-btn.active .count{background:rgba(255,255,255,.3);color:#fff;}
+  .search-row{display:flex;gap:10px;align-items:center;margin-bottom:12px;}
+  .search-row input{flex:1;padding:10px 14px;border:1px solid var(--line);
+    border-radius:10px;font-size:14px;background:var(--lav-50);color:var(--text);}
+  .search-row input:focus{outline:2px solid var(--lav-500);border-color:transparent;background:#fff;}
+  .order-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+    border-radius:10px;background:var(--lav-50);margin-bottom:8px;
+    border-left:5px solid var(--lav-500);transition:.2s;
+    border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .order-item.warning{border-left-color:var(--amber);background:#fffbeb;}
+  .order-item.overdue{border-left-color:var(--red);background:#ffe4e6;
+    animation:blink 1s infinite;}
+  @keyframes blink{0%,100%{background:#ffe4e6;box-shadow:0 0 0 0 rgba(225,29,72,.5);}
+    50%{background:#fecdd3;box-shadow:0 0 0 6px rgba(225,29,72,0);}}
+  .order-item.taken{border-left-color:var(--green);background:#dcfce7;animation:none;}
+  .order-item.archived{border-left-color:#b8a3f5;background:var(--lav-100);opacity:.92;}
+  .badges-col{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:155px;}
+  .cat-badge,.wait-badge,.sound-badge,.repeat-badge{padding:4px 10px;border-radius:12px;
+    font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+  .cat-tours{background:#d3c2ee;color:#4c1d95;}
+  .cat-hotels{background:#fbcfe8;color:#9d174d;}
+  .cat-flights{background:#cffafe;color:#155e75;}
+  .cat-experiences{background:#fef3c7;color:#92400e;}
+  .cat-other{background:#d3c2ee;color:#4c1d95;}
+  .wait-line2{background:#e4d9f5;color:#4c1d95;}
+  .wait-tech{background:#cffafe;color:#155e75;}
+  .wait-sv{background:#ffe4e6;color:#9f1239;}
+  .wait-claim{background:#fee2e2;color:#991b1b;}
+  .wait-tours{background:#d3c2ee;color:#4c1d95;}
+  .wait-none{background:#f1ebfb;color:var(--text-soft);font-style:italic;text-transform:none;}
+  .sound-badge{background:#dcfce7;color:#166534;text-transform:none;}
+  .repeat-badge{background:#e4d9f5;color:var(--lav-700);text-transform:none;}
+  .order-main{flex:1;min-width:0;}
+  .order-num{font-weight:800;font-size:15px;color:var(--text);}
+  .order-meta{font-size:12px;color:var(--text-soft);margin-top:3px;line-height:1.5;}
+  .timer{font-size:17px;font-weight:800;color:var(--lav-700);
+    font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .overdue .timer{color:var(--red);}
+  .warning .timer{color:var(--amber);}
+  .order-actions{display:flex;flex-direction:column;gap:6px;}
+  .btn-sm{border:none;padding:8px 12px;border-radius:6px;cursor:pointer;
+    font-size:12px;font-weight:800;white-space:nowrap;transition:.15s;}
+  .btn-take{background:var(--green);color:#fff;}
+  .btn-take:hover{background:#15803d;}
+  .btn-undo{background:#e4d9f5;color:var(--lav-700);}
+  .btn-undo:hover{background:#d3c2ee;}
+  .btn-edit{background:#e0e7ff;color:#3730a3;}
+  .btn-edit:hover{background:#c7d2fe;}
+  .btn-del{background:#fee2e2;color:#991b1b;}
+  .btn-del:hover{background:#fecaca;}
+  .btn-close{background:var(--green);color:#fff;}
+  .btn-close:hover{background:#15803d;}
+  .btn-test{background:#fef3c7;color:#92400e;}
+  .btn-test:hover{background:#fde68a;}
+  .empty{text-align:center;color:var(--text-soft);padding:30px 10px;font-size:14px;}
+  .stats{display:flex;justify-content:space-between;font-size:12px;
+    color:var(--text-soft);margin-bottom:12px;flex-wrap:wrap;gap:8px;
+    padding:10px 14px;background:var(--lav-50);border-radius:10px;
+    border:1px dashed var(--lav-300);}
+  .archive-toolbar{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .archive-toolbar h3{margin:0;font-size:15px;color:var(--text);}
+  .btn-export{background:var(--green);color:#fff;border:none;padding:8px 14px;
+    border-radius:8px;cursor:pointer;font-size:13px;font-weight:800;}
+  .btn-export:hover{background:#15803d;}
+  .btn-clear{background:var(--lav-100);color:var(--lav-700);border:none;
+    padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:800;}
+  .btn-clear:hover{background:var(--lav-200);}
+  #muteBtn{position:fixed;bottom:14px;right:14px;background:var(--lav-700);color:#fff;
+    border:none;padding:10px 14px;border-radius:20px;font-size:12px;
+    cursor:pointer;opacity:.65;z-index:99;box-shadow:0 4px 12px rgba(109,63,214,.4);}
+  #muteBtn:hover{opacity:1;}
+  .toast{position:fixed;bottom:20px;left:20px;background:#fff;padding:15px 25px;
+    border-radius:12px;box-shadow:0 10px 24px rgba(109,63,214,.25);
+    border-left:5px solid var(--lav-500);display:none;
+    animation:slideIn .3s ease;z-index:2000;font-weight:700;color:var(--text);}
+  @keyframes slideIn{from{transform:translateX(-100%);opacity:0;}
+    to{transform:translateX(0);opacity:1;}}
+  .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(60,40,100,.4);backdrop-filter:blur(6px);justify-content:center;
+    align-items:center;z-index:1000;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:#fff;padding:28px;border-radius:20px;width:90%;max-width:520px;
+    box-shadow:0 20px 40px rgba(109,63,214,.3);max-height:90vh;overflow-y:auto;
+    border:1px solid var(--line);}
+  .modal h2{margin-bottom:18px;color:var(--lav-700);font-size:20px;}
+  .modal .form-group{margin-bottom:14px;}
+  .modal .form-group label{display:block;font-weight:700;margin-bottom:5px;
+    color:var(--text-soft);font-size:13px;}
+  .modal .form-group input,.modal .form-group select,.modal .form-group textarea{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:10px;
+    font-size:14px;outline:none;font-family:inherit;background:var(--lav-50);color:var(--text);}
+  .modal .form-group input:focus,.modal .form-group select:focus,
+  .modal .form-group textarea:focus{border-color:var(--lav-500);background:#fff;
+    box-shadow:0 0 0 3px rgba(139,100,214,.15);}
+  .modal .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .modal .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .modal-hint{font-size:12px;color:var(--text-soft);font-style:italic;margin-top:4px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+  .btn-cancel{background:#e4d9f5;color:var(--lav-700);box-shadow:none;}
+  .btn-cancel:hover{background:#d3c2ee;color:var(--lav-800);}
+  .confirm-modal{max-width:420px;}
+  .confirm-modal h2{color:var(--lav-700);font-size:19px;margin-bottom:8px;}
+  .confirm-subtitle{font-size:14px;color:var(--text-soft);line-height:1.5;}
+  .btn-confirm{background:var(--lav-600);color:#fff;border:none;padding:10px 22px;
+    border-radius:50px;font-weight:700;cursor:pointer;font-size:14px;transition:.2s;
+    box-shadow:0 4px 12px rgba(109,63,214,.3);}
+  .btn-confirm:hover{background:var(--lav-700);transform:translateY(-1px);}
+  @media(max-width:700px){
+    body{padding:12px;}
+    .app-container{padding:16px;border-radius:18px;}
+    .header{flex-direction:column;align-items:flex-start;}
+    .header-left{width:100%;}
+    .motivation{border-left:none;padding-left:0;}
+    .actions{width:100%;}
+    .btn{flex:1;justify-content:center;}
+  }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><i class="fas fa-suitcase-rolling"></i> wb travel</div>
+      <div class="motivation" id="motivationText"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="openBookmarkModal('add')"><i class="fas fa-plus"></i> Закладка</button>
+    </div>
+  </div>
+  <div class="main-tabs">
+    <button class="main-tab active" data-tab="all" onclick="switchMainTab('all')">
+      <i class="fas fa-th-large"></i> Все <span class="tab-count" id="cntAll">0</span>
+    </button>
+    <button class="main-tab" data-tab="tools" onclick="switchMainTab('tools')">
+      <i class="fas fa-tools"></i> Инструменты <span class="tab-count" id="cntTools">0</span>
+    </button>
+    <button class="main-tab" data-tab="important" onclick="switchMainTab('important')">
+      <i class="fas fa-star"></i> Важное <span class="tab-count" id="cntImportant">0</span>
+    </button>
+    <button class="main-tab" data-tab="reports" onclick="switchMainTab('reports')">
+      <i class="fas fa-chart-bar"></i> Отчетность <span class="tab-count" id="cntReports">0</span>
+    </button>
+    <button class="main-tab" data-tab="notes" onclick="switchMainTab('notes')">
+      <i class="fas fa-sticky-note"></i> Заметки <span class="tab-count" id="cntNotes">0</span>
+    </button>
+  </div>
+  <div id="tabContentCards">
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+  <div id="tabContentNotes" style="display:none;">
+    <div class="notepad-wrap">
+      <div class="notepad-toolbar">
+        <h3><i class="fas fa-book-open"></i> Блокнот</h3>
+        <div class="notepad-actions">
+          <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="addNotepadPage()">
+            <i class="fas fa-plus"></i> Новая страница
+          </button>
+          <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="clearNotepadPage()">
+            <i class="fas fa-eraser"></i> Очистить
+          </button>
+          <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="deleteNotepadPage()">
+            <i class="fas fa-trash"></i> Удалить страницу
+          </button>
+        </div>
+      </div>
+      <div class="notepad-page-info">
+        <button id="prevPageBtn" onclick="changeNotepadPage(-1)"><i class="fas fa-chevron-left"></i></button>
+        <span>Страница <b id="notepadPageNum">1</b> из <b id="notepadPageTotal">1</b></span>
+        <button id="nextPageBtn" onclick="changeNotepadPage(1)"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <div class="notepad-pages" id="notepadPages"></div>
+      <div class="notepad-paper">
+        <textarea id="notepadText" placeholder="Пишите здесь... (автосохранение, 20 строк на страницу)"></textarea>
+      </div>
+      <div class="notepad-footer">
+        <span class="lines-counter" id="notepadLinesInfo">Строк: 0 / 20</span>
+        <span class="saved-badge" id="notepadSaved">Сохранено</span>
+      </div>
+    </div>
+    <div class="section-divider"><span>Напоминания</span></div>
+    <div class="reminder-section">
+      <div class="reminder-title"><i class="fas fa-bell"></i> Напоминание о возврате к клиенту в чат</div>
+      <div id="alarmBanner">🔔 ВНИМАНИЕ! Нужен ответ клиенту!</div>
+      <div class="tabs">
+        <button class="tab active" id="tabActive" onclick="switchReminderView('active')">
+          📋 Активные <span class="tab-count" id="cntActiveRem">0</span>
+        </button>
+        <button class="tab" id="tabArchive" onclick="switchReminderView('archive')">
+          📁 Обработанные <span class="tab-count" id="cntArchiveRem">0</span>
+        </button>
+      </div>
+      <div class="reminder-card" id="formCard">
+        <div class="grid-form">
+          <div>
+            <label>WB ID</label>
+            <input type="text" id="orderNum" placeholder="12345678">
+          </div>
+          <div>
+            <label>Категория</label>
+            <select id="category">
+              <option value="tours">🏝 Туры</option>
+              <option value="hotels">🏨 Отели</option>
+              <option value="flights">✈️ Авиабилеты</option>
+              <option value="experiences">🎡 Впечатления</option>
+              <option value="other">📦 Другое</option>
+            </select>
+          </div>
+          <div class="col-wait">
+            <label>Что ждём?</label>
+            <select id="waiting">
+              <option value="">— не указано —</option>
+              <option value="line2">Решение от второй линии</option>
+              <option value="tech">Решение от тех.специалистов</option>
+              <option value="sv">Решение от СВ</option>
+              <option value="claim">Решение от отдела претензий</option>
+              <option value="tours">Решение от туров</option>
+            </select>
+          </div>
+          <div class="col-sound">
+            <label>Напоминание</label>
+            <select id="sound">
+              <option value="birds">🐦 Птицы</option>
+              <option value="alert">🔔 Оповещение</option>
+            </select>
+          </div>
+          <div class="col-repeat">
+            <label>Повторять каждые</label>
+            <select id="repeat">
+              <option value="2000">2 секунды (тест)</option>
+              <option value="5000">5 секунд (тест)</option>
+              <option value="10000">10 секунд</option>
+              <option value="30000" selected>30 секунд</option>
+              <option value="60000">1 минута</option>
+              <option value="120000">2 минуты</option>
+              <option value="300000">5 минут</option>
+              <option value="600000">10 минут</option>
+            </select>
+          </div>
+          <div class="col-time">
+            <label>Через сколько вернуться?</label>
+            <div class="time-row">
+              <input type="number" id="hours" value="0" min="0" placeholder="часы">
+              <input type="number" id="minutes" value="30" min="0" max="59" placeholder="мин">
+              <input type="number" id="seconds" value="0" min="0" max="59" placeholder="сек">
+            </div>
+          </div>
+        </div>
+        <div class="voice-row">
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">
+            <i class="fas fa-microphone"></i> <span id="voiceBtnText">Голосом</span>
+          </button>
+          <button class="voice-btn-cancel" id="voiceCancelBtn" onclick="cancelVoiceInput()">
+            <i class="fas fa-times"></i> Отмена
+          </button>
+          <span class="voice-hint">
+            Диктуйте WB ID по одной цифре: один-два-три-четыре-пять. Затем — категорию, что ждём и время. Когда закончите — нажмите «Готово».
+          </span>
+        </div>
+        <div class="voice-status" id="voiceStatus">
+          <span class="pulse-dot"></span>
+          <span>Идёт запись… Нажмите «⏹ Готово», когда закончите.</span>
+        </div>
+        <div class="voice-transcript" id="voiceTranscript"></div>
+        <button class="primary" onclick="addOrder()">+ Поставить напоминание</button>
+        <div style="text-align:center;margin-top:10px;">
+          <button class="btn-sm btn-test" onclick="testCurrentSound()">▶ Проверить выбранный сигнал</button>
+        </div>
+      </div>
+      <div class="reminder-card">
+        <div class="filters" id="filters"></div>
+        <div class="search-row">
+          <input type="text" id="search" placeholder="🔍 Поиск по WB ID..." oninput="renderReminders()">
+        </div>
+        <div class="archive-toolbar" id="archiveToolbar" style="display:none;">
+          <h3>📁 Папка «Обработанные»</h3>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-export" onclick="exportArchive()">⬇ Выгрузить в файл</button>
+            <button class="btn-clear" onclick="clearArchive()">🗑 Очистить архив</button>
+          </div>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div id="ordersList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- МОДАЛКА ЗАКЛАДОК -->
+<div class="modal-overlay" id="bookmarkModalOverlay">
+  <div class="modal">
+    <h2 id="bookmarkModalTitle">Добавить закладку</h2>
+    <form id="bookmarkForm">
+      <input type="hidden" id="bmId">
+      <div class="form-group">
+        <label>Название</label>
+        <input type="text" id="bmName" placeholder="Например: WB Analytics" required>
+      </div>
+      <div class="form-group">
+        <label>Категория</label>
+        <select id="bmCategory" required></select>
+      </div>
+      <div class="form-group">
+        <label>Ссылка (URL)</label>
+        <input type="url" id="bmLink" placeholder="https://..." required>
+      </div>
+      <div class="form-group">
+        <label>Описание</label>
+        <textarea id="bmDesc" rows="3" placeholder="Краткое описание..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" onclick="closeBookmarkModal()">Отмена</button>
+        <button type="submit" class="btn">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- МОДАЛКА РЕДАКТИРОВАНИЯ НАПОМИНАНИЯ -->
+<div class="modal-overlay" id="reminderModalOverlay">
+  <div class="modal">
+    <h2>Редактировать напоминание</h2>
+    <form id="reminderForm">
+      <input type="hidden" id="editReminderId">
+      <div class="form-group">
+        <label>WB ID</label>
+        <input type="text" id="editNum" placeholder="12345678">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Категория</label>
+          <select id="editCategory">
+            <option value="tours">🏝 Туры</option>
+            <option value="hotels">🏨 Отели</option>
+            <option value="flights">✈️ Авиабилеты</option>
+            <option value="experiences">🎡 Впечатления</option>
+            <option value="other">📦 Другое</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Что ждём?</label>
+          <select id="editWaiting">
+            <option value="">— не указано —</option>
+            <option value="line2">Вторая линия</option>
+            <option value="tech">Тех.специалисты</option>
+            <option value="sv">СВ</option>
+            <option value="claim">Отдел претензий</option>
+            <option value="tours">Туры</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Напоминание (звук)</label>
+          <select id="editSound">
+            <option value="birds">🐦 Птицы</option>
+            <option value="alert">🔔 Оповещение</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Повторять каждые</label>
+          <select id="editRepeat">
+            <option value="2000">2 секунды (тест)</option>
+            <option value="5000">5 секунд (тест)</option>
+            <option value="10000">10 секунд</option>
+            <option value="30000">30 секунд</option>
+            <option value="60000">1 минута</option>
+            <option value="120000">2 минуты</option>
+            <option value="300000">5 минут</option>
+            <option value="600000">10 минут</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Новое время до возврата</label>
+        <div class="form-row-3">
+          <input type="number" id="editHours" min="0" value="0" placeholder="часы">
+          <input type="number" id="editMinutes" min="0" max="59" value="0" placeholder="мин">
+          <input type="number" id="editSeconds" min="0" max="59" value="0" placeholder="сек">
+        </div>
+        <div class="modal-hint" id="editCurrentHint"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" onclick="closeReminderModal()">Отмена</button>
+        <button type="submit" class="btn">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- УНИВЕРСАЛЬНАЯ МОДАЛКА ПОДТВЕРЖДЕНИЯ -->
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal confirm-modal">
+    <h2 id="confirmTitle">Подтвердите действие</h2>
+    <div class="confirm-subtitle" id="confirmSubtitle"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-cancel" onclick="closeConfirm()">Отмена</button>
+      <button type="button" class="btn-confirm" id="confirmOkBtn">Удалить</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<button id="muteBtn" onclick="toggleMute()">🔊 Звук: вкл</button>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   УТИЛИТЫ
+   ══════════════════════════════════════════════ */
+const Utils = (() => {
+  const pad = (n) => String(n).padStart(2, '0');
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text).replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
+  }
+  function formatTime(ms) {
+    const neg = ms < 0;
+    ms = Math.abs(ms);
+    const total = Math.floor(ms / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    const sign = neg ? '-' : '';
+    return sign + (h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`);
+  }
+  function formatClock(ts) {
+    const d = new Date(ts);
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function formatDate(ts) {
+    const d = new Date(ts);
+    return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.style.display = 'none', 2500);
+  }
+  return { pad, escapeHtml, formatTime, formatClock, formatDate, showToast };
+})();
+const { pad, escapeHtml, formatTime, formatClock, formatDate, showToast } = Utils;
+
+/* ──────────────────────────────────────────────
+   ЛОКАЛЬНОЕ ХРАНИЛИЩЕ
+   ────────────────────────────────────────────── */
+const Storage = (() => {
+  function get(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
+  }
+  function set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  return { get, set };
+})();
+
+/* ──────────────────────────────────────────────
+   МОТИВАЦИОННЫЕ ФРАЗЫ
+   ────────────────────────────────────────────── */
+const Motivation = (() => {
+  const PHRASES = [
+    'Каждое возвращение к клиенту — ещё один кирпичик в фундаменте доверия.',
+    'Клиент ждёт не просто ответа — он ждёт, что о нём позаботятся. И у тебя это отлично получается.',
+    'Порой достаточно пары тёплых слов, чтобы день человека перестал быть тяжёлым.',
+    'Скорость важна, но теплота — неотъемлемая часть сервиса. Ты умеешь сочетать и то, и другое.',
+    'Ты — голос компании: пусть он звучит спокойно и уверенно.',
+    'Вовремя вернуться к клиенту — это по-настоящему ценный навык.',
+    'Детали стираются из памяти, а ощущение заботы остаётся надолго.',
+    'В каждом диалоге есть шанс сделать чей-то день чуточку светлее.',
+    'Твоя внимательность — это спокойствие и уверенность клиента в его путешествии.',
+    'Один вопрос, один честный ответ — и мир становится чуть добрее.',
+    'Спешка часто ведёт к ошибкам, а собранность — к верным решениям.',
+    'Сделай глубокий вдох: ты справляешься лучше, чем думаешь.',
+    'Очередь задач — не марафон, и ты не обязан бежать без остановки.',
+    'Любая большая нагрузка — это просто череда небольших шагов.',
+    'Короткая пауза в 30 секунд может уберечь от долгих исправлений.',
+    'Главное — не скорость, а точность: именно она делает поддержку по-настоящему полезной.',
+    'Двигайся шаг за шагом — и день сложится в чёткую, понятную картину.',
+    'Тебе можно взять минуту, чтобы собраться с мыслями.',
+    'Спокойствие — уже половина победы: там, где другие паникуют, ты находишь решение.',
+    'Сегодня не гонка на время — сегодня ты делаешь важную работу.',
+    'Каждый непростой кейс — это возможность стать сильнее и увереннее.',
+    'Ошибка — не провал, а полезная обратная связь: на ней строится настоящий опыт.',
+    'Твой профессиональный рост идёт быстрее, чем кажется со стороны.',
+    'Опыт не приходит сам — он рождается в ежедневной практике и внимательном отношении к деталям.',
+    'То, что ты знаешь сегодня, — это уже шаг вперёд по сравнению со вчерашним днём.',
+    'Сложные клиенты учат замечать нюансы и находить точные формулировки.',
+    'Необязательно знать всё на свете — важно уметь быстро и надёжно находить нужную информацию.',
+    'Каждый рабочий день добавляет новую строчку к твоей профессиональной истории.',
+    'Профессионализм — это не врождённый талант, а привычка делать всё тщательно и вдумчиво.',
+    'Часто твоя работа остаётся «за кулисами», но именно она держит весь процесс.',
+    'Спокойно. Уверенно. По плану.',
+    'Решение обязательно найдётся — ты на верном пути.',
+    'Фокус на одном клиенте, одном вопросе, одном решении.',
+    'Движение вперёд — это уже результат.',
+    'Сделал шаг — уже молодец.',
+    'У тебя всё получается — и ты уже справляешься с этой задачей.',
+    'План на день — твой ориентир, и он работает.',
+    'Из маленьких, но точных шагов складываются большие достижения.',
+    'Сегодня ты работаешь, а завтра сможешь спокойно отдыхать.',
+    'Держи свой темп: он самый правильный.',
+    'Ты не один: за твоей спиной — команда, которая поддержит, а впереди — клиенты, которым ты помогаешь.',
+    'Благодаря твоей работе кто-то может спокойно спать, не переживая о деталях поездки.',
+    'Клиенты могут не видеть всех твоих усилий, но это не делает их менее ценными.',
+    'Ты — часть большого процесса, где важен каждый человек.',
+    'Аккуратность и внимание к мелочам — это то, что формирует репутацию всей команды.',
+    'Именно такие специалисты, как ты, делают команду по-настоящему сильной.',
+    'Любой твой ответ — это вклад в общий результат компании.',
+    'Есть работа, которую могут сделать только люди: внимательные, терпеливые, неравнодушные — такие, как ты.',
+    'Твоя вовлечённость — это редкость и большая ценность. Береги её и гордись ею.',
+    'Спасибо, что ты с нами: твоя работа действительно важна.',
+    'Относись к клиенту так, как хотел бы, чтобы относились к тебе в сложной ситуации.',
+    'Иногда именно твой спокойный, понятный ответ становится причиной, по которой клиент остаётся с компанией.',
+    'Хороший рабочий день часто начинается с одного хорошего, тёплого ответа.',
+    'Ты справишься — сегодня, завтра и в любой другой день.',
+    'Это твоя работа, и ты делаешь её по-настоящему хорошо.'
+  ];
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function pick() {
+    let state = Storage.get('wb_motivation_state', null);
+    if (!state || !Array.isArray(state.queue) || state.queue.length === 0) {
+      state = { queue: shuffle([...Array(PHRASES.length).keys()]), lastShown: state ? state.lastShown : -1 };
+    }
+    let idx = state.queue.shift();
+    if (idx === state.lastShown && state.queue.length > 0) {
+      state.queue.push(idx);
+      idx = state.queue.shift();
+    }
+    state.lastShown = idx;
+    Storage.set('wb_motivation_state', state);
+    return PHRASES[idx];
+  }
+  function render() {
+    const el = document.getElementById('motivationText');
+    if (el) el.textContent = pick();
+  }
+  return { render };
+})();
+
+/* ──────────────────────────────────────────────
+   АУДИО
+   ────────────────────────────────────────────── */
+const AudioEngine = (() => {
+  let audioCtx = null;
+  let muted = false;
+  function unlock() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  }
+  function playAlert() {
+    unlock();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    for (let i = 0; i < 2; i++) {
+      const t = now + i * 0.18;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1200, t);
+      gain.gain.setValueAtTime(0.9, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.16);
+    }
+  }
+  function playBirds() {
+    unlock();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    for (let i = 0; i < 4; i++) {
+      const t = now + i * 0.12 + Math.random() * 0.04;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      const baseFreq = 2200 + Math.random() * 800;
+      const peakFreq = 3200 + Math.random() * 900;
+      osc.frequency.setValueAtTime(baseFreq, t);
+      osc.frequency.exponentialRampToValueAtTime(peakFreq, t + 0.04);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.9, t + 0.09);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.5, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.11);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.13);
+    }
+  }
+  function play(type) {
+    if (muted) return;
+    switch (type) {
+      case 'birds': playBirds(); break;
+      case 'alert': playAlert(); break;
+    }
+  }
+  function toggleMute() {
+    muted = !muted;
+    const btn = document.getElementById('muteBtn');
+    if (btn) btn.textContent = muted ? '🔇 Звук: выкл' : '🔊 Звук: вкл';
+  }
+  function testCurrentSound() {
+    const t = document.getElementById('sound').value;
+    const wasMuted = muted;
+    muted = false; unlock(); play(t);
+    setTimeout(() => { muted = wasMuted; }, 100);
+  }
+  function isMuted() { return muted; }
+  return { unlock, play, toggleMute, testCurrentSound, isMuted };
+})();
+
+/* ──────────────────────────────────────────────
+   ЗАКЛАДКИ
+   ────────────────────────────────────────────── */
+const Bookmarks = (() => {
+  const CATEGORIES = ['Инструменты', 'Важное', 'Отчетность'];
+  const TAB_TO_CATEGORY = { tools: 'Инструменты', important: 'Важное', reports: 'Отчетность' };
+  const STORAGE_KEY = 'wb_travel_bookmarks';
+  let bookmarks = [];
+  let currentTab = 'all';
+
+  function load() {
+    const saved = Storage.get(STORAGE_KEY, null);
+    if (saved) {
+      bookmarks = saved;
+    } else {
+      bookmarks = [
+        { id: '1', name: 'WB Analytics', category: 'Инструменты', link: 'https://www.google.com/analytics/', description: 'Основная аналитика продаж' },
+        { id: '2', name: 'Стандарты оформления', category: 'Важное', link: 'https://docs.google.com/', description: 'Регламент по карточкам товара' },
+        { id: '3', name: 'Отчёт по продажам', category: 'Отчетность', link: 'https://docs.google.com/', description: 'Шаблон месячного отчёта' }
+      ];
+      save();
+    }
+  }
+  function save() { Storage.set(STORAGE_KEY, bookmarks); }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.main-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    const isNotes = tab === 'notes';
+    document.getElementById('tabContentCards').style.display = isNotes ? 'none' : '';
+    document.getElementById('tabContentNotes').style.display = isNotes ? '' : 'none';
+    if (isNotes) {
+      Notepad.render();
+      Reminders.render();
+    } else {
+      render();
+    }
+    updateCounters();
+  }
+
+  function render() {
+    const grid = document.getElementById('cardsGrid');
+    grid.innerHTML = '';
+    let filtered;
+    if (currentTab === 'all') {
+      filtered = bookmarks;
+    } else {
+      const cat = TAB_TO_CATEGORY[currentTab];
+      filtered = bookmarks.filter(b => b.category === cat);
+    }
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        ${currentTab === 'all' ? 'Пока нет закладок. Добавьте первую!' : 'В этой категории пока пусто.'}
+      </div>`;
+      updateCounters();
+      return;
+    }
+    filtered.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-header">
+          <h3>${escapeHtml(item.name)}</h3>
+          <div class="card-actions">
+            <button class="icon-btn" onclick="openBookmarkModal('edit','${item.id}')" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="icon-btn delete" onclick="confirmDeleteBookmark('${item.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <span class="cat-tag">${escapeHtml(item.category)}</span>
+        <p>${escapeHtml(item.description || '')}</p>
+        <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener">
+          <i class="fas fa-external-link-alt"></i> ${escapeHtml(item.link)}
+        </a>
+      `;
+      grid.appendChild(card);
+    });
+    updateCounters();
+  }
+
+  function openModal(mode, id = null) {
+    const overlay = document.getElementById('bookmarkModalOverlay');
+    const form = document.getElementById('bookmarkForm');
+    form.reset();
+    overlay.classList.add('show');
+    const select = document.getElementById('bmCategory');
+    select.innerHTML = '';
+    CATEGORIES.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      select.appendChild(o);
+    });
+    if (mode === 'add') {
+      document.getElementById('bookmarkModalTitle').textContent = 'Добавить закладку';
+      document.getElementById('bmId').value = '';
+      if (currentTab !== 'all') {
+        const cat = TAB_TO_CATEGORY[currentTab];
+        if (cat) select.value = cat;
+      }
+    } else if (mode === 'edit' && id) {
+      const item = bookmarks.find(b => String(b.id) === String(id));
+      if (!item) return;
+      document.getElementById('bookmarkModalTitle').textContent = 'Редактировать закладку';
+      document.getElementById('bmId').value = item.id;
+      document.getElementById('bmName').value = item.name;
+      document.getElementById('bmCategory').value = item.category;
+      document.getElementById('bmLink').value = item.link;
+      document.getElementById('bmDesc').value = item.description || '';
+    }
+  }
+  function closeModal() {
+    document.getElementById('bookmarkModalOverlay').classList.remove('show');
+  }
+  function submitForm(e) {
+    e.preventDefault();
+    const id = document.getElementById('bmId').value;
+    const name = document.getElementById('bmName').value.trim();
+    const category = document.getElementById('bmCategory').value;
+    const link = document.getElementById('bmLink').value.trim();
+    const description = document.getElementById('bmDesc').value.trim();
+    if (id) {
+      const idx = bookmarks.findIndex(b => String(b.id) === String(id));
+      if (idx > -1) bookmarks[idx] = { ...bookmarks[idx], name, category, link, description };
+      showToast('Обновлено!');
+    } else {
+      bookmarks.push({ id: 'bm_' + Date.now(), name, category, link, description });
+      showToast('Добавлено!');
+    }
+    save();
+    closeModal();
+    render();
+  }
+  function confirmDelete(id) {
+    const item = bookmarks.find(b => String(b.id) === String(id));
+    if (!item) return;
+    Confirm.open(
+      'Удалить закладку?',
+      `«${item.name}» будет удалена без возможности восстановления.`,
+      () => {
+        bookmarks = bookmarks.filter(b => String(b.id) !== String(id));
+        save();
+        render();
+        showToast('Закладка удалена');
+      }
+    );
+  }
+  function updateCounters() {
+    document.getElementById('cntAll').textContent = bookmarks.length;
+    document.getElementById('cntTools').textContent = bookmarks.filter(b => b.category === 'Инструменты').length;
+    document.getElementById('cntImportant').textContent = bookmarks.filter(b => b.category === 'Важное').length;
+    document.getElementById('cntReports').textContent = bookmarks.filter(b => b.category === 'Отчетность').length;
+    const notesPages = Notepad.pageCount();
+    const cntNotes = document.getElementById('cntNotes');
+    if (cntNotes) cntNotes.textContent = notesPages;
+  }
+
+  return {
+    load, render, switchTab, getCurrentTab: () => currentTab, getAll: () => bookmarks,
+    openModal, closeModal, submitForm, confirmDelete, updateCounters
+  };
+})();
+
+/* ──────────────────────────────────────────────
+   БЛОКНОТ
+   ────────────────────────────────────────────── */
+const Notepad = (() => {
+  const LINES_PER_PAGE = 20;
+  const STORAGE_KEY = 'wb_travel_notepad_v4';
+  let state = { pages: [''], current: 0 };
+  let saveTimer = null;
+
+  function load() {
+    const parsed = Storage.get(STORAGE_KEY, null);
+    if (parsed && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
+      state = parsed;
+      if (typeof state.current !== 'number' || state.current >= state.pages.length) {
+        state.current = 0;
+      }
+    }
+  }
+  function save() {
+    Storage.set(STORAGE_KEY, state);
+    const badge = document.getElementById('notepadSaved');
+    if (badge) {
+      badge.textContent = 'Сохранено';
+      badge.classList.remove('dirty');
+    }
+    Bookmarks.updateCounters();
+  }
+  function render() {
+    const ta = document.getElementById('notepadText');
+    if (!ta) return;
+    ta.value = state.pages[state.current] || '';
+    updateUI();
+  }
+  function updateUI() {
+    const total = state.pages.length;
+    const cur = state.current;
+    document.getElementById('notepadPageNum').textContent = cur + 1;
+    document.getElementById('notepadPageTotal').textContent = total;
+    document.getElementById('prevPageBtn').disabled = cur === 0;
+    document.getElementById('nextPageBtn').disabled = cur === total - 1;
+    const dots = document.getElementById('notepadPages');
+    dots.innerHTML = '';
+    state.pages.forEach((_, i) => {
+      const b = document.createElement('button');
+      b.className = 'page-dot' + (i === cur ? ' active' : '');
+      b.textContent = i + 1;
+      b.onclick = () => { state.current = i; render(); };
+      dots.appendChild(b);
+    });
+    updateLinesInfo();
+  }
+  function updateLinesInfo() {
+    const ta = document.getElementById('notepadText');
+    if (!ta) return;
+    const text = ta.value;
+    const lines = text === '' ? 1 : text.split('\n').length;
+    const info = document.getElementById('notepadLinesInfo');
+    info.textContent = `Строк: ${lines} / ${LINES_PER_PAGE}`;
+    if (lines >= LINES_PER_PAGE) info.classList.add('full');
+    else info.classList.remove('full');
+  }
+  function enforcePageLimit() {
+    const ta = document.getElementById('notepadText');
+    if (!ta) return false;
+    const lines = ta.value.split('\n');
+    if (lines.length <= LINES_PER_PAGE) return false;
+    const currentPart = lines.slice(0, LINES_PER_PAGE).join('\n');
+    const overflowPart = lines.slice(LINES_PER_PAGE).join('\n');
+    state.pages[state.current] = currentPart;
+    const nextIndex = state.current + 1;
+    if (nextIndex < state.pages.length) {
+      const existing = state.pages[nextIndex] || '';
+      state.pages[nextIndex] = overflowPart + (existing ? '\n' + existing : '');
+    } else {
+      state.pages.push(overflowPart);
+    }
+    state.current = nextIndex;
+    save();
+    requestAnimationFrame(() => {
+      render();
+      const newTa = document.getElementById('notepadText');
+      newTa.focus();
+      newTa.setSelectionRange(newTa.value.length, newTa.value.length);
+      enforcePageLimit();
+    });
+    return true;
+  }
+  function handleInput() {
+    const ta = document.getElementById('notepadText');
+    state.pages[state.current] = ta.value;
+    updateLinesInfo();
+    const badge = document.getElementById('notepadSaved');
+    badge.textContent = 'Сохраняется...';
+    badge.classList.add('dirty');
+    const moved = enforcePageLimit();
+    if (!moved) {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(save, 600);
+    }
+  }
+  function changePage(delta) {
+    const next = state.current + delta;
+    if (next < 0 || next >= state.pages.length) return;
+    state.current = next;
+    render();
+  }
+  function addPage() {
+    state.pages.push('');
+    state.current = state.pages.length - 1;
+    save();
+    render();
+    showToast('Создана новая страница');
+  }
+  function clearPage() {
+    Confirm.open(
+      `Очистить страницу ${state.current + 1}?`,
+      'Весь текст на текущей странице будет удалён.',
+      () => {
+        state.pages[state.current] = '';
+        save();
+        render();
+        showToast('Страница очищена');
+      },
+      'Очистить'
+    );
+  }
+  function deletePage() {
+    if (state.pages.length <= 1) {
+      showToast('Нельзя удалить единственную страницу');
+      return;
+    }
+    const num = state.current + 1;
+    Confirm.open(
+      `Удалить страницу ${num}?`,
+      'Текст будет потерян безвозвратно.',
+      () => {
+        state.pages.splice(state.current, 1);
+        if (state.current >= state.pages.length) {
+          state.current = state.pages.length - 1;
+        }
+        save();
+        render();
+        showToast('Страница удалена');
+      }
+    );
+  }
+  function pageCount() { return state.pages.length; }
+
+  function init() {
+    document.getElementById('notepadText').addEventListener('input', handleInput);
+  }
+
+  return { load, render, changePage, addPage, clearPage, deletePage, pageCount, init };
+})();
+
+/* ──────────────────────────────────────────────
+   МОДАЛКА ПОДТВЕРЖДЕНИЯ
+   ────────────────────────────────────────────── */
+const Confirm = (() => {
+  let callback = null;
+  function open(title, subtitle = '', onConfirm, okText = 'Удалить') {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmSubtitle').textContent = subtitle || '';
+    callback = onConfirm;
+    document.getElementById('confirmOkBtn').textContent = okText;
+    document.getElementById('confirmModalOverlay').classList.add('show');
+  }
+  function close() {
+    document.getElementById('confirmModalOverlay').classList.remove('show');
+    callback = null;
+  }
+  function init() {
+    document.getElementById('confirmOkBtn').addEventListener('click', () => {
+      const cb = callback;
+      close();
+      if (cb) cb();
+    });
+    document.getElementById('confirmModalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) close();
+    });
+  }
+  return { open, close, init };
+})();
+
+/* ──────────────────────────────────────────────
+   ГОЛОСОВОЙ ВВОД — ИСПРАВЛЕННАЯ ВЕРСИЯ
+   (с проверкой безопасного контекста + interim)
+   ────────────────────────────────────────────── */
+const Voice = (() => {
+  const DIGIT_WORDS = {
+    'ноль': 0, 'нуль': 0, 'один': 1, 'одна': 1, 'два': 2, 'две': 2,
+    'три': 3, 'четыре': 4, 'пять': 5, 'шесть': 6, 'семь': 7,
+    'восемь': 8, 'девять': 9
+  };
+
+  let recognition = null;
+  let isListening = false;
+  let voiceFinalText = '';
+  let voiceInterimText = '';
+
+  function isSecureEnv() {
+    return window.isSecureContext;
+  }
+
+  function initRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      showToast('Голосовой ввод не поддерживается этим браузером (нужен Chrome/Edge)');
+      return null;
+    }
+    if (!isSecureEnv()) {
+      const transcript = document.getElementById('voiceTranscript');
+      transcript.classList.add('show');
+      transcript.innerHTML = `<b>🔒 Микрофон недоступен.</b><br>
+        Вы открыли файл без HTTPS (вероятно, через <code>file://</code>).<br>
+        Браузер не даёт доступ к микрофону в таком режиме.<br><br>
+        <b>Решение:</b> запустите локальный сервер и откройте через
+        <code>http://localhost</code>. Например, в папке с файлом выполните
+        <code>python -m http.server 8000</code> и откройте
+        <code>http://localhost:8000/имя-файла.html</code>.`;
+      return null;
+    }
+    const rec = new SR();
+    rec.lang = 'ru-RU';
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.maxAlternatives = 1;
+    return rec;
+  }
+
+  function toggle() {
+    const btn = document.getElementById('voiceBtn');
+    const btnText = document.getElementById('voiceBtnText');
+    const cancelBtn = document.getElementById('voiceCancelBtn');
+    const status = document.getElementById('voiceStatus');
+    const transcript = document.getElementById('voiceTranscript');
+    if (isListening) {
+      stopAndCreate();
+      return;
+    }
+    if (!recognition) recognition = initRecognition();
+    if (!recognition) return;
+    voiceFinalText = '';
+    voiceInterimText = '';
+    recognition.onresult = (e) => {
+      let interim = '';
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t + ' ';
+        else interim += t;
+      }
+      voiceFinalText += final;
+      voiceInterimText = interim;
+      transcript.classList.add('show');
+      transcript.innerHTML = `<b>Распознано:</b> ${escapeHtml((voiceFinalText + voiceInterimText).trim())}`;
+    };
+    recognition.onerror = (e) => {
+      console.warn('Voice error:', e.error);
+      if (e.error === 'not-allowed') showToast('Разрешите доступ к микрофону');
+      else if (e.error !== 'aborted') showToast('Ошибка распознавания: ' + e.error);
+      stopUI();
+    };
+    recognition.onend = () => {
+      if (isListening) stopUI();
+    };
+    try {
+      recognition.start();
+      isListening = true;
+      btn.classList.add('recording');
+      btnText.textContent = 'Готово';
+      cancelBtn.classList.add('show');
+      status.classList.add('show');
+      transcript.classList.add('show');
+      transcript.innerHTML = '<b>Говорите…</b> Назовите WB ID, категорию, что ждём и время.';
+    } catch (e) {
+      showToast('Не удалось запустить распознавание');
+      stopUI();
+    }
+  }
+
+  function stopAndCreate() {
+    const fullText = (voiceFinalText + voiceInterimText).trim();
+    if (recognition) { try { recognition.stop(); } catch (e) {} }
+    stopUI();
+    const transcript = document.getElementById('voiceTranscript');
+    if (!fullText) {
+      transcript.classList.add('show');
+      transcript.innerHTML = 'Ничего не распознано, попробуйте ещё раз';
+      return;
+    }
+    parseAndCreate(fullText);
+  }
+
+  function cancel() {
+    if (recognition) { try { recognition.stop(); } catch (e) {} }
+    voiceFinalText = '';
+    voiceInterimText = '';
+    stopUI();
+    const transcript = document.getElementById('voiceTranscript');
+    transcript.classList.remove('show');
+    transcript.innerHTML = '';
+    showToast('Запись отменена');
+  }
+
+  function stopUI() {
+    isListening = false;
+    const btn = document.getElementById('voiceBtn');
+    const btnText = document.getElementById('voiceBtnText');
+    const cancelBtn = document.getElementById('voiceCancelBtn');
+    const status = document.getElementById('voiceStatus');
+    if (btn) btn.classList.remove('recording');
+    if (btnText) btnText.textContent = 'Голосом';
+    if (cancelBtn) cancelBtn.classList.remove('show');
+    if (status) status.classList.remove('show');
+  }
+
+  function parseAndCreate(text) {
+    const raw = text.toLowerCase().replace(/ё/g, 'е');
+    const transcript = document.getElementById('voiceTranscript');
+    const tokens = raw.split(/\s+/);
+    const normalizedTokens = tokens.map(tok => {
+      const clean = tok.replace(/[^а-я0-9]/gi, '');
+      if (Object.prototype.hasOwnProperty.call(DIGIT_WORDS, clean)) {
+        return String(DIGIT_WORDS[clean]);
+      }
+      return tok;
+    });
+    let bestChain = '';
+    let currentChain = '';
+    for (const tok of normalizedTokens) {
+      const clean = tok.replace(/[^0-9]/g, '');
+      if (clean && /^\d+$/.test(clean)) {
+        currentChain += clean;
+      } else {
+        if (currentChain.length > bestChain.length) bestChain = currentChain;
+        currentChain = '';
+      }
+    }
+    if (currentChain.length > bestChain.length) bestChain = currentChain;
+    const result = { num: bestChain || null, cat: null, wait: null, ms: null };
+    if (/тур/.test(raw)) result.cat = 'tours';
+    else if (/отел|гостиниц/.test(raw)) result.cat = 'hotels';
+    else if (/авиа|билет|перелет|рейс/.test(raw)) result.cat = 'flights';
+    else if (/впечатл|экскурс/.test(raw)) result.cat = 'experiences';
+    else if (/друг|проч/.test(raw)) result.cat = 'other';
+    if (/втор(ая|ую|ой)\s*лини/.test(raw)) result.wait = 'line2';
+    else if (/тех/.test(raw)) result.wait = 'tech';
+    else if (/\bсв\b|эс\s*вэ/.test(raw)) result.wait = 'sv';
+    else if (/претенз/.test(raw)) result.wait = 'claim';
+    else if (/от\s*туров|ждем\s*туры|туру/.test(raw)) result.wait = 'tours';
+    let totalMs = 0;
+    const hourMatch = raw.match(/(\d+)\s*(час|ч\b)/);
+    const minMatch = raw.match(/(\d+)\s*(мин|м\b)/);
+    const secMatch = raw.match(/(\d+)\s*(сек|с\b)/);
+    if (hourMatch) totalMs += parseInt(hourMatch[1]) * 3600000;
+    if (minMatch) totalMs += parseInt(minMatch[1]) * 60000;
+    if (secMatch) totalMs += parseInt(secMatch[1]) * 1000;
+    if (totalMs <= 0) {
+      const curH = parseInt(document.getElementById('hours').value) || 0;
+      const curM = parseInt(document.getElementById('minutes').value) || 0;
+      const curS = parseInt(document.getElementById('seconds').value) || 0;
+      totalMs = (curH * 3600 + curM * 60 + curS) * 1000;
+      if (totalMs <= 0) totalMs = 30 * 60 * 1000;
+    }
+    result.ms = totalMs;
+    document.getElementById('orderNum').value = result.num !== null ? result.num : '—';
+    if (result.cat) document.getElementById('category').value = result.cat;
+    if (result.wait) document.getElementById('waiting').value = result.wait;
+    const h = Math.floor(result.ms / 3600000);
+    const m = Math.floor((result.ms % 3600000) / 60000);
+    const s = Math.floor((result.ms % 60000) / 1000);
+    document.getElementById('hours').value = h;
+    document.getElementById('minutes').value = m;
+    document.getElementById('seconds').value = s;
+    const parts = [];
+    parts.push(`WB ID: ${result.num !== null ? result.num : '—'}`);
+    if (result.cat) parts.push(`Категория: ${CATS[result.cat].label}`);
+    if (result.wait) parts.push(`Ждём: ${WAITING[result.wait].label}`);
+    parts.push(`Время: ${formatTime(result.ms)}`);
+    transcript.classList.add('show');
+    transcript.innerHTML = `<b>Распознано:</b> ${escapeHtml(text)}<br>
+      <b>Создаю:</b> ${parts.join(' · ')}`;
+    createOrderFromForm(true);
+    showToast('Напоминание создано голосом');
+  }
+
+  return { toggle, cancel };
+})();
+
+/* ──────────────────────────────────────────────
+   НАПОМИНАНИЯ
+   ────────────────────────────────────────────── */
+const CATS = {
+  tours:       { label: 'Туры',        icon: '🏝', cls: 'cat-tours' },
+  hotels:      { label: 'Отели',       icon: '🏨', cls: 'cat-hotels' },
+  flights:     { label: 'Авиабилеты',  icon: '✈️', cls: 'cat-flights' },
+  experiences: { label: 'Впечатления', icon: '🎡', cls: 'cat-experiences' },
+  other:       { label: 'Другое',      icon: '📦', cls: 'cat-other' }
+};
+const WAITING = {
+  line2: { label: 'Вторая линия',    cls: 'wait-line2', full: 'Решение от второй линии' },
+  tech:  { label: 'Тех.специалисты', cls: 'wait-tech',  full: 'Решение от тех.специалистов' },
+  sv:    { label: 'СВ',              cls: 'wait-sv',    full: 'Решение от СВ' },
+  claim: { label: 'Отдел претензий', cls: 'wait-claim', full: 'Решение от отдела претензий' },
+  tours: { label: 'Туры',            cls: 'wait-tours', full: 'Решение от туров' }
+};
+const SOUNDS = {
+  birds: { label: '🐦 Птицы',      short: '🐦 Птицы', priority: 1 },
+  alert: { label: '🔔 Оповещение', short: '🔔 Опов.', priority: 0 }
+};
+const REPEATS = {
+  2000: '2 сек', 5000: '5 сек', 10000: '10 сек', 30000: '30 сек',
+  60000: '1 мин', 120000: '2 мин', 300000: '5 мин', 600000: '10 мин'
+};
+const DEFAULT_SOUND = 'birds';
+const DEFAULT_REPEAT = 30000;
+let orders = Storage.get('orders_v14', []);
+let view = 'active';
+let activeFilter = 'all';
+const saveOrders = () => Storage.set('orders_v14', orders);
+
+function createOrderFromForm(fromVoice) {
+  const numRaw = document.getElementById('orderNum').value.trim();
+  const num = numRaw || '—';
+  const cat = document.getElementById('category').value;
+  const wait = document.getElementById('waiting').value;
+  const sound = document.getElementById('sound').value;
+  const repeat = parseInt(document.getElementById('repeat').value) || DEFAULT_REPEAT;
+  const h = parseInt(document.getElementById('hours').value) || 0;
+  const m = parseInt(document.getElementById('minutes').value) || 0;
+  const s = parseInt(document.getElementById('seconds').value) || 0;
+  const totalMs = (h * 3600 + m * 60 + s) * 1000;
+  if (totalMs <= 0) return false;
+  orders.push({
+    id: 'ord_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+    num, cat, wait: wait || null,
+    sound: sound || DEFAULT_SOUND, repeat,
+    created: Date.now(), endTime: Date.now() + totalMs,
+    alarmed: false, taken: false, takenAt: null,
+    archived: false, archivedAt: null, lastPlayed: 0
+  });
+  saveOrders();
+  document.getElementById('orderNum').value = '';
+  document.getElementById('hours').value = 0;
+  document.getElementById('minutes').value = 30;
+  document.getElementById('seconds').value = 0;
+  if (!fromVoice) document.getElementById('orderNum').focus();
+  renderReminders();
+  return true;
+}
+function addOrder() {
+  const numRaw = document.getElementById('orderNum').value.trim();
+  const h = parseInt(document.getElementById('hours').value) || 0;
+  const m = parseInt(document.getElementById('minutes').value) || 0;
+  const s = parseInt(document.getElementById('seconds').value) || 0;
+  const totalMs = (h * 3600 + m * 60 + s) * 1000;
+  if (!numRaw) return alert('Введите WB ID');
+  if (totalMs <= 0) return alert('Укажите время больше 0');
+  createOrderFromForm(false);
+  const transcript = document.getElementById('voiceTranscript');
+  transcript.classList.remove('show');
+  transcript.innerHTML = '';
+  showToast('Напоминание добавлено');
+}
+function switchReminderView(v) {
+  view = v;
+  document.getElementById('tabActive').classList.toggle('active', v === 'active');
+  document.getElementById('tabArchive').classList.toggle('active', v === 'archive');
+  document.getElementById('formCard').style.display = v === 'active' ? '' : 'none';
+  document.getElementById('archiveToolbar').style.display = v === 'archive' ? '' : 'none';
+  renderReminders();
+}
+function setFilter(k) { activeFilter = k; renderReminders(); }
+function takeOrder(id) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  o.taken = true; o.takenAt = Date.now();
+  saveOrders(); renderReminders();
+}
+function undoTake(id) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  o.taken = false; o.takenAt = null;
+  if (Date.now() >= o.endTime) { o.alarmed = true; o.lastPlayed = 0; }
+  saveOrders(); renderReminders();
+}
+function archiveOrder(id) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  o.archived = true; o.archivedAt = Date.now();
+  saveOrders(); renderReminders();
+}
+function deleteOrder(id) {
+  orders = orders.filter(o => o.id !== id);
+  saveOrders(); renderReminders();
+}
+function restoreFromArchive(id) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  o.archived = false; o.archivedAt = null;
+  saveOrders(); renderReminders();
+}
+function renderFilters() {
+  const wrap = document.getElementById('filters');
+  if (!wrap) return;
+  const pool = view === 'active'
+    ? orders.filter(o => !o.archived)
+    : orders.filter(o => o.archived);
+  const counts = { all: pool.length };
+  Object.keys(CATS).forEach(k => counts[k] = 0);
+  pool.forEach(o => { if (counts[o.cat] !== undefined) counts[o.cat]++; });
+  const btn = (key, label) => `
+    <button class="filter-btn ${activeFilter === key ? 'active' : ''}" onclick="setFilter('${key}')">
+      ${label}<span class="count">${counts[key] || 0}</span>
+    </button>`;
+  wrap.innerHTML = btn('all', '📋 Все') +
+    Object.entries(CATS).map(([k, c]) => btn(k, `${c.icon} ${c.label}`)).join('');
+}
+function renderReminders() {
+  if (!document.getElementById('ordersList')) return;
+  renderFilters();
+  const activeCnt = orders.filter(o => !o.archived).length;
+  const archiveCnt = orders.filter(o => o.archived).length;
+  const overdueCnt = orders.filter(o => !o.archived && !o.taken && Date.now() >= o.endTime).length;
+  const elActive = document.getElementById('cntActiveRem');
+  if (elActive) {
+    elActive.textContent = activeCnt;
+    if (overdueCnt > 0) elActive.classList.add('alarm');
+    else elActive.classList.remove('alarm');
+  }
+  const elArch = document.getElementById('cntArchiveRem');
+  if (elArch) elArch.textContent = archiveCnt;
+  Bookmarks.updateCounters();
+  const list = document.getElementById('ordersList');
+  const query = (document.getElementById('search').value || '').trim().toLowerCase();
+  let pool = orders.filter(o => view === 'active' ? !o.archived : o.archived);
+  let filtered = pool.filter(o => activeFilter === 'all' || o.cat === activeFilter);
+  if (query) filtered = filtered.filter(o => String(o.num).toLowerCase().includes(query));
+  filtered.sort((a, b) => {
+    if (view === 'archive') return (b.archivedAt || 0) - (a.archivedAt || 0);
+    const rank = o => {
+      if (o.taken) return 2;
+      if (Date.now() >= o.endTime) return 0;
+      return 1;
+    };
+    const ra = rank(a), rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    return a.endTime - b.endTime;
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = view === 'active'
+      ? '<div class="empty">Здесь пока нет напоминаний</div>'
+      : '<div class="empty">В архиве пока пусто</div>';
+    renderStats();
+    return;
+  }
+  list.innerHTML = filtered.map(o => {
+    const left = o.endTime - Date.now();
+    const cat = CATS[o.cat] || CATS.tours;
+    const wait = o.wait ? WAITING[o.wait] : null;
+    const snd = SOUNDS[o.sound || DEFAULT_SOUND] || SOUNDS[DEFAULT_SOUND];
+    const repLabel = REPEATS[o.repeat || DEFAULT_REPEAT] || '';
+    const waitBadge = wait
+      ? `<span class="wait-badge ${wait.cls}" title="${wait.full}">❓ ${wait.label}</span>`
+      : `<span class="wait-badge wait-none">ждём не указано</span>`;
+    const soundBadge = `<span class="sound-badge">${snd.short}</span>`;
+    const repeatBadge = `<span class="repeat-badge">🔁 каждые ${repLabel}</span>`;
+    let cls = '', meta = '', actionHtml = '';
+    if (o.archived) {
+      cls = 'archived';
+      meta = `📁 Обработан в ${formatClock(o.archivedAt || o.takenAt)} · ${formatDate(o.archivedAt || o.takenAt)}`;
+      actionHtml = `
+        <button class="btn-sm btn-undo" onclick="restoreFromArchive('${o.id}')">↺ Вернуть</button>
+        <button class="btn-sm btn-del"  onclick="deleteOrder('${o.id}')">✕ Удалить</button>`;
+    } else if (o.taken) {
+      cls = 'taken';
+      meta = `🟢 В работе с ${formatClock(o.takenAt)} — нажмите ✕ когда вернётесь к клиенту`;
+      actionHtml = `
+        <button class="btn-sm btn-undo"  onclick="undoTake('${o.id}')">↺ Отменить</button>
+        <button class="btn-sm btn-close" onclick="archiveOrder('${o.id}')">✕ Завершить</button>`;
+    } else if (left <= 0) {
+      cls = 'overdue';
+      meta = `🔔 <b>Нужен ответ!</b> Просрочен на ${formatTime(left)}`;
+      actionHtml = `
+        <button class="btn-sm btn-take" onclick="takeOrder('${o.id}')">✅ Взял в работу</button>
+        <button class="btn-sm btn-del"  onclick="archiveOrder('${o.id}')">🗑 Завершить</button>`;
+    } else {
+      cls = left < 60000 ? 'warning' : '';
+      meta = `Осталось: <span class="timer">${formatTime(left)}</span>`;
+      actionHtml = `
+        <button class="btn-sm btn-take" onclick="takeOrder('${o.id}')">✅ Взял</button>
+        <button class="btn-sm btn-del" onclick="archiveOrder('${o.id}')">🗑 Завершить</button>`;
+    }
+    return `
+      <div class="order-item ${cls}">
+        <div class="badges-col">
+          <span class="cat-badge ${cat.cls}">${cat.icon} ${cat.label}</span>
+          ${waitBadge}
+          ${soundBadge}
+          ${repeatBadge}
+        </div>
+        <div class="order-main">
+          <div class="order-num">WB ID: ${escapeHtml(String(o.num))}</div>
+          <div class="order-meta">${meta}</div>
+        </div>
+        <div class="order-actions">${actionHtml}</div>
+      </div>`;
+  }).join('');
+  renderStats();
+}
+function renderStats() {
+  const el = document.getElementById('stats');
+  if (!el) return;
+  const activeOrders = orders.filter(o => !o.archived);
+  const overdue = activeOrders.filter(o => !o.taken && Date.now() >= o.endTime).length;
+  const pending = activeOrders.filter(o => !o.taken && Date.now() < o.endTime).length;
+  const inWork  = activeOrders.filter(o => o.taken).length;
+  const archived = orders.filter(o => o.archived).length;
+  el.innerHTML =
+    `<span>Активных: <b>${activeOrders.length}</b></span>` +
+    `<span>⏳ Ждут: <b>${pending}</b></span>` +
+    `<span style="color:#16a34a">🟢 В работе: <b>${inWork}</b></span>` +
+    `<span style="color:#e11d48">🔔 Нужен ответ: <b>${overdue}</b></span>` +
+    `<span style="color:#6d3fd6">📁 Обработано: <b>${archived}</b></span>`;
+}
+/* РЕДАКТИРОВАНИЕ */
+function openReminderModal(id) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  document.getElementById('editReminderId').value = o.id;
+  document.getElementById('editNum').value = o.num;
+  document.getElementById('editCategory').value = o.cat;
+  document.getElementById('editWaiting').value = o.wait || '';
+  document.getElementById('editSound').value = o.sound || DEFAULT_SOUND;
+  document.getElementById('editRepeat').value = String(o.repeat || DEFAULT_REPEAT);
+  document.getElementById('editHours').value = 0;
+  document.getElementById('editMinutes').value = 0;
+  document.getElementById('editSeconds').value = 0;
+  const left = o.endTime - Date.now();
+  const d = new Date(o.endTime);
+  const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const leftStr = left > 0 ? formatTime(left) : 'уже просрочено';
+  document.getElementById('editCurrentHint').textContent =
+    `Сейчас стоит на ${timeStr} · ${left > 0 ? 'через ' + leftStr : leftStr}. Введите новое время от текущего момента (можно уменьшить).`;
+  document.getElementById('reminderModalOverlay').classList.add('show');
+}
+function closeReminderModal() {
+  document.getElementById('reminderModalOverlay').classList.remove('show');
+}
+document.getElementById('reminderForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const id = document.getElementById('editReminderId').value;
+  const o = orders.find(x => String(x.id) === String(id));
+  if (!o) return;
+  o.num = document.getElementById('editNum').value.trim() || '—';
+  o.cat = document.getElementById('editCategory').value;
+  o.wait = document.getElementById('editWaiting').value || null;
+  o.sound = document.getElementById('editSound').value;
+  o.repeat = parseInt(document.getElementById('editRepeat').value) || DEFAULT_REPEAT;
+  const h = parseInt(document.getElementById('editHours').value) || 0;
+  const m = parseInt(document.getElementById('editMinutes').value) || 0;
+  const s = parseInt(document.getElementById('editSeconds').value) || 0;
+  const newMs = (h * 3600 + m * 60 + s) * 1000;
+  o.endTime = Date.now() + newMs;
+  o.alarmed = false;
+  o.taken = false;
+  o.takenAt = null;
+  o.lastPlayed = 0;
+  saveOrders();
+  closeReminderModal();
+  renderReminders();
+  showToast(newMs > 0 ? 'Напоминание обновлено' : 'Напоминание сразу сработает');
+});
+/* ЭКСПОРТ / ОЧИСТКА */
+function exportArchive() {
+  const archived = orders.filter(o => o.archived);
+  if (archived.length === 0) return alert('Архив пуст');
+  const rows = [['WB ID','Категория','Что ждём','Напоминание','Повтор','Создан','Срок','Взят в работу','В архив']];
+  archived.forEach(o => {
+    rows.push([
+      o.num, CATS[o.cat]?.label || '',
+      o.wait ? WAITING[o.wait]?.full || '' : '',
+      SOUNDS[o.sound || DEFAULT_SOUND]?.label || '',
+      REPEATS[o.repeat || DEFAULT_REPEAT] || '',
+      formatDate(o.created), formatDate(o.endTime),
+      o.takenAt ? formatDate(o.takenAt) : '',
+      o.archivedAt ? formatDate(o.archivedAt) : ''
+    ]);
+  });
+  const csv = '\uFEFF' + rows.map(r =>
+    r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';')
+  ).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Обработанные_' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+function clearArchive() {
+  const cnt = orders.filter(o => o.archived).length;
+  if (cnt === 0) { showToast('Архив пуст'); return; }
+  Confirm.open(
+    'Очистить архив?',
+    `Все ${cnt} записей из папки «Обработанные» будут удалены.`,
+    () => {
+      orders = orders.filter(o => !o.archived);
+      saveOrders(); renderReminders();
+      showToast('Архив очищен');
+    },
+    'Очистить'
+  );
+}
+/* ТИК НАПОМИНАНИЙ */
+function tickAlarm() {
+  if (AudioEngine.isMuted()) return;
+  const now = Date.now();
+  const pending = orders.filter(o => !o.archived && !o.taken && now >= o.endTime);
+  if (pending.length === 0) return;
+  const due = pending.filter(o => {
+    const interval = o.repeat || DEFAULT_REPEAT;
+    return now - (o.lastPlayed || 0) >= interval;
+  });
+  if (due.length === 0) return;
+  due.sort((a, b) =>
+    (SOUNDS[b.sound || DEFAULT_SOUND]?.priority || 0) -
+    (SOUNDS[a.sound || DEFAULT_SOUND]?.priority || 0)
+  );
+  AudioEngine.play(due[0].sound || DEFAULT_SOUND);
+  const stamp = Date.now();
+  due.forEach(o => { o.lastPlayed = stamp; });
+  saveOrders();
+}
+setInterval(() => {
+  let changed = false;
+  orders.forEach(o => {
+    if (!o.archived && !o.taken && !o.alarmed && Date.now() >= o.endTime) {
+      o.alarmed = true; o.lastPlayed = 0; changed = true;
+    }
+  });
+  if (changed) saveOrders();
+  tickAlarm();
+  const banner = document.getElementById('alarmBanner');
+  const cnt = orders.filter(o => !o.archived && !o.taken && Date.now() >= o.endTime).length;
+  if (banner) {
+    if (cnt > 0) {
+      banner.classList.add('show');
+      banner.textContent = `🔔 ВНИМАНИЕ! ${cnt} WB ID — нужен ответ!`;
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+}, 1000);
+setInterval(() => {
+  const cnt = orders.filter(o => !o.archived && !o.taken && Date.now() >= o.endTime).length;
+  document.title = cnt > 0 ? `🔴 (${cnt}) НУЖЕН ОТВЕТ!` : 'WB Travel · Заметки + Напоминания';
+}, 1000);
+/* УТИЛИТЫ ВЫЗОВА */
+function updateCounters() { Bookmarks.updateCounters(); }
+document.getElementById('bookmarkForm').addEventListener('submit', function(e) { Bookmarks.submitForm(e); });
+document.getElementById('bookmarkModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) Bookmarks.closeModal();
+});
+document.getElementById('reminderModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeReminderModal();
+});
+document.getElementById('muteBtn').addEventListener('click', function() { AudioEngine.toggleMute(); });
+document.getElementById('voiceBtn').addEventListener('click', function() { Voice.toggle(); });
+document.getElementById('voiceCancelBtn').addEventListener('click', function() { Voice.cancel(); });
+document.addEventListener('click', AudioEngine.unlock, { once: true });
+['orderNum','hours','minutes','seconds'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addOrder();
+  });
+});
+/* ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK */
+window.switchMainTab = (t) => Bookmarks.switchTab(t);
+window.openBookmarkModal = (mode, id) => Bookmarks.openModal(mode, id);
+window.closeBookmarkModal = () => Bookmarks.closeModal();
+window.confirmDeleteBookmark = (id) => Bookmarks.confirmDelete(id);
+window.switchReminderView = (v) => switchReminderView(v);
+window.setFilter = (k) => setFilter(k);
+window.addOrder = () => addOrder();
+window.takeOrder = (id) => takeOrder(id);
+window.undoTake = (id) => undoTake(id);
+window.archiveOrder = (id) => archiveOrder(id);
+window.deleteOrder = (id) => deleteOrder(id);
+window.restoreFromArchive = (id) => restoreFromArchive(id);
+window.openReminderModal = (id) => openReminderModal(id);
+window.closeReminderModal = () => closeReminderModal();
+window.exportArchive = () => exportArchive();
+window.clearArchive = () => clearArchive();
+window.changeNotepadPage = (d) => Notepad.changePage(d);
+window.addNotepadPage = () => Notepad.addPage();
+window.clearNotepadPage = () => Notepad.clearPage();
+window.deleteNotepadPage = () => Notepad.deletePage();
+window.testCurrentSound = () => AudioEngine.testCurrentSound();
+window.toggleMute = () => AudioEngine.toggleMute();
+window.toggleVoiceInput = () => Voice.toggle();
+window.cancelVoiceInput = () => Voice.cancel();
+window.openConfirm = (t, s, cb, ok) => Confirm.open(t, s, cb, ok);
+window.closeConfirm = () => Confirm.close();
+/* ИНИЦИАЛИЗАЦИЯ */
+document.addEventListener('DOMContentLoaded', () => {
+  Motivation.render();
+  Bookmarks.load();
+  Notepad.load();
+  Notepad.init();
+  Confirm.init();
+  Bookmarks.render();
+  renderReminders();
+  Bookmarks.updateCounters();
+});
+</script>
+</body>
+</html>
