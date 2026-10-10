@@ -1,0 +1,3612 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>WB Travel · Рабочее пространство</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --lav-50:#f1ebfb; --lav-100:#e4d9f5; --lav-200:#d3c2ee; --lav-300:#bda5e5;
+    --lav-400:#a488e3; --lav-500:#8b64d6; --lav-600:#7c4ecf; --lav-700:#6d3fd6;
+    --lav-800:#5a2fb8;
+    --text:#2f2350; --text-soft:#5b4b85; --line:#d3c2ee;
+    --green:#16a34a; --red:#e11d48; --amber:#d97706;
+    --shadow:0 8px 28px rgba(109,63,214,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Nunito',sans-serif;}
+  body{background:#ede7f6;min-height:100vh;padding:24px;color:var(--text);}
+  .app-container{max-width:1500px;margin:0 auto;background:rgba(255,255,255,.92);
+    border-radius:24px;padding:26px;box-shadow:var(--shadow);border:1px solid var(--line);}
+
+  /* ══════════ ШАПКА ══════════ */
+  .header{display:flex;flex-direction:column;gap:14px;
+    margin-bottom:20px;border-bottom:2px solid var(--lav-300);padding-bottom:14px;}
+  .header-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .header-top .logo{flex-shrink:0;}
+  .header-top .user-bar{flex-shrink:0;}
+  .header-top .actions{margin-left:auto;flex-shrink:0;display:flex;gap:10px;}
+
+  /* Строка мотивации со скроллом по горизонтали */
+  .header-bottom{
+    display:flex;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:thin;
+    scrollbar-color: var(--lav-300) transparent;
+    padding-bottom:4px;
+  }
+  .header-bottom::-webkit-scrollbar{height:6px;}
+  .header-bottom::-webkit-scrollbar-thumb{background:var(--lav-300);border-radius:3px;}
+  .header-bottom::-webkit-scrollbar-track{background:transparent;}
+
+  .logo{display:flex;align-items:center;gap:10px;
+    font-size:24px;font-weight:800;color:var(--lav-700);white-space:nowrap;}
+  .logo i{color:var(--lav-600);}
+  .user-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:4px 12px;border-radius:50px;background:var(--lav-50);
+    border:1px solid var(--lav-200);}
+  .user-name{font-weight:800;color:var(--text);font-size:14px;white-space:nowrap;}
+  .user-sep{color:var(--lav-400);font-weight:800;font-size:13px;}
+  .user-line-chip{background:var(--lav-600);color:#fff;font-weight:800;
+    padding:3px 12px;border-radius:20px;font-size:12px;
+    letter-spacing:.3px;white-space:nowrap;}
+  .btn-logout{padding:5px 12px !important;font-size:12px !important;box-shadow:none !important;}
+  .motivation{
+    font-size:13.5px;
+    color:var(--text-soft);
+    line-height:1.4;
+    border-left:3px solid var(--lav-300);
+    padding-left:12px;
+    white-space:nowrap;
+    display:block;
+  }
+
+  /* ══════════ КНОПКИ ══════════ */
+  .btn{background:var(--lav-500);color:#fff;border:none;padding:10px 20px;
+    border-radius:50px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+    gap:8px;transition:.2s;box-shadow:0 4px 12px rgba(139,100,214,.35);font-size:14px;}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(109,63,214,.4);
+    background:var(--lav-600);}
+  .btn-outline{background:#fff;border:2px solid var(--lav-400);
+    color:var(--lav-700);box-shadow:none;}
+  .btn-outline:hover{background:var(--lav-100);color:var(--lav-800);}
+
+  /* ══════════ ВКЛАДКИ ══════════ */
+  .main-tabs{display:flex;gap:6px;background:#fff;padding:6px;border-radius:14px;
+    margin-bottom:18px;box-shadow:0 2px 10px rgba(109,63,214,.1);flex-wrap:wrap;
+    border:1px solid var(--line);}
+  .main-tab{flex:1;min-width:120px;padding:12px 16px;border-radius:10px;border:none;
+    background:transparent;cursor:pointer;font-size:14px;font-weight:800;
+    color:var(--text-soft);transition:.15s;display:flex;align-items:center;
+    justify-content:center;gap:8px;}
+  .main-tab:hover{background:var(--lav-50);color:var(--lav-700);}
+  .main-tab.active{background:var(--lav-600);color:#fff;box-shadow:0 4px 12px rgba(109,63,214,.4);}
+  .main-tab .tab-count{background:rgba(109,63,214,.15);padding:3px 10px;border-radius:12px;
+    font-size:12px;font-weight:800;min-width:24px;text-align:center;color:var(--lav-700);}
+  .main-tab.active .tab-count{background:rgba(255,255,255,.35);color:#fff;}
+  .main-tab .tab-count.alarm{background:var(--red)!important;color:#fff!important;
+    animation:badgePulse 1s infinite;}
+  .main-tab.gap{pointer-events:none;background:transparent;box-shadow:none;
+    min-width:20px;flex:0 0 20px;padding:0;}
+  .main-tab.hidden{display:none !important;}
+  @keyframes badgePulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.8);}
+    70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+
+  /* ══════════ ЗАКЛАДКИ ══════════ */
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
+  .card{background:#fff;border-radius:16px;padding:18px;
+    box-shadow:0 4px 12px rgba(109,63,214,.1);border-left:6px solid var(--lav-500);
+    position:relative;transition:.2s;border-top:1px solid var(--line);
+    border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .card:hover{transform:translateY(-5px);box-shadow:0 10px 24px rgba(109,63,214,.2);}
+  .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .card h3{font-size:17px;color:var(--text);margin-right:20px;}
+  .card-actions{display:flex;gap:8px;opacity:0;transition:.2s;}
+  .card:hover .card-actions{opacity:1;}
+  .icon-btn{background:none;border:none;color:#a488e3;cursor:pointer;font-size:14px;transition:.2s;}
+  .icon-btn:hover{color:var(--lav-700);}
+  .icon-btn.delete:hover{color:var(--red);}
+  .card p{color:var(--text-soft);font-size:13px;margin-bottom:8px;line-height:1.4;}
+  .card a{color:var(--lav-700);text-decoration:none;font-size:12px;
+    display:flex;align-items:center;gap:5px;word-break:break-all;}
+  .card a:hover{text-decoration:underline;color:var(--lav-800);}
+  .card .cat-tag{display:inline-block;background:var(--lav-100);color:var(--lav-700);
+    padding:3px 9px;border-radius:10px;font-size:11px;font-weight:800;
+    text-transform:uppercase;margin-bottom:8px;letter-spacing:.4px;}
+  .empty-state{grid-column:1/-1;text-align:center;color:var(--text-soft);padding:50px 20px;}
+  .empty-state i{font-size:40px;margin-bottom:15px;display:block;color:var(--lav-300);}
+
+  /* ══════════ МОДАЛКИ ══════════ */
+  .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(60,40,100,.4);backdrop-filter:blur(6px);justify-content:center;
+    align-items:center;z-index:1000;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:#fff;padding:28px;border-radius:20px;width:90%;max-width:520px;
+    box-shadow:0 20px 40px rgba(109,63,214,.3);max-height:90vh;overflow-y:auto;
+    border:1px solid var(--line);}
+  .modal h2{margin-bottom:18px;color:var(--lav-700);font-size:20px;}
+  .modal .form-group{margin-bottom:14px;}
+  .modal .form-group label{display:block;font-weight:700;margin-bottom:5px;
+    color:var(--text-soft);font-size:13px;}
+  .modal .form-group input,.modal .form-group select,.modal .form-group textarea{
+    width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:10px;
+    font-size:14px;outline:none;font-family:inherit;background:var(--lav-50);color:var(--text);}
+  .modal .form-group input:focus,.modal .form-group select:focus,
+  .modal .form-group textarea:focus{border-color:var(--lav-500);background:#fff;
+    box-shadow:0 0 0 3px rgba(139,100,214,.15);}
+  .modal .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .modal-hint{font-size:12px;color:var(--text-soft);font-style:italic;margin-top:4px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+  .btn-cancel{background:#e4d9f5;color:var(--lav-700);box-shadow:none;}
+  .btn-cancel:hover{background:#d3c2ee;color:var(--lav-800);}
+  .char-counter{font-size:11px;color:var(--text-soft);text-align:right;margin-top:3px;}
+  .char-counter.warn{color:var(--amber);}
+  .char-counter.over{color:var(--red);font-weight:800;}
+
+  /* ══════════ ЛОГИН ══════════ */
+  .login-overlay{position:fixed;inset:0;background:rgba(60,40,100,.55);
+    backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:3000;}
+  .login-overlay.show{display:flex;}
+  .login-card{background:#fff;border-radius:20px;padding:32px;width:90%;max-width:400px;
+    box-shadow:0 20px 50px rgba(109,63,214,.4);}
+  .login-card h2{margin-bottom:18px;color:var(--lav-700);text-align:center;font-size:22px;}
+  .login-card .logo{justify-content:center;margin-bottom:16px;}
+  .login-card .form-group{margin-bottom:14px;}
+  .login-card label{display:block;font-weight:700;margin-bottom:5px;color:var(--text-soft);font-size:13px;}
+  .login-card input{width:100%;padding:12px 16px;border:1px solid var(--line);
+    border-radius:10px;font-size:15px;outline:none;font-family:inherit;
+    background:var(--lav-50);color:var(--text);}
+  .login-card input:focus{border-color:var(--lav-500);background:#fff;
+    box-shadow:0 0 0 3px rgba(139,100,214,.15);}
+  .login-card button{width:100%;justify-content:center;margin-top:8px;}
+  .login-error{color:var(--red);font-size:13px;margin-top:12px;text-align:center;
+    min-height:18px;font-weight:700;}
+  .login-hint{font-size:12px;color:var(--text-soft);text-align:center;margin-top:14px;font-style:italic;}
+
+  /* ══════════ БАННЕР ТРЕВОГИ ══════════ */
+  #alarmBanner{display:none;background:var(--red);color:#fff;padding:14px 18px;
+    border-radius:12px;font-weight:800;font-size:15px;text-align:center;
+    animation:bannerPulse .8s infinite alternate;}
+  #alarmBanner.show{display:block;}
+  @keyframes bannerPulse{from{background:#e11d48;box-shadow:0 0 0 0 rgba(225,29,72,.7);}
+    to{background:#be123c;box-shadow:0 0 0 14px rgba(225,29,72,0);}}
+
+  /* ══════════ ДВУХКОЛОНОЧНЫЙ LAYOUT ЗАМЕТОК ══════════ */
+  .notes-layout{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;}
+  @media(max-width:1100px){.notes-layout{grid-template-columns:1fr;}}
+  .notes-left{min-width:0;}
+  .notes-right{
+    position:sticky;top:20px;
+    min-width:0;
+  }
+
+  /* ══════════ НАПОМИНАНИЯ ══════════ */
+  .reminder-section{display:flex;flex-direction:column;gap:14px;}
+  .reminder-title{
+    display:flex;justify-content:center;align-items:center;gap:10px;
+    font-size:18px;font-weight:800;color:var(--lav-700);
+    padding:6px 0;
+  }
+  .reminder-title i{color:var(--lav-600);}
+  .section-counter{
+    background:var(--lav-100);color:var(--lav-700);
+    font-size:12px;font-weight:800;
+    padding:2px 10px;border-radius:12px;
+    min-width:24px;text-align:center;
+  }
+  .reminder-card{background:#fff;padding:16px;border-radius:14px;
+    box-shadow:0 2px 10px rgba(109,63,214,.1);border:1px solid var(--line);}
+  .grid-form{display:grid;grid-template-columns:1.2fr .9fr 1.6fr 1.2fr 1fr 1.8fr;gap:10px;}
+  @media(max-width:1100px){.grid-form{grid-template-columns:1fr 1fr 1fr;}
+    .grid-form .col-time{grid-column:span 3;}}
+  @media(max-width:720px){.grid-form{grid-template-columns:1fr 1fr;}
+    .grid-form .col-wait,.grid-form .col-sound,.grid-form .col-repeat,
+    .grid-form .col-time{grid-column:1/-1;}}
+
+  /* Время чч/мм */
+  .time-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .time-field{position:relative;}
+  .time-field input{width:100%;padding:10px 34px 10px 10px;text-align:left;}
+  .time-field .time-label{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    color:var(--text-soft);font-size:12px;font-weight:700;pointer-events:none;
+  }
+
+  /* Звук + кнопка проверки */
+  .sound-row{display:flex;gap:6px;align-items:stretch;}
+  .sound-row select{flex:1;}
+  .sound-row .btn-sound-test{
+    padding:0 12px;border:none;border-radius:8px;cursor:pointer;
+    background:#fef3c7;color:#92400e;font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;transition:.15s;
+  }
+  .sound-row .btn-sound-test:hover{background:#fde68a;}
+
+  .grid-form label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--text-soft);}
+  .grid-form input,.grid-form select{width:100%;padding:10px;border:1px solid var(--line);
+    border-radius:8px;font-size:15px;background:var(--lav-50);color:var(--text);}
+  .grid-form input:focus,.grid-form select:focus{outline:2px solid var(--lav-500);
+    border-color:transparent;background:#fff;}
+
+  /* Комментарий + компактная кнопка */
+  .note-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:10px;}
+  .note-field{min-width:0;}
+  .note-field label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--text-soft);}
+  .note-field input{
+    width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;
+    font-size:15px;background:var(--lav-50);color:var(--text);outline:none;
+  }
+  .note-field input:focus{border-color:var(--lav-500);background:#fff;
+    box-shadow:0 0 0 3px rgba(139,100,214,.15);}
+  .primary-compact{
+    width:auto;padding:12px 20px;margin-top:0;
+    background:var(--lav-600);color:#fff;border:none;border-radius:10px;
+    cursor:pointer;font-size:14px;font-weight:800;
+    box-shadow:0 4px 12px rgba(109,63,214,.35);
+    display:flex;align-items:center;gap:6px;white-space:nowrap;
+    height:42px;transition:.15s;
+  }
+  .primary-compact:hover{background:var(--lav-700);transform:translateY(-1px);}
+
+  .reminder-author-note{background:var(--lav-50);border:1px dashed var(--lav-300);
+    border-radius:10px;padding:8px 14px;font-size:13px;color:var(--text-soft);
+    margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .reminder-author-note b{color:var(--lav-700);}
+  .reminder-author-note .line-chip-small{background:var(--lav-100);color:var(--lav-700);
+    padding:2px 10px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;}
+
+  .tabs{display:flex;gap:6px;background:#fff;padding:6px;border-radius:12px;
+    box-shadow:0 2px 10px rgba(109,63,214,.1);border:1px solid var(--line);}
+  .tab{flex:1;padding:10px;border-radius:8px;border:none;background:transparent;
+    cursor:pointer;font-size:14px;font-weight:800;color:var(--text-soft);
+    transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .tab:hover{background:var(--lav-50);color:var(--lav-700);}
+  .tab.active{background:var(--lav-600);color:#fff;box-shadow:0 4px 12px rgba(109,63,214,.4);}
+  .tab .tab-count{background:rgba(109,63,214,.15);padding:4px 12px;border-radius:12px;
+    font-size:14px;font-weight:800;min-width:30px;text-align:center;color:var(--lav-700);}
+  .tab.active .tab-count{background:rgba(255,255,255,.35);color:#fff;}
+  .tab-count.alarm{background:var(--red)!important;color:#fff!important;
+    animation:badgePulse 1s infinite;}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .filter-btn{border:2px solid transparent;background:var(--lav-50);
+    color:var(--text-soft);padding:8px 14px;border-radius:20px;cursor:pointer;
+    font-size:13px;font-weight:700;transition:.15s;display:flex;align-items:center;gap:6px;}
+  .filter-btn:hover{background:var(--lav-100);}
+  .filter-btn.active{background:var(--lav-600);color:#fff;}
+  .filter-btn .count{background:rgba(109,63,214,.15);padding:1px 7px;border-radius:10px;
+    font-size:11px;min-width:20px;text-align:center;color:var(--lav-700);}
+  .filter-btn.active .count{background:rgba(255,255,255,.3);color:#fff;}
+  .search-row{display:flex;gap:10px;align-items:center;margin-bottom:12px;}
+  .search-row input{flex:1;padding:10px 14px;border:1px solid var(--line);
+    border-radius:10px;font-size:14px;background:var(--lav-50);color:var(--text);}
+  .search-row input:focus{outline:2px solid var(--lav-500);border-color:transparent;background:#fff;}
+
+   /* ══════════ КОМПАКТНЫЕ КАРТОЧКИ НАПОМИНАНИЙ ══════════ */
+  .order-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 12px;
+    border-radius:10px;
+    background:var(--lav-50);
+    margin-bottom:5px;
+    border-left:5px solid var(--lav-500);
+    transition:.2s;
+    border-top:1px solid var(--line);
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    min-height:52px;
+  }
+  .order-item.warning{border-left-color:var(--amber);background:#fffbeb;}
+  .order-item.overdue{border-left-color:var(--red);background:#ffe4e6;
+    animation:blink 1s infinite;}
+  @keyframes blink{0%,100%{background:#ffe4e6;box-shadow:0 0 0 0 rgba(225,29,72,.5);}
+    50%{background:#fecdd3;box-shadow:0 0 0 6px rgba(225,29,72,0);}}
+  .order-item.taken{border-left-color:var(--green);background:#dcfce7;animation:none;}
+  .order-item.archived{border-left-color:#b8a3f5;background:var(--lav-100);opacity:.92;}
+
+  /* Основной контент — одна строка с переносом */
+  .order-main{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:5px 8px;
+    font-size:12.5px;
+    line-height:1.3;
+  }
+  .order-num{font-weight:800;font-size:13px;color:var(--text);}
+  .order-sep{color:var(--lav-400);font-weight:800;}
+  .order-meta{color:var(--text-soft);font-size:12.5px;}
+  .order-note-inline{
+    color:var(--text-soft);
+    font-size:12px;
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-style:italic;
+    max-width:400px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .order-note-inline i{color:var(--lav-500);flex-shrink:0;font-size:11px;}
+
+  /* Кнопки справа */
+  .order-actions{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    flex-shrink:0;
+    align-self:center;
+  }
+  .order-actions .btn-sm{
+    padding:4px 9px;
+    font-size:11px;
+  }
+
+  /* Бейджи в одну строку */
+  .cat-badge,.wait-badge,.sound-badge,.repeat-badge,.author-badge{
+    padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.2px;white-space:nowrap;line-height:1.4;}
+  .cat-tours{background:#d3c2ee;color:#4c1d95;}
+  .cat-hotels{background:#fbcfe8;color:#9d174d;}
+  .cat-flights{background:#cffafe;color:#155e75;}
+  .cat-experiences{background:#fef3c7;color:#92400e;}
+  .cat-other{background:#d3c2ee;color:#4c1d95;}
+  .wait-line2{background:#e4d9f5;color:#4c1d95;}
+  .wait-tech{background:#cffafe;color:#155e75;}
+  .wait-sv{background:#ffe4e6;color:#9f1239;}
+  .wait-claim{background:#fee2e2;color:#991b1b;}
+  .wait-tours{background:#d3c2ee;color:#4c1d95;}
+  .wait-none{background:#f1ebfb;color:var(--text-soft);font-style:italic;text-transform:none;}
+  .sound-badge{background:#dcfce7;color:#166534;text-transform:none;}
+  .repeat-badge{background:#e4d9f5;color:var(--lav-700);text-transform:none;}
+  .author-badge{background:#e0e7ff;color:#3730a3;text-transform:none;}
+  .author-badge.mine{background:var(--lav-600);color:#fff;}
+  .timer{font-weight:800;color:var(--lav-700);white-space:nowrap;}
+  .overdue .timer{color:var(--red);}
+  .warning .timer{color:var(--amber);}
+  .created-badge{
+    background:#f1f5f9;
+    color:#475569;
+    padding:2px 8px;
+    border-radius:10px;
+    font-size:10.5px;
+    font-weight:700;
+    white-space:nowrap;
+    line-height:1.4;
+    text-transform:none;
+  }
+
+  .btn-sm{border:none;padding:6px 10px;border-radius:6px;cursor:pointer;
+    font-size:11.5px;font-weight:800;white-space:nowrap;transition:.15s;}
+  .btn-take{background:var(--green);color:#fff;}
+  .btn-take:hover{background:#15803d;}
+  .btn-undo{background:#e4d9f5;color:var(--lav-700);}
+  .btn-undo:hover{background:#d3c2ee;}
+  .btn-edit{background:#e0e7ff;color:#3730a3;}
+  .btn-edit:hover{background:#c7d2fe;}
+  .btn-del{background:#fee2e2;color:#991b1b;}
+  .btn-del:hover{background:#fecaca;}
+  .btn-close{background:var(--green);color:#fff;}
+  .btn-close:hover{background:#15803d;}
+  .btn-test{background:#fef3c7;color:#92400e;}
+  .btn-test:hover{background:#fde68a;}
+
+  .empty{text-align:center;color:var(--text-soft);padding:30px 10px;font-size:14px;}
+  .stats{display:flex;justify-content:space-between;font-size:12px;
+    color:var(--text-soft);margin-bottom:12px;flex-wrap:wrap;gap:8px;
+    padding:8px 14px;background:var(--lav-50);border-radius:10px;
+    border:1px dashed var(--lav-300);}
+  .archive-toolbar{display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .archive-toolbar h3{margin:0;font-size:15px;color:var(--text);}
+  .btn-export{background:var(--green);color:#fff;border:none;padding:8px 14px;
+    border-radius:8px;cursor:pointer;font-size:13px;font-weight:800;}
+  .btn-export:hover{background:#15803d;}
+  .btn-clear{background:var(--lav-100);color:var(--lav-700);border:none;
+    padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:800;}
+  .btn-clear:hover{background:var(--lav-200);}
+
+  /* ══════════ СТИКЕРЫ ══════════ */
+  .stickers-wrap{display:flex;flex-direction:column;gap:14px;}
+  .stickers-toolbar{display:flex;flex-direction:column;gap:10px;}
+  .stickers-title{
+    display:flex;justify-content:center;align-items:center;gap:10px;
+    font-size:18px;font-weight:800;color:var(--text);
+    padding:6px 0;
+  }
+  .stickers-title i{color:var(--lav-600);}
+  .stickers-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+  .btn-sticker-voice{background:var(--lav-600);color:#fff;border:none;padding:8px 14px;
+    border-radius:30px;cursor:pointer;font-weight:800;font-size:12px;
+    display:flex;align-items:center;gap:6px;transition:.15s;}
+  .btn-sticker-voice:hover{background:var(--lav-700);}
+  .btn-sticker-voice.recording{background:var(--red);animation:micPulse 1.4s infinite;}
+  @keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.55);}
+    70%{box-shadow:0 0 0 12px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
+
+  /* Одна колонка стикеров в правой панели */
+  .stickers-grid{display:grid;grid-template-columns:1fr;
+    gap:14px;max-height:calc(100vh - 260px);overflow-y:auto;padding:4px;}
+
+  .sticker{background:#fef9c3;border-radius:12px;padding:16px;min-height:160px;
+    position:relative;box-shadow:0 4px 10px rgba(0,0,0,.08);
+    display:flex;flex-direction:column;transition:.2s;border:1px solid #fde68a;}
+  .sticker.pink{background:#fce7f3;border-color:#fbcfe8;}
+  .sticker.green{background:#dcfce7;border-color:#bbf7d0;}
+  .sticker.flash{animation:stickerFlash 1s infinite;}
+  @keyframes stickerFlash{0%,100%{box-shadow:0 0 0 0 rgba(225,29,72,.6);}
+    50%{box-shadow:0 0 0 8px rgba(225,29,72,0);}}
+  .sticker-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .sticker-color-select{display:flex;gap:6px;}
+  .color-dot{width:20px;height:20px;border-radius:50%;cursor:pointer;
+    border:2px solid rgba(0,0,0,.15);transition:.15s;}
+  .color-dot.yellow{background:#fde047;}
+  .color-dot.pink{background:#ec4899;}
+  .color-dot.green{background:#22c55e;}
+  .color-dot.active{border-color:#fff;box-shadow:0 0 0 2px var(--lav-600);}
+  .sticker-actions{display:flex;gap:6px;}
+  .sticker-edit,.sticker-remove{background:none;border:none;color:#a16207;cursor:pointer;
+    font-size:13px;transition:.15s;}
+  .sticker-edit:hover{color:var(--lav-700);}
+  .sticker-remove:hover{color:var(--red);}
+  .sticker-text{flex:1;font-size:14px;line-height:1.4;color:var(--text);word-break:break-word;}
+  .sticker-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+  .sticker-time{font-size:11px;color:var(--text-soft);}
+  .sticker-wordcount{font-size:11px;color:var(--text-soft);font-style:italic;}
+
+  /* Легенда цветов с CSS-кружками */
+  .sticker-legend{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    font-size:11.5px;
+    color:var(--text-soft);
+    font-style:italic;
+    padding:8px 10px;
+    background:var(--lav-50);
+    border-radius:10px;
+  }
+  .sticker-legend .legend-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .sticker-legend .legend-dot{
+    width:14px;height:14px;border-radius:50%;
+    border:2px solid rgba(0,0,0,.15);
+    flex-shrink:0;
+  }
+  .sticker-legend .legend-dot.yellow{background:#fde047;}
+  .sticker-legend .legend-dot.pink{background:#ec4899;}
+  .sticker-legend .legend-dot.green{background:#22c55e;}
+
+  /* ══════════ ТРЕКЕР ══════════ */
+  .trackercard{background:#fff;border-radius:20px;border:1px solid var(--line);
+    box-shadow:var(--shadow);overflow:hidden;}
+  .tracker-header-merged{
+    background:linear-gradient(135deg,var(--lav-500),var(--lav-700));
+    color:#fff;padding:22px 26px;display:flex;flex-direction:column;gap:16px;}
+  .tracker-title-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .tracker-logo{font-size:1.5rem;font-weight:800;display:flex;align-items:center;gap:10px;}
+  .tracker-logo i{color:#fff;}
+  .tracker-pill{display:inline-block;background:rgba(255,255,255,.22);border-radius:40px;
+    padding:3px 14px;font-size:.75rem;font-weight:700;}
+  .tracker-status{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.25);
+    border-radius:40px;padding:3px 12px;font-size:.72rem;font-weight:700;margin-left:auto;}
+  .tracker-status .dot{width:8px;height:8px;border-radius:50%;background:var(--lav-200);}
+  .tracker-status.online .dot{background:var(--green);box-shadow:0 0 8px var(--green);}
+  .tracker-status.offline .dot{background:var(--red);}
+  .tracker-status.syncing .dot{background:var(--amber);box-shadow:0 0 8px var(--amber);}
+
+  .tracker-shift-row{display:flex;justify-content:space-between;align-items:center;
+    gap:20px;flex-wrap:wrap;}
+  .tracker-clock-wrap{flex-shrink:0;}
+  .tracker-shiftlabel{font-size:.72rem;text-transform:uppercase;opacity:.85;letter-spacing:.5px;}
+  .tracker-clock{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
+  .tracker-shiftinfo{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;align-items:center;opacity:.95;}
+  .tracker-shiftinfo b{font-size:1rem;}
+  .tracker-shiftbtns{display:flex;gap:10px;flex-shrink:0;}
+  .tracker-shiftbtns .btn-shift{background:#fff;color:var(--lav-800);border:none;border-radius:50px;
+    padding:11px 20px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.88rem;}
+  .tracker-shiftbtns .btn-shift.end{background:var(--red);color:#fff;}
+  .tracker-shiftbtns .btn-shift:disabled{opacity:.45;cursor:not-allowed;}
+
+  .tracker-motivation{
+    background:linear-gradient(135deg,var(--lav-100),var(--lav-50));
+    color:var(--lav-800);text-align:center;padding:14px 20px;font-weight:800;font-size:1.05rem;
+    border-bottom:1px solid var(--lav-200);transition:background .4s;
+    display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .tracker-motivation.on-pause{background:linear-gradient(135deg,#fed7aa,#fef3c7);color:#92400e;}
+  .tracker-motivation .tm-text{transition:opacity .3s;}
+  .tracker-motivation.on-pause .tm-text{opacity:.9;font-size:.95rem;}
+  .tracker-motivation .tm-pause{display:inline-flex;align-items:center;gap:10px;
+    background:rgba(255,255,255,.6);border-radius:40px;padding:8px 18px;font-size:1rem;font-weight:700;}
+  .tracker-motivation .tm-pause i{font-size:1.1rem;}
+  .tracker-motivation .tm-pause-timer{font-variant-numeric:tabular-nums;font-size:1.35rem;
+    background:rgba(255,255,255,.7);border-radius:30px;padding:4px 14px;letter-spacing:1px;}
+  .tracker-motivation .tm-pause-stop{background:rgba(255,255,255,.75);color:#92400e;border:none;
+    border-radius:30px;padding:6px 14px;font-family:inherit;font-weight:700;font-size:.85rem;
+    cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;margin-left:8px;}
+  .tracker-motivation .tm-pause-stop:hover{background:rgba(255,255,255,.95);transform:scale(1.05);}
+
+  /* Перерывы/обед — по центру */
+  .tracker-breakbar{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:center;
+    gap:24px;
+    background:var(--lav-50);
+    border:1px solid var(--lav-200);
+    border-radius:16px;
+    padding:14px 18px;
+    margin:18px;
+  }
+  .tracker-break-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .tracker-break-group input{width:80px;border:1px solid var(--line);border-radius:40px;
+    padding:9px 12px;font-weight:700;text-align:center;font-family:inherit;color:var(--text);}
+  .tracker-breaklabel{font-weight:700;color:var(--lav-800);}
+  .tracker-lunch-fixed{font-weight:700;color:var(--lav-800);background:var(--lav-100);
+    border-radius:40px;padding:9px 18px;font-size:.95rem;}
+  .btn-break{background:var(--amber);color:#fff;border:none;border-radius:50px;padding:10px 20px;
+    font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-break:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-break.active{background:var(--green);}
+  .btn-lunch{background:var(--lav-600);color:#fff;border:none;border-radius:50px;padding:10px 20px;
+    font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-lunch:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-lunch.active{background:var(--green);}
+  .tracker-lunch-group{border-left:2px dashed var(--lav-300);padding-left:14px;}
+
+  .tracker-act-title{font-weight:700;color:var(--text);margin:0 18px 12px;font-size:1.1rem;
+    display:flex;align-items:center;gap:10px;}
+  .tracker-linechip{background:var(--lav-100);color:var(--lav-700);padding:3px 12px;
+    border-radius:40px;font-size:.72rem;text-transform:uppercase;}
+
+  .activity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;
+    margin:0 18px 20px;}
+  .activity-card{background:var(--lav-50);border-radius:16px;padding:16px;border:1px solid var(--line);position:relative;}
+  .activity-card .accent{position:absolute;top:0;left:0;bottom:0;width:5px;border-radius:16px 0 0 16px;}
+  .activity-card h4{margin:0 0 4px 10px;color:var(--text);}
+  .activity-card .sub{margin-left:10px;font-size:.72rem;color:var(--text-soft);font-weight:700;}
+  .activity-card .hint{margin-left:10px;font-size:.68rem;color:var(--text-soft);font-style:italic;margin-top:2px;}
+  .activity-card .counter{display:flex;justify-content:space-between;align-items:center;margin:12px 0 0 10px;gap:8px;}
+  .activity-card .count-value{font-size:2.4rem;font-weight:700;color:var(--text);}
+  .activity-card .btn-group{display:flex;gap:8px;}
+  .activity-card .btn-plus,.activity-card .btn-minus{
+    width:56px;height:56px;border-radius:50%;border:none;
+    cursor:pointer;font-size:1.8rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-family:inherit;
+    transition:.15s;}
+  .activity-card .btn-plus{color:#fff;}
+  .activity-card .btn-plus:hover{transform:scale(1.08);}
+  .activity-card .btn-minus{
+    color:var(--lav-700);
+    font-size:2rem;}
+  .activity-card .btn-minus:hover{transform:scale(1.08);}
+  .activity-card .btn-plus:disabled,.activity-card .btn-minus:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+  .activity-card .last{margin-left:10px;font-size:.75rem;color:var(--text-soft);margin-top:6px;}
+
+  .tracker-log-title{font-weight:700;color:var(--text);margin:0 18px 10px;}
+  .log-list{max-height:220px;overflow-y:auto;background:var(--lav-50);border:1px solid var(--line);
+    border-radius:12px;padding:8px 4px;margin:0 18px 20px;font-size:.85rem;}
+  .log-item{display:flex;justify-content:space-between;padding:6px 12px;
+    border-bottom:1px solid var(--lav-100);color:var(--text-soft);}
+  .log-item .time{font-weight:700;color:var(--text);min-width:62px;}
+  .log-item .label{flex:1;margin-left:10px;}
+  .log-item .badge{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;background:var(--lav-600);}
+  .tracker-log-empty{text-align:center;color:var(--lav-300);padding:18px;font-style:italic;}
+
+  /* ══════════ ДАШБОРД ══════════ */
+  .dashboard-wrap{display:flex;flex-direction:column;gap:18px;}
+  .db-toolbar{display:flex;justify-content:space-between;align-items:center;
+    gap:12px;flex-wrap:wrap;background:#fff;padding:14px 18px;border-radius:14px;
+    border:1px solid var(--line);box-shadow:0 2px 10px rgba(109,63,214,.08);}
+  .db-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .db-filter-btn{background:var(--lav-50);border:1px solid var(--line);color:var(--text-soft);
+    padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;transition:.15s;}
+  .db-filter-btn:hover{background:var(--lav-100);color:var(--lav-700);}
+  .db-filter-btn.active{background:var(--lav-600);color:#fff;border-color:var(--lav-600);}
+  .db-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .db-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;}
+  .db-kpi{background:#fff;border-radius:14px;padding:16px 18px;
+    border:1px solid var(--line);box-shadow:0 2px 10px rgba(109,63,214,.08);}
+  .db-kpi .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--text-soft);font-weight:800;margin-bottom:6px;}
+  .db-kpi .value{font-size:28px;font-weight:800;color:var(--lav-700);
+    font-variant-numeric:tabular-nums;line-height:1.1;}
+  .db-kpi .unit{font-size:13px;color:var(--text-soft);font-weight:700;margin-left:4px;}
+  .db-card{background:#fff;border-radius:14px;padding:18px;
+    border:1px solid var(--line);box-shadow:0 2px 10px rgba(109,63,214,.08);}
+  .db-card h3{font-size:16px;color:var(--lav-700);margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;font-weight:800;}
+  .db-card h3 i{color:var(--lav-500);}
+  .db-chart-wrap{position:relative;height:280px;}
+  .db-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:900px){.db-grid-2{grid-template-columns:1fr;}}
+  .db-table-wrap{overflow-x:auto;}
+  .db-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .db-table th{background:var(--lav-50);color:var(--text-soft);font-weight:800;
+    text-align:left;padding:10px 12px;border-bottom:2px solid var(--line);
+    font-size:11px;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;user-select:none;}
+  .db-table th:hover{background:var(--lav-100);color:var(--lav-700);}
+  .db-table td{padding:10px 12px;border-bottom:1px solid var(--lav-100);color:var(--text);}
+  .db-table tr:hover td{background:var(--lav-50);}
+  .db-table .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  .db-empty{text-align:center;color:var(--text-soft);padding:40px 20px;font-style:italic;}
+
+  /* ══════════ ПРОЧЕЕ ══════════ */
+  .confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;
+    pointer-events:none;z-index:5000;overflow:hidden;}
+  .confetti-piece{position:absolute;top:-20px;width:10px;height:14px;opacity:.9;
+    will-change:transform;animation:confettiFall linear forwards;}
+  @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);}
+    100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+  .motiv-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);
+    background:linear-gradient(135deg,var(--lav-600),var(--lav-800));
+    color:#fff;padding:28px 40px;border-radius:20px;font-size:1.2rem;font-weight:700;
+    text-align:center;max-width:520px;z-index:5000;box-shadow:0 20px 50px rgba(109,63,214,.5);
+    opacity:0;transition:all .4s cubic-bezier(.2,1.4,.4,1);pointer-events:none;line-height:1.5;}
+  .motiv-popup.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+
+  #muteBtn{position:fixed;bottom:14px;left:14px;background:var(--lav-700);color:#fff;
+    border:none;padding:10px 14px;border-radius:20px;font-size:12px;
+    cursor:pointer;opacity:.65;z-index:99;box-shadow:0 4px 12px rgba(109,63,214,.4);}
+  #muteBtn:hover{opacity:1;}
+
+  .toast{position:fixed;top:20px;right:20px;background:#fff;padding:15px 25px;
+    border-radius:12px;box-shadow:0 10px 24px rgba(109,63,214,.25);
+    border-left:5px solid var(--lav-500);display:none;
+    animation:slideInRight .3s ease;z-index:2000;font-weight:700;color:var(--text);
+    max-width:340px;}
+  @keyframes slideInRight{from{transform:translateX(100%);opacity:0;}
+    to{transform:translateX(0);opacity:1;}}
+
+  .section-divider{margin:26px 0 20px;display:flex;align-items:center;gap:14px;}
+  .section-divider::before,.section-divider::after{content:'';flex:1;height:2px;
+    background:linear-gradient(90deg,transparent,var(--lav-300),transparent);}
+  .section-divider span{font-weight:800;color:var(--lav-700);font-size:13px;
+    letter-spacing:2px;text-transform:uppercase;padding:6px 16px;background:var(--lav-100);
+    border-radius:20px;border:1px solid var(--lav-200);}
+
+  @media(max-width:820px){
+    .header-top{flex-direction:column;align-items:flex-start;gap:10px;}
+    .header-top .actions{margin-left:0;}
+  }
+  @media(max-width:700px){
+    body{padding:12px;}
+    .app-container{padding:16px;border-radius:18px;}
+    .actions{width:100%;}
+    .btn{flex:1;justify-content:center;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ЛОГИН -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <div class="logo"><i class="fas fa-suitcase-rolling"></i> wb travel</div>
+    <h2>Вход в систему</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="ivanova@wb-travel.ru" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Код доступа</label>
+      <input type="password" id="loginCode" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+    </div>
+    <button class="btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Войти</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-hint">Введите корпоративный email и 4-значный код</div>
+  </div>
+</div>
+
+<div class="app-container">
+
+  <!-- ШАПКА -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo"><i class="fas fa-suitcase-rolling"></i> wb travel</div>
+      <div class="user-bar" id="userBar" style="display:none;">
+        <span class="user-name" id="userName">—</span>
+        <span class="user-sep">·</span>
+        <span class="user-line-chip" id="userLineChip">—</span>
+        <button class="btn btn-outline btn-logout" onclick="Auth.logout()">
+          <i class="fas fa-sign-out-alt"></i> Выйти
+        </button>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="openBookmarkModal('add')">
+          <i class="fas fa-plus"></i> Закладка
+        </button>
+      </div>
+    </div>
+    <div class="header-bottom">
+      <div class="motivation" id="motivationText"></div>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКИ -->
+  <div class="main-tabs">
+    <button class="main-tab active" data-tab="all" onclick="switchMainTab('all')">
+      <i class="fas fa-th-large"></i> Все <span class="tab-count" id="cntAll">0</span>
+    </button>
+    <button class="main-tab" data-tab="tools" onclick="switchMainTab('tools')">
+      <i class="fas fa-tools"></i> Инструменты <span class="tab-count" id="cntTools">0</span>
+    </button>
+    <button class="main-tab" data-tab="important" onclick="switchMainTab('important')">
+      <i class="fas fa-star"></i> Избранное <span class="tab-count" id="cntImportant">0</span>
+    </button>
+    <button class="main-tab gap" aria-hidden="true"></button>
+    <button class="main-tab" data-tab="notes" onclick="switchMainTab('notes')">
+      <i class="fas fa-sticky-note"></i> Заметки <span class="tab-count" id="cntNotes">0</span>
+    </button>
+    <button class="main-tab" data-tab="tracker" onclick="switchMainTab('tracker')">
+      <i class="fas fa-chart-line"></i> Трекер
+    </button>
+    <button class="main-tab hidden" data-tab="dashboard" id="tabDashboardBtn" onclick="switchMainTab('dashboard')">
+      <i class="fas fa-chart-pie"></i> Дашборд
+    </button>
+  </div>
+
+  <!-- ЗАКЛАДКИ -->
+  <div id="tabContentCards">
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+
+  <!-- ЗАМЕТКИ — ДВЕ КОЛОНКИ -->
+  <div id="tabContentNotes" style="display:none;">
+    <div class="notes-layout">
+
+      <!-- ЛЕВАЯ КОЛОНКА: НАПОМИНАНИЯ -->
+      <div class="notes-left">
+        <div class="reminder-section">
+          <div class="reminder-title">
+            <i class="fas fa-bell"></i>
+            <span>Напоминания</span>
+            <span class="section-counter" id="remindersActiveCount">0</span>
+          </div>
+          <div id="alarmBanner">🔔 ВНИМАНИЕ! Нужен ответ клиенту!</div>
+
+          <div class="reminder-card" id="formCard">
+            <div class="reminder-author-note" id="reminderAuthorNote"></div>
+            <div class="grid-form">
+              <div><label>WB ID</label><input type="text" id="orderNum" placeholder="12345678"></div>
+              <div>
+                <label>Категория</label>
+                <select id="category">
+                  <option value="tours">🏝 Туры</option>
+                  <option value="hotels">🏨 Отели</option>
+                  <option value="flights">✈️ Авиабилеты</option>
+                  <option value="experiences">🎡 Впечатления</option>
+                  <option value="other">📦 Другое</option>
+                </select>
+              </div>
+              <div class="col-wait">
+                <label>Что ждём?</label>
+                <select id="waiting">
+                  <option value="">— не указано —</option>
+                  <option value="line2">Решение от второй линии</option>
+                  <option value="tech">Решение от тех.специалистов</option>
+                  <option value="sv">Решение от СВ</option>
+                  <option value="claim">Решение от отдела претензий</option>
+                  <option value="tours">Решение от туров</option>
+                </select>
+              </div>
+              <div class="col-sound">
+                <label>Напоминание</label>
+                <div class="sound-row">
+                  <select id="sound">
+                    <option value="birds">Птицы</option>
+                    <option value="alert">Звонок</option>
+                  </select>
+                  <button class="btn-sound-test" onclick="testCurrentSound()" title="Прослушать">
+                    <i class="fas fa-play"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-repeat">
+                <label>Повтор каждые</label>
+                <select id="repeat">
+                  <option value="10000">10 секунд</option>
+                  <option value="30000" selected>30 секунд</option>
+                  <option value="60000">1 минута</option>
+                  <option value="120000">2 минуты</option>
+                  <option value="300000">5 минут</option>
+                  <option value="600000">10 минут</option>
+                </select>
+              </div>
+              <div class="col-time">
+                <label>Через сколько вернуться?</label>
+                <div class="time-row-2">
+                  <div class="time-field">
+                    <input type="number" id="hours" min="0" max="23" value="0">
+                    <span class="time-label">чч</span>
+                  </div>
+                  <div class="time-field">
+                    <input type="number" id="minutes" min="0" max="59" value="30">
+                    <span class="time-label">мм</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="note-row">
+              <div class="note-field">
+                <label>Комментарий (необязательно)</label>
+                <input type="text" id="note" maxlength="100" placeholder="До 100 символов">
+                <div class="char-counter" id="noteCounter">0 / 100</div>
+              </div>
+              <button class="primary-compact" onclick="addOrder()">
+                <i class="fas fa-plus"></i> Поставить
+              </button>
+            </div>
+          </div>
+
+          <div class="reminder-card">
+            <div class="tabs">
+              <button class="tab active" id="tabActive" onclick="switchReminderView('active')">
+                📋 Активные <span class="tab-count" id="cntActiveRem">0</span>
+              </button>
+              <button class="tab" id="tabArchive" onclick="switchReminderView('archive')">
+                📁 Обработанные <span class="tab-count" id="cntArchiveRem">0</span>
+              </button>
+            </div>
+            <div class="filters" id="filters" style="margin-top:12px;"></div>
+            <div class="search-row">
+              <input type="text" id="search" placeholder="🔍 Поиск по WB ID..." oninput="scheduleRenderReminders()">
+            </div>
+            <div class="archive-toolbar" id="archiveToolbar" style="display:none;">
+              <h3>📁 Папка «Обработанные»</h3>
+              <div style="display:flex;gap:8px;">
+                <button class="btn-export" onclick="exportArchive()">⬇ Выгрузить</button>
+                <button class="btn-clear" onclick="clearArchive()">🗑 Очистить</button>
+              </div>
+            </div>
+            <div class="stats" id="stats"></div>
+            <div id="ordersList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПРАВАЯ КОЛОНКА: СТИКЕРЫ -->
+      <div class="notes-right">
+        <div class="stickers-wrap">
+          <div class="stickers-toolbar">
+            <div class="stickers-title">
+              <i class="fas fa-sticky-note"></i> Стикеры
+              <span class="section-counter" id="stickersCount">0</span>
+            </div>
+            <div class="stickers-actions">
+              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="openStickerModal('add')">
+                <i class="fas fa-plus"></i> Добавить
+              </button>
+              <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="voiceSticker()">
+                <i class="fas fa-microphone"></i> <span id="stickerVoiceText">Диктовать</span>
+              </button>
+            </div>
+          </div>
+          <div class="stickers-grid" id="stickersGrid"></div>
+          <div class="sticker-legend">
+            <div class="legend-row">
+              <span class="legend-dot yellow"></span>
+              Жёлтый — напоминание каждые 2 часа
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot pink"></span>
+              Розовый — каждые 10 минут
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot green"></span>
+              Зелёный — к завершению смены
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ТРЕКЕР -->
+  <div id="tabContentTracker" style="display:none;">
+    <div class="trackercard">
+      <div class="tracker-header-merged">
+        <div class="tracker-title-row">
+          <div class="tracker-logo"><i class="fas fa-user-clock"></i> Личный кабинет</div>
+          <span class="tracker-pill" id="linePill">— линия</span>
+          <span class="tracker-status" id="cloudStatus">
+            <span class="dot"></span><span id="cloudStatusText">локальный режим</span>
+          </span>
+        </div>
+        <div class="tracker-shift-row">
+          <div class="tracker-clock-wrap">
+            <div class="tracker-shiftlabel">Длительность смены</div>
+            <div class="tracker-clock" id="shiftClock">00:00:00</div>
+          </div>
+          <div class="tracker-shiftinfo">
+            <div>Начало: <b id="startTimeLabel">—</b></div>
+            <div>Активностей: <b id="totalActivities">0</b></div>
+            <div>Перерыв: <b id="breakTimeLabel">0 мин</b></div>
+            <div>Обед: <b id="lunchTimeLabel">0 мин</b></div>
+            <div>Статус: <b id="shiftStateLabel">не начата</b></div>
+          </div>
+          <div class="tracker-shiftbtns">
+            <button class="btn-shift" id="startBtn">▶ Старт смены</button>
+            <button class="btn-shift end" id="endBtn" disabled>■ Завершить</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tracker-motivation" id="trackerMotivation">
+        <div class="tm-text" id="trackerMotivationText">Войдите в систему и нажмите «Старт смены»</div>
+        <div class="tm-pause" id="trackerPauseInfo" style="display:none;">
+          <i class="fas fa-mug-hot"></i>
+          <span id="trackerPauseLabel">Перерыв</span>
+          <span class="tm-pause-timer" id="trackerPauseTimer">00:00</span>
+          <button class="tm-pause-stop" id="trackerPauseStop">
+            <i class="fas fa-stop"></i> Завершить
+          </button>
+        </div>
+      </div>
+
+      <div class="tracker-breakbar">
+        <div class="tracker-break-group">
+          <span style="font-size:1.4rem;">☕</span>
+          <span class="tracker-breaklabel">Перерыв</span>
+          <input type="number" id="breakMinutes" value="15" min="1" disabled>
+          <span>мин.</span>
+          <button class="btn-break" id="addBreakBtn" disabled>Добавить</button>
+          <span>Всего: <b id="breakTotalMin">0 мин</b></span>
+        </div>
+        <div class="tracker-break-group tracker-lunch-group">
+          <span style="font-size:1.4rem;">🍽️</span>
+          <span class="tracker-breaklabel">Обед</span>
+          <span class="tracker-lunch-fixed">30 мин</span>
+          <button class="btn-lunch" id="addLunchBtn" disabled>Добавить</button>
+          <span>Раз: <b id="lunchCount">0/2</b></span>
+        </div>
+      </div>
+
+      <div class="tracker-act-title">
+        🎯 Активности
+        <span class="tracker-linechip" id="lineChip">—</span>
+      </div>
+      <div class="activity-grid" id="activityGrid"></div>
+
+      <div class="tracker-log-title">🧾 Журнал событий</div>
+      <div class="log-list" id="logList">
+        <div class="tracker-log-empty">Войдите и начните смену.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ДАШБОРД -->
+  <div id="tabContentDashboard" style="display:none;">
+    <div class="dashboard-wrap">
+      <div class="db-toolbar">
+        <div class="db-filters">
+          <button class="db-filter-btn active" data-period="today" onclick="Dashboard.setPeriod('today')">Сегодня</button>
+          <button class="db-filter-btn" data-period="week" onclick="Dashboard.setPeriod('week')">Неделя</button>
+          <button class="db-filter-btn" data-period="month" onclick="Dashboard.setPeriod('month')">Месяц</button>
+          <button class="db-filter-btn" data-line="all" onclick="Dashboard.setLine('all')">Все линии</button>
+          <button class="db-filter-btn" data-line="line1" onclick="Dashboard.setLine('line1')">Первая</button>
+          <button class="db-filter-btn" data-line="line2" onclick="Dashboard.setLine('line2')">Вторая</button>
+          <button class="db-filter-btn" data-line="line3" onclick="Dashboard.setLine('line3')">Претензии</button>
+          <button class="db-filter-btn" data-line="sv" onclick="Dashboard.setLine('sv')">Супервайзеры</button>
+          <button class="db-filter-btn" data-line="tours" onclick="Dashboard.setLine('tours')">Туры</button>
+        </div>
+        <div class="db-actions">
+          <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="Dashboard.reload()">
+            <i class="fas fa-sync"></i> Обновить
+          </button>
+          <button class="btn" style="padding:8px 16px;font-size:13px;" onclick="Dashboard.exportCSV()">
+            <i class="fas fa-file-csv"></i> CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="db-summary" id="dbSummary"></div>
+
+      <div class="db-card">
+        <h3><i class="fas fa-chart-bar"></i> Активность по часам</h3>
+        <div class="db-chart-wrap"><canvas id="chartHourly"></canvas></div>
+      </div>
+
+      <div class="db-grid-2">
+        <div class="db-card">
+          <h3><i class="fas fa-chart-pie"></i> Первая линия — по активностям</h3>
+          <div class="db-chart-wrap"><canvas id="chartLine1"></canvas></div>
+        </div>
+        <div class="db-card">
+          <h3><i class="fas fa-chart-pie"></i> Вторая линия — по активностям</h3>
+          <div class="db-chart-wrap"><canvas id="chartLine2"></canvas></div>
+        </div>
+      </div>
+
+      <div class="db-card">
+        <h3><i class="fas fa-users"></i> Сводная по операторам</h3>
+        <div class="db-table-wrap">
+          <table class="db-table" id="dbOperatorTable">
+            <thead>
+              <tr>
+                <th onclick="Dashboard.sortBy('operator')">Оператор</th>
+                <th onclick="Dashboard.sortBy('line')">Линия</th>
+                <th onclick="Dashboard.sortBy('activities')" style="text-align:right;">Активностей</th>
+                <th onclick="Dashboard.sortBy('minutes')" style="text-align:right;">Минут</th>
+                <th onclick="Dashboard.sortBy('shifts')" style="text-align:right;">Смен</th>
+                <th onclick="Dashboard.sortBy('avgShiftMin')" style="text-align:right;">Ср. смена</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- МОДАЛКА ЗАКЛАДКИ -->
+<div class="modal-overlay" id="bookmarkModalOverlay">
+  <div class="modal">
+    <h2 id="bookmarkModalTitle">Добавить закладку</h2>
+    <form id="bookmarkForm">
+      <input type="hidden" id="bmId">
+      <div class="form-group">
+        <label>Название</label>
+        <input type="text" id="bmName" placeholder="Например: WB Analytics" required>
+      </div>
+      <div class="form-group">
+        <label>Категория</label>
+        <select id="bmCategory" required></select>
+      </div>
+      <div class="form-group">
+        <label>Ссылка (URL)</label>
+        <input type="url" id="bmLink" placeholder="https://..." required>
+      </div>
+      <div class="form-group">
+        <label>Описание</label>
+        <textarea id="bmDesc" rows="3" placeholder="Краткое описание..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" onclick="closeBookmarkModal()">Отмена</button>
+        <button type="submit" class="btn">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- МОДАЛКА РЕДАКТИРОВАНИЯ -->
+<div class="modal-overlay" id="reminderModalOverlay">
+  <div class="modal">
+    <h2>Редактировать напоминание</h2>
+    <form id="reminderForm">
+      <input type="hidden" id="editReminderId">
+      <div class="form-group">
+        <label>WB ID</label>
+        <input type="text" id="editNum" placeholder="12345678">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Категория</label>
+          <select id="editCategory">
+            <option value="tours">🏝 Туры</option>
+            <option value="hotels">🏨 Отели</option>
+            <option value="flights">✈️ Авиабилеты</option>
+            <option value="experiences">🎡 Впечатления</option>
+            <option value="other">📦 Другое</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Что ждём?</label>
+          <select id="editWaiting">
+            <option value="">— не указано —</option>
+            <option value="line2">Вторая линия</option>
+            <option value="tech">Тех.специалисты</option>
+            <option value="sv">СВ</option>
+            <option value="claim">Отдел претензий</option>
+            <option value="tours">Туры</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Напоминание (звук)</label>
+          <select id="editSound">
+            <option value="birds">Птицы</option>
+            <option value="alert">Звонок</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Повтор каждые</label>
+          <select id="editRepeat">
+            <option value="10000">10 секунд</option>
+            <option value="30000">30 секунд</option>
+            <option value="60000">1 минута</option>
+            <option value="120000">2 минуты</option>
+            <option value="300000">5 минут</option>
+            <option value="600000">10 минут</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Комментарий</label>
+        <input type="text" id="editNote" maxlength="100" placeholder="До 100 символов">
+        <div class="char-counter" id="editNoteCounter">0 / 100</div>
+      </div>
+      <div class="form-group">
+        <label>Новое время до возврата</label>
+        <div class="time-row-2">
+          <div class="time-field">
+            <input type="number" id="editHours" min="0" max="23" value="0">
+            <span class="time-label">чч</span>
+          </div>
+          <div class="time-field">
+            <input type="number" id="editMinutes" min="0" max="59" value="0">
+            <span class="time-label">мм</span>
+          </div>
+        </div>
+        <div class="modal-hint" id="editCurrentHint"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-cancel" onclick="closeReminderModal()">Отмена</button>
+        <button type="submit" class="btn">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- МОДАЛКА СТИКЕРА -->
+<div class="modal-overlay" id="stickerModalOverlay">
+  <div class="modal">
+    <h2 id="stickerModalTitle">Добавить стикер</h2>
+    <div class="form-group">
+      <label>Текст стикера</label>
+      <textarea id="stickerText" rows="4" placeholder="До 25 слов..." maxlength="300"></textarea>
+      <div class="modal-hint"><span id="stickerWordCount">0</span> / 25 слов</div>
+    </div>
+    <div class="form-group">
+      <label>Цвет</label>
+      <select id="stickerColor">
+        <option value="yellow">Жёлтый (2 часа)</option>
+        <option value="pink">Розовый (10 минут)</option>
+        <option value="green">Зелёный (к завершению смены)</option>
+      </select>
+      <div class="sticker-legend" style="margin-top:8px;">
+        <div class="legend-row"><span class="legend-dot yellow"></span> Жёлтый</div>
+        <div class="legend-row"><span class="legend-dot pink"></span> Розовый</div>
+        <div class="legend-row"><span class="legend-dot green"></span> Зелёный</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-cancel" onclick="closeStickerModal()">Отмена</button>
+      <button type="button" class="btn" id="stickerSaveBtn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ПОДТВЕРЖДЕНИЯ -->
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal" style="max-width:440px;">
+    <h2 id="confirmTitle">Подтвердите действие</h2>
+    <div class="confirm-subtitle" id="confirmSubtitle"
+      style="font-size:14px;color:var(--text-soft);line-height:1.55;white-space:pre-line;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-cancel" onclick="closeConfirm()">Отмена</button>
+      <button type="button" class="btn-confirm" id="confirmOkBtn"
+        style="background:var(--lav-600);color:#fff;border:none;padding:10px 22px;
+        border-radius:50px;font-weight:700;cursor:pointer;font-size:14px;">
+        Удалить
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button id="muteBtn" onclick="toggleMute()">🔊 Звук: вкл</button>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════
+   КОНФИГ
+   ══════════════════════════════════════════════ */
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlvBCm_1V7uR0jEdAVdFFyY7LxAVXzWsz2sq9htQU5t7I7Ib-h/exec';
+
+const LINES = {
+  line1: { num: '1',  title: 'Первая линия',  chipLabel: 'Линия 1', color: '#8b64d6', desc: 'Первичная обработка обращений' },
+  line2: { num: '2',  title: 'Вторая линия',  chipLabel: 'Линия 2', color: '#7c4ecf', desc: 'Сложные кейсы, эскалации' },
+  line3: { num: '3',  title: 'Претензии',     chipLabel: 'Линия 3', color: '#a488e3', desc: 'Работа с претензиями' },
+  sv:    { num: 'СВ', title: 'Супервайзеры',  chipLabel: 'Супервайзеры', color: '#6d3fd6', desc: 'Супервайзеры и обучение' },
+  tours: { num: 'Т',  title: 'Туры',          chipLabel: 'Туры', color: '#bda5e5', desc: 'Профильное направление' }
+};
+
+/* ══════════════════════════════════════════════
+   УТИЛИТЫ
+   ══════════════════════════════════════════════ */
+const Utils = (() => {
+  const pad = (n) => String(n).padStart(2, '0');
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text).replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    }[m]));
+  }
+  function formatTime(ms) {
+    const neg = ms < 0; ms = Math.abs(ms);
+    const total = Math.floor(ms / 1000);
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = total % 60;
+    return (neg ? '-' : '') + (h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`);
+  }
+  function formatClock(ts) {
+    const d = new Date(ts);
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function formatDate(ts) {
+    const d = new Date(ts);
+    return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function formatLeftMin(ms) {
+    const min = Math.floor(Math.abs(ms) / 60000);
+    if (min === 0) return '< 1 мин';
+    if (min < 60) return `${min} мин`;
+    const h = Math.floor(min / 60), m = min % 60;
+    return m > 0 ? `${h} ч ${m} мин` : `${h} ч`;
+  }
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.style.display = 'none', 3000);
+  }
+  return { pad, escapeHtml, formatTime, formatClock, formatDate, formatLeftMin, showToast };
+})();
+const { pad, escapeHtml, formatTime, formatClock, formatDate, formatLeftMin, showToast } = Utils;
+
+const Storage = (() => {
+  function get(key, fallback = null) {
+    try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+    catch (e) { return fallback; }
+  }
+  function set(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  function remove(key) {
+    try { localStorage.removeItem(key); } catch (e) {}
+  }
+  return { get, set, remove };
+})();
+
+/* ══════════════════════════════════════════════
+   МОТИВАЦИЯ ПО ЛИНИЯМ
+   ══════════════════════════════════════════════ */
+const Motivation = (() => {
+  const SHARED_PHRASES = [
+    'Твоя вовлечённость превращает шаблон в реальную помощь 🤗',
+    'Ты вникаешь в проблемы — клиент чувствует, что его слышат 😊',
+    'Вовлечённость — лучшая страховка от ошибок 😌',
+    'Молодец! Ты видишь, где клиенту нужна опора 💛',
+    'Твоё внимание делает процесс прозрачным ✨',
+    'Ты не закрываешь чат, пока всё не ясно 🤝',
+    'Твои ответы делают сервис понятным для клиентов 🌟',
+    'Глубже в ситуацию — точнее решение 🧠',
+    'Клиент знает, что на тебя можно положиться 💖',
+    'Своим вниманием ты снимаешь тревогу перед поездкой 😌',
+    'Будь проактивным: уточнить, проверить, предложить 💡',
+    'Когда ты держишь кейс «на контроле» — клиент спокоен 💛',
+    'Каждый твой ответ — по делу и с заботой 🤗',
+    'Твоя вовлечённость выделяет ответ среди других ✨',
+    'Своими ответами ты снижаешь риск новых обращений 🤝',
+    'Перепроверять и уточнять — это клиентоориентированность 😊',
+    'Мелочи создают спокойствие: дата, сроки, номер брони 📝',
+    'Ты упаковываешь информацию с заботой о клиенте 😌',
+    'Точные формулировки экономят время и повышают лояльность 🗣️',
+    'Твоя экспертиза экономит время всей команде 🚀',
+    'Ты помогаешь улучшать процессы своим вниманием 🛠️',
+    'Ты умеешь замечать скрытые потребности клиента 👀',
+    'Детали — то, за что клиенты остаются лояльными 💛',
+    'Ты видишь проблему до того, как о ней скажут 💡',
+    'Ты умеешь видеть детали сразу, понимая контекст 🤝',
+    'Внимательность защищает и клиента, и команду 🛡️',
+    'Помни, за запросом — чья-то поездка, зависящая от тебя ✈️',
+    'Один правильный ответ меняет ход решения проблемы ❤️',
+    'Уметь разбираться до конца — это твоя сила 💪',
+    'Спасибо, что относишься к каждому обращению с погружением ❤️'
+  ];
+
+  const SUPERVISOR_PHRASES = [
+    'На твою экспертность опираются операторы: именно твои подсказки помогают им уверенно закрывать даже самые запутанные кейсы. 🤝',
+    'Твои знания — залог успешного решения сложных кейсов: команда чувствует себя увереннее, когда знает, что ты рядом. 🌟',
+    'Ты задаёшь планку качества: операторы равняются на твой подход и учатся видеть суть проблемы с первого сообщения. 🎯',
+    'Благодаря твоей наставнической поддержке новички быстрее становятся самостоятельными и сильнее верят в свои силы. 🌱',
+    'Ты умеешь разложить сложный кейс на понятные шаги — и этим делаешь работу всей команды предсказуемее и спокойнее. 🧩',
+    'Твоя способность быстро находить корень проблемы экономит время всей линии и снижает уровень стресса у операторов. ⚡',
+    'Ты не просто даёшь ответ — ты учишь команду думать: это самый ценный вклад в устойчивость поддержки. 💡',
+    'Твой спокойный и системный подход становится опорой для всей смены: в напряжённые часы именно это держит команду в фокусе. 🛡️',
+    'Ты превращаешь хаос из нескольких противоречивых обращений в чёткую картину — и это напрямую влияет на точность решений. 🗺️',
+    'Твоя внимательность к деталям спасает от ошибок, которые могли бы обернуться серьёзными претензиями. 🔍',
+    'Ты видишь не только кейс, но и оператора: вовремя подстрахуешь, подскажешь и поможешь сохранить ресурс. ❤️',
+    'Благодаря тебе сложные процессы становятся понятными: ты умеешь объяснять сложное простыми словами без потери смысла. 💬',
+    'Ты создаёшь культуру поддержки, где ошибаться не страшно, а учиться — нормально: это делает команду сильнее. 💪',
+    'Твоя готовность взять на себя эскалацию в пиковые моменты даёт команде чувство безопасности и позволяет работать эффективнее. 🧱',
+    'Ты помогаешь операторам не просто «закрыть тикет», а по-настоящему помочь клиенту — в этом главная ценность твоей роли. 🤝',
+    'Ты умеешь держать фокус на главном, даже когда вокруг десятки срочных задач: команда учится у тебя приоритизировать. ⏱️',
+    'Твоя экспертиза становится общим ресурсом: один твой комментарий может закрыть похожие кейсы сразу у нескольких операторов. 🌐',
+    'Ты не только решаешь проблемы, но и предотвращаешь их: твои заметки и инструкции экономят часы работы всей линии. 📝',
+    'Ты умеешь сохранять спокойствие и ясность в стрессовых ситуациях — и этим задаёшь правильный тон всей смене. 🧘',
+    'Ты делаешь поддержку не просто сервисом, а местом, где клиенты чувствуют, что их слышат, — и в этом твоя главная заслуга. ❤️'
+  ];
+
+  const ACTIVITY_PHRASES = [
+    'Отличный темп! Продолжай в том же духе. 🚀',
+    'Ты в потоке — так держать! ⚡',
+    'Ещё десять шагов — и день сложится идеально. ✨',
+    'Продуктивность растёт: ты справляешься отлично! 💪',
+    'Ритм пойман. Двигайся дальше так же уверенно. 🎯',
+    'Каждая активность — вклад в общий результат. 🌟',
+    'Ты сегодня настоящий герой поддержки! 🦸',
+    'Работа кипит — и это благодаря тебе. 🔥',
+    'Такой темп достоин восхищения. Держись! 👏',
+    'Ты не сбавляешь обороты — это вдохновляет! 💜',
+    'Ещё рывок — и день будет закрыт с отличным результатом. 🏆',
+    'Скорость и качество — твои сильные стороны. 🎨',
+    'Очередь задач тает — ты делаешь это мастерски. 🧩',
+    'Каждое нажатие — шаг к спокойному вечеру. 🌇',
+    'Ты в ритме. Не сбавляй — и победа твоя. 🥇'
+  ];
+
+  function getPhrasesForLine(line) {
+    if (line === 'sv' || line === 'line3') return SUPERVISOR_PHRASES;
+    return SHARED_PHRASES;
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function pickFrom(list, stateKey) {
+    let state = Storage.get(stateKey, null);
+    const invalid = !state || !Array.isArray(state.queue) || state.queue.length === 0
+      || state.queue.some(i => typeof i !== 'number' || i < 0 || i >= list.length);
+    if (invalid) state = { queue: shuffle([...Array(list.length).keys()]), lastShown: -1 };
+    let idx = state.queue.shift();
+    if (idx === state.lastShown && state.queue.length > 0) {
+      state.queue.push(idx); idx = state.queue.shift();
+    }
+    state.lastShown = idx;
+    Storage.set(stateKey, state);
+    return list[idx];
+  }
+
+  function pick(line) {
+    const list = getPhrasesForLine(line);
+    const key = 'wb_motivation_state_' + (line || 'common');
+    return pickFrom(list, key);
+  }
+  function pickActivity() { return pickFrom(ACTIVITY_PHRASES, 'wb_motivation_activity_state'); }
+
+  function render() {
+    const el = document.getElementById('motivationText');
+    if (!el) return;
+    const op = (typeof Auth !== 'undefined') ? Auth.getOperator() : null;
+    el.textContent = pick(op ? op.line : null);
+  }
+
+  return { render, pick, pickActivity };
+})();
+
+/* ══════════════════════════════════════════════
+   АУДИО
+   ══════════════════════════════════════════════ */
+const AudioEngine = (() => {
+  let audioCtx = null;
+  let muted = false;
+  function unlock() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  }
+  function playAlert() {
+    unlock(); if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    for (let i = 0; i < 2; i++) {
+      const t = now + i * 0.18;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'square'; osc.frequency.setValueAtTime(1200, t);
+      gain.gain.setValueAtTime(0.9, t);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.16);
+    }
+  }
+  function playBirds() {
+    unlock(); if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    for (let i = 0; i < 4; i++) {
+      const t = now + i * 0.12 + Math.random() * 0.04;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      const base = 2200 + Math.random() * 800;
+      const peak = 3200 + Math.random() * 900;
+      osc.frequency.setValueAtTime(base, t);
+      osc.frequency.exponentialRampToValueAtTime(peak, t + 0.04);
+      osc.frequency.exponentialRampToValueAtTime(base * 0.9, t + 0.09);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.5, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.11);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.13);
+    }
+  }
+  function playTone(freq, start, dur, type = 'sine', vol = 0.3) {
+    if (!audioCtx) return;
+    const t = audioCtx.currentTime + start;
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(vol, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + dur + 0.05);
+  }
+  function playStickerPink() {
+    unlock(); if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const notes = [880, 1100, 1320];
+    notes.forEach((freq, i) => {
+      const t = now + i * 0.15;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.55, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.28);
+    });
+  }
+  function playStickerYellow() {
+    unlock(); if (!audioCtx) return;
+    playTone(800, 0, 0.18, 'sine', 0.5);
+    playTone(1000, 0.25, 0.22, 'sine', 0.5);
+  }
+  function playStickerGreen() {
+    unlock(); if (!audioCtx) return;
+    playTone(440, 0, 0.7, 'sine', 0.4);
+  }
+  function playClaxon() {
+    unlock(); if (!audioCtx) return;
+    playTone(440, 0.00, 0.35, 'square', 0.35);
+    playTone(554, 0.00, 0.35, 'square', 0.35);
+    playTone(440, 0.45, 0.35, 'square', 0.35);
+    playTone(554, 0.45, 0.35, 'square', 0.35);
+    playTone(660, 0.90, 0.45, 'square', 0.4);
+  }
+  function play(type) {
+    if (muted) return;
+    unlock();
+    if (type === 'birds') playBirds();
+    else if (type === 'alert') playAlert();
+  }
+  function toggleMute() {
+    muted = !muted;
+    const btn = document.getElementById('muteBtn');
+    if (btn) btn.textContent = muted ? '🔇 Звук: выкл' : '🔊 Звук: вкл';
+  }
+  function testCurrentSound() {
+    const t = document.getElementById('sound').value;
+    const wasMuted = muted;
+    muted = false; unlock(); play(t);
+    setTimeout(() => { muted = wasMuted; }, 100);
+  }
+  function isMuted() { return muted; }
+  return { unlock, play, toggleMute, testCurrentSound, isMuted,
+    playStickerPink, playStickerYellow, playStickerGreen, playClaxon };
+})();
+
+const Confirm = (() => {
+  let callback = null;
+  let bound = false;
+  function open(title, subtitle = '', onConfirm, okText = 'Удалить') {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmSubtitle').textContent = subtitle || '';
+    callback = onConfirm;
+    document.getElementById('confirmOkBtn').textContent = okText;
+    document.getElementById('confirmModalOverlay').classList.add('show');
+  }
+  function close() {
+    document.getElementById('confirmModalOverlay').classList.remove('show');
+    callback = null;
+  }
+  function init() {
+    if (bound) return;
+    bound = true;
+    document.getElementById('confirmOkBtn').addEventListener('click', () => {
+      const cb = callback; close(); if (cb) cb();
+    });
+    document.getElementById('confirmModalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) close();
+    });
+  }
+  return { open, close, init };
+})();
+
+const API = (() => {
+  async function get(action, params = {}) {
+    const qs = new URLSearchParams({ action, ...params });
+    const res = await fetch(SHEETS_URL + '?' + qs.toString());
+    return await res.json();
+  }
+  async function post(action, payload = {}) {
+    const res = await fetch(SHEETS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  }
+  return { get, post };
+})();
+
+const Auth = (() => {
+  const TOKEN_KEY = 'wb_auth_token';
+  const OP_KEY = 'wb_auth_operator';
+  let bound = false;
+  function getToken() { return Storage.get(TOKEN_KEY, null); }
+  function getOperator() { return Storage.get(OP_KEY, null); }
+  function isLoggedIn() { return !!getToken() && !!getOperator(); }
+  function isSupervisor() {
+    const op = getOperator();
+    return op && op.line === 'sv';
+  }
+
+  async function login(email, code) {
+    const data = await API.get('login', { email, code });
+    if (!data.ok) throw new Error(data.error || 'login_failed');
+    Storage.set(TOKEN_KEY, data.token);
+    Storage.set(OP_KEY, data.operator);
+    return data.operator;
+  }
+  async function restore() {
+    const token = getToken();
+    if (!token) return null;
+    try {
+      const data = await API.get('me', { token });
+      if (data.ok && data.operator) { Storage.set(OP_KEY, data.operator); return data.operator; }
+    } catch (e) {}
+    Storage.remove(TOKEN_KEY); Storage.remove(OP_KEY);
+    return null;
+  }
+  function logout() {
+    const s = (typeof Tracker !== 'undefined' && Tracker.getState) ? Tracker.getState() : null;
+    const shiftActive = s && s.startedAt && !s.endedAt;
+    const subtitle = shiftActive
+      ? '⚠️ Если вы выйдете сейчас, смена завершится, а данные отправятся в лог.\n\nПродолжить выход?'
+      : 'Вы действительно хотите выйти?';
+    Confirm.open('Выйти из системы?', subtitle, () => {
+      if (typeof Tracker !== 'undefined' && Tracker.stopOnLogout) Tracker.stopOnLogout();
+      Storage.remove(TOKEN_KEY); Storage.remove(OP_KEY);
+      setTimeout(() => location.reload(), 400);
+    }, 'Выйти');
+  }
+  function showLogin() {
+    document.getElementById('loginOverlay').classList.add('show');
+    setTimeout(() => { const inp = document.getElementById('loginEmail'); if (inp) inp.focus(); }, 100);
+  }
+  function hideLogin() { document.getElementById('loginOverlay').classList.remove('show'); }
+
+  async function doLogin() {
+    const emailEl = document.getElementById('loginEmail');
+    const codeEl = document.getElementById('loginCode');
+    const errEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+    errEl.textContent = '';
+    const email = emailEl.value.trim();
+    const code = codeEl.value.trim();
+    if (!email || !code) { errEl.textContent = 'Введите email и код'; return; }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход…';
+    try {
+      const op = await login(email, code);
+      hideLogin();
+      renderUserBar();
+      renderDashboardTab();
+      Motivation.render();
+      if (typeof Tracker !== 'undefined' && Tracker.applyOperator) Tracker.applyOperator(op);
+      if (typeof Reminders !== 'undefined' && Reminders.reload) await Reminders.reload();
+      if (typeof Reminders !== 'undefined' && Reminders.startSyncTimer) Reminders.startSyncTimer();
+      showToast(`Добро пожаловать, ${op.name}!`);
+    } catch (e) {
+      const map = {
+        'invalid_credentials': 'Неверный email или код',
+        'no_email': 'Введите email',
+        'no_code': 'Введите код',
+        'no_email_no_code': 'Введите email и код',
+        'no_line_assigned': 'У вас не назначена линия. Обратитесь к руководителю.',
+        'login_failed': 'Не удалось войти. Проверьте данные.'
+      };
+      errEl.textContent = map[e.message] || 'Ошибка входа. Проверьте связь.';
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+    }
+  }
+
+  function renderUserBar() {
+    const op = getOperator();
+    const bar = document.getElementById('userBar');
+    if (!bar) return;
+    if (!op) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    document.getElementById('userName').textContent = op.name;
+    const line = LINES[op.line];
+    document.getElementById('userLineChip').textContent =
+      line ? line.chipLabel : op.line;
+    renderReminderAuthorNote();
+  }
+
+  function renderReminderAuthorNote() {
+    const el = document.getElementById('reminderAuthorNote');
+    if (!el) return;
+    const op = getOperator();
+    if (!op) { el.style.display = 'none'; return; }
+    const line = LINES[op.line];
+    const lineTitle = line ? line.title : op.line;
+    el.style.display = '';
+    el.innerHTML = `
+      <i class="fas fa-users"></i>
+      Напоминание увидят операторы линии
+      <span class="line-chip-small">${escapeHtml(lineTitle)}</span>
+      · автор: <b>${escapeHtml(op.name)}</b>
+    `;
+  }
+
+  function renderDashboardTab() {
+    const btn = document.getElementById('tabDashboardBtn');
+    if (!btn) return;
+    if (isSupervisor()) btn.classList.remove('hidden');
+    else {
+      btn.classList.add('hidden');
+      if (btn.classList.contains('active')) {
+        document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+        if (typeof Bookmarks !== 'undefined') Bookmarks.switchTab('all');
+      }
+    }
+  }
+
+  function init() {
+    if (bound) return;
+    bound = true;
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+    document.getElementById('loginCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('loginEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('loginCode').focus(); });
+  }
+    return { init, login, restore, logout, getToken, getOperator, isLoggedIn, isSupervisor,
+           showLogin, hideLogin, renderUserBar, renderDashboardTab, renderReminderAuthorNote };
+})();
+
+/* ══════════════════════════════════════════════
+   ЗАКЛАДКИ
+   ══════════════════════════════════════════════ */
+const SYSTEM_BOOKMARKS = [
+  { id: 'bm_sys_wbkc', name: 'Веб-КЦ', category: 'Инструменты',
+    link: 'https://callcenter.wildberries.ru/ACCOUNT/PATH/account-profile',
+    description: 'Личный кабинет Веб-КЦ', system: true },
+  { id: 'bm_sys_schedule', name: 'График смен', category: 'Инструменты',
+    link: 'https://script.google.com/macros/s/AKfycbyMiV_wqQLUAw8Rwj5AtjGXAQRsoS1bMiMXFpPOZcNkcRNtA6XR3ZlucJI3nB_lYwwW/exec',
+    description: 'Просмотр графика смен', system: true },
+  { id: 'bm_sys_templates', name: 'Шаблоны поддержки', category: 'Инструменты',
+    link: 'https://script.google.com/macros/s/AKfycbxu9_f_rzmcylLJOZJO3hGvxQEKpQ6IA8MHETabgrJ4wYUId6zx2ij2ctLq7KbRIGSD/exec',
+    description: 'Готовые шаблоны ответов', system: true }
+];
+
+const Bookmarks = (() => {
+  const CATEGORIES = ['Инструменты', 'Важное', 'Отчётность'];
+  const CATEGORY_LABELS = { 'Инструменты': 'Инструменты', 'Важное': 'Избранное', 'Отчётность': 'Отчётность' };
+  const TAB_TO_CATEGORY = { tools: 'Инструменты', important: 'Важное' };
+  const STORAGE_KEY = 'wb_travel_bookmarks';
+  const VERSION_KEY = 'wb_bookmarks_version';
+  const BM_VERSION = 2;
+  let bookmarks = [];
+  let currentTab = 'all';
+
+  function load() {
+    const storedVersion = Storage.get(VERSION_KEY, 0);
+    if (storedVersion < BM_VERSION) {
+      Storage.remove(STORAGE_KEY);
+      Storage.set(VERSION_KEY, BM_VERSION);
+    }
+    const saved = Storage.get(STORAGE_KEY, null);
+    const nonSystem = (saved || []).filter(b => !b.system);
+    bookmarks = [...SYSTEM_BOOKMARKS, ...nonSystem];
+    save();
+  }
+  function save() { Storage.set(STORAGE_KEY, bookmarks); }
+
+  function switchTab(tab) {
+    if (tab === 'dashboard' && !Auth.isSupervisor()) tab = 'all';
+    currentTab = tab;
+    document.querySelectorAll('.main-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    const isNotes = tab === 'notes';
+    const isTracker = tab === 'tracker';
+    const isDashboard = tab === 'dashboard';
+    const cardsEl = document.getElementById('tabContentCards');
+    const notesEl = document.getElementById('tabContentNotes');
+    const trackerEl = document.getElementById('tabContentTracker');
+    const dashEl = document.getElementById('tabContentDashboard');
+
+    if (cardsEl) cardsEl.style.display = (isNotes || isTracker || isDashboard) ? 'none' : '';
+    if (notesEl) notesEl.style.display = isNotes ? '' : 'none';
+    if (trackerEl) trackerEl.style.display = isTracker ? '' : 'none';
+    if (dashEl) dashEl.style.display = isDashboard ? '' : 'none';
+
+    if (isNotes) {
+      if (typeof Stickers !== 'undefined') Stickers.render();
+      if (typeof Reminders !== 'undefined' && Reminders.render) Reminders.render();
+    } else if (isTracker) {
+      if (typeof Tracker !== 'undefined' && Tracker.refresh) Tracker.refresh();
+    } else if (isDashboard) {
+      if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
+    } else {
+      render();
+    }
+    updateCounters();
+  }
+
+  function render() {
+    const grid = document.getElementById('cardsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    let filtered;
+    if (currentTab === 'all') filtered = bookmarks;
+    else {
+      const cat = TAB_TO_CATEGORY[currentTab];
+      filtered = bookmarks.filter(b => b.category === cat);
+    }
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        ${currentTab === 'all' ? 'Пока нет закладок. Добавьте первую!' : 'В этой категории пока пусто.'}
+      </div>`;
+      updateCounters();
+      return;
+    }
+    filtered.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const catLabel = CATEGORY_LABELS[item.category] || item.category;
+      const actionsHtml = item.system ? '' : `
+        <div class="card-actions">
+          <button class="icon-btn" onclick="openBookmarkModal('edit','${item.id}')" title="Редактировать">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="icon-btn delete" onclick="confirmDeleteBookmark('${item.id}')" title="Удалить">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`;
+      card.innerHTML = `
+        <div class="card-header"><h3>${escapeHtml(item.name)}</h3>${actionsHtml}</div>
+        <span class="cat-tag">${escapeHtml(catLabel)}</span>
+        <p>${escapeHtml(item.description || '')}</p>
+        <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener">
+          <i class="fas fa-external-link-alt"></i> ${escapeHtml(item.link)}
+        </a>`;
+      grid.appendChild(card);
+    });
+    updateCounters();
+  }
+
+  function openModal(mode, id = null) {
+    if (mode === 'edit' && id) {
+      const item = bookmarks.find(b => String(b.id) === String(id));
+      if (item && item.system) return;
+    }
+    const overlay = document.getElementById('bookmarkModalOverlay');
+    const form = document.getElementById('bookmarkForm');
+    form.reset();
+    overlay.classList.add('show');
+    const select = document.getElementById('bmCategory');
+    select.innerHTML = '';
+    CATEGORIES.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = CATEGORY_LABELS[c] || c;
+      select.appendChild(o);
+    });
+    if (mode === 'add') {
+      document.getElementById('bookmarkModalTitle').textContent = 'Добавить закладку';
+      document.getElementById('bmId').value = '';
+      if (currentTab !== 'all') {
+        const cat = TAB_TO_CATEGORY[currentTab];
+        if (cat) select.value = cat;
+      }
+    } else if (mode === 'edit' && id) {
+      const item = bookmarks.find(b => String(b.id) === String(id));
+      if (!item) return;
+      document.getElementById('bookmarkModalTitle').textContent = 'Редактировать закладку';
+      document.getElementById('bmId').value = item.id;
+      document.getElementById('bmName').value = item.name;
+      document.getElementById('bmCategory').value = item.category;
+      document.getElementById('bmLink').value = item.link;
+      document.getElementById('bmDesc').value = item.description || '';
+    }
+  }
+  function closeModal() { document.getElementById('bookmarkModalOverlay').classList.remove('show'); }
+
+  function submitForm(e) {
+    e.preventDefault();
+    const id = document.getElementById('bmId').value;
+    const name = document.getElementById('bmName').value.trim();
+    const category = document.getElementById('bmCategory').value;
+    const link = document.getElementById('bmLink').value.trim();
+    const description = document.getElementById('bmDesc').value.trim();
+    if (id) {
+      const idx = bookmarks.findIndex(b => String(b.id) === String(id));
+      if (idx > -1) {
+        if (bookmarks[idx].system) return;
+        bookmarks[idx] = { ...bookmarks[idx], name, category, link, description };
+      }
+      showToast('Обновлено!');
+    } else {
+      bookmarks.push({ id: 'bm_' + Date.now(), name, category, link, description, system: false });
+      showToast('Добавлено!');
+    }
+    save(); closeModal(); render();
+  }
+
+  function confirmDelete(id) {
+    const item = bookmarks.find(b => String(b.id) === String(id));
+    if (!item) return;
+    if (item.system) return;
+    Confirm.open('Удалить закладку?', `«${item.name}» будет удалена без возможности восстановления.`, () => {
+      bookmarks = bookmarks.filter(b => String(b.id) !== String(id));
+      save(); render(); showToast('Закладка удалена');
+    });
+  }
+
+  function updateCounters() {
+    const elAll = document.getElementById('cntAll');
+    const elTools = document.getElementById('cntTools');
+    const elImp = document.getElementById('cntImportant');
+    if (elAll) elAll.textContent = bookmarks.length;
+    if (elTools) elTools.textContent = bookmarks.filter(b => b.category === 'Инструменты').length;
+    if (elImp) elImp.textContent = bookmarks.filter(b => b.category === 'Важное').length;
+    const cntNotes = document.getElementById('cntNotes');
+    if (cntNotes) {
+      const stickerCount = (typeof Stickers !== 'undefined') ? Stickers.count() : 0;
+      const remCount = (typeof Reminders !== 'undefined' && Reminders.activeCount) ? Reminders.activeCount() : 0;
+      cntNotes.textContent = stickerCount + remCount;
+    }
+  }
+
+  return { load, render, switchTab, openModal, closeModal, submitForm, confirmDelete, updateCounters };
+})();
+
+/* ══════════════════════════════════════════════
+   НАБОРЫ АКТИВНОСТЕЙ
+   ══════════════════════════════════════════════ */
+const ACTIVITY_SETS = {
+  line1: [
+    { id: 'call',   title: 'Звонки',           sub: 'все входящие и исходящие',    hint: '', color: '#8b64d6', weightMin: 3 },
+    { id: 'chat',   title: 'Чаты с клиентами', sub: 'исходящие в чате',            hint: '', color: '#7c4ecf', weightMin: 3 },
+    { id: 'webkc',  title: 'Чаты Л1 Веб КЦ',   sub: 'запросы с кнопки КЦ',         hint: '', color: '#a488e3', weightMin: 1 },
+    { id: 'mailkc', title: 'Почта Веб КЦ',     sub: 'входящие и исходящие письма', hint: '', color: '#6d3fd6', weightMin: 2 }
+  ],
+  line2: [
+    { id: 'call',    title: 'Звонки',                 sub: 'все входящие и исходящие',      hint: '', color: '#7c4ecf', weightMin: 2 },
+    { id: 'chat',    title: 'Чаты с клиентами',       sub: 'исходящие в чате',              hint: '', color: '#8b64d6', weightMin: 2 },
+    { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 1 },
+    { id: 'mailkc',  title: 'Почта Веб КЦ',           sub: 'входящие и исходящие',          hint: '', color: '#6d3fd6', weightMin: 1 },
+    { id: 'sched',   title: 'Изменение в расписании', sub: 'информирование клиента',        hint: '', color: '#bda5e5', weightMin: 3 },
+    { id: 'problem', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 2 },
+    { id: 'partner', title: 'Обработка партнёрки',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 3 },
+    { id: 'mailhot', title: 'Почта отели',            sub: 'письма провайдерам',            hint: '', color: '#a488e3', weightMin: 1 }
+  ],
+  line3: [
+    { id: 'claim_in', title: 'Приём претензий',       sub: 'регистрация входящих',  hint: 'новые',    color: '#a488e3', weightMin: 2 },
+    { id: 'claim_de', title: 'Решения по претензиям', sub: 'вынесение решения',     hint: 'закрытия', color: '#7c4ecf', weightMin: 3 },
+    { id: 'report',   title: 'Отчётность',            sub: 'отчёты и выгрузки',     hint: '',         color: '#8b64d6', weightMin: 2 },
+    { id: 'contact',  title: 'Связь с клиентом',      sub: 'уведомления и звонки',  hint: '',         color: '#6d3fd6', weightMin: 2 }
+  ],
+  sv: [
+    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 3 },
+    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 2 },
+    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 3 },
+    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 2 }
+  ],
+  tours: [
+    { id: 'book', title: 'Брони',     sub: 'оформление', hint: 'новые брони',     color: '#6d3fd6', weightMin: 1 },
+    { id: 'mod',  title: 'Изменения', sub: 'правки',     hint: 'переносы/отмены', color: '#8b64d6', weightMin: 1 },
+    { id: 'visa', title: 'Документы', sub: 'визы',       hint: 'проверки',        color: '#a488e3', weightMin: 1 },
+    { id: 'sup',  title: 'Поддержка', sub: 'туры',       hint: 'ответы по турам', color: '#7c4ecf', weightMin: 1 }
+  ]
+};
+
+/* ══════════════════════════════════════════════
+   ТРЕКЕР
+   ══════════════════════════════════════════════ */
+const Tracker = (() => {
+  const SYNC_INTERVAL = 30 * 1000;
+  const SYNC_DEBOUNCE = 3000;
+  const STORAGE_STATE = 'wb_tracker_state_v2';
+  const STORAGE_QUEUE = 'wb_tracker_queue_v1';
+
+  let state = null;
+  let pendingRows = [];
+  let tickTimer = null, syncTimer = null, syncDebounceTimer = null;
+  let isSyncing = false;
+  let listenersBound = false;
+  let saveStateTimer = null;
+
+  function freshState() {
+    return {
+      sessionId: null,
+      operatorId: null, operatorName: null, supervisor: '', line: null,
+      startedAt: null, endedAt: null,
+      accumulatedMs: 0, lastTickAt: null,
+      activities: {}, lastActivityAt: {},
+      breakTotalMs: 0, lunchCount: 0, lunchTotalMs: 0,
+      comments: [], log: [],
+      lastConfettiTotal: 0, lastSyncAt: null, _lastSave: 0,
+      pauseType: null, pauseUntil: null, pauseStartedAt: null, pauseDurationMin: 0
+    };
+  }
+  function loadState() {
+    const saved = Storage.get(STORAGE_STATE, null);
+    state = saved && typeof saved === 'object' ? Object.assign(freshState(), saved) : freshState();
+  }
+  function saveState() {
+    if (saveStateTimer) return;
+    saveStateTimer = setTimeout(() => {
+      saveStateTimer = null;
+      Storage.set(STORAGE_STATE, state);
+    }, 500);
+  }
+  function saveStateNow() { Storage.set(STORAGE_STATE, state); }
+  function loadQueue() { pendingRows = Storage.get(STORAGE_QUEUE, []) || []; }
+  function saveQueue() { Storage.set(STORAGE_QUEUE, pendingRows); }
+
+  function currentSet() { return ACTIVITY_SETS[state.line] || ACTIVITY_SETS.line1; }
+  function isOnPause() { return state.pauseType && state.pauseUntil && Date.now() < state.pauseUntil; }
+  function pauseRemainingMs() { return isOnPause() ? (state.pauseUntil - Date.now()) : 0; }
+  function totalActivities() { return Object.values(state.activities).reduce((s, v) => s + v, 0); }
+
+  function log(type, text) {
+    state.log.unshift({ ts: Date.now(), type, text });
+    if (state.log.length > 300) state.log.length = 300;
+    saveStateNow(); renderLog();
+  }
+
+  function renderOperatorInfo() {
+    const op = Auth.getOperator();
+    const pill = document.getElementById('linePill');
+    const chip = document.getElementById('lineChip');
+    const line = op ? LINES[op.line] : null;
+    if (pill) pill.textContent = line ? line.title : '— линия';
+    if (chip) chip.textContent = line ? line.title : '—';
+  }
+
+  function renderActivities() {
+    const grid = document.getElementById('activityGrid');
+    if (!grid) return;
+    const set = currentSet();
+    const sessionActive = !!state.startedAt && !state.endedAt;
+    const enabled = sessionActive && !isOnPause();
+    grid.innerHTML = set.map(a => {
+      const count = state.activities[a.id] || 0;
+      const last = state.lastActivityAt[a.id]
+        ? 'Последнее: ' + formatClock(state.lastActivityAt[a.id])
+        : 'Нет действий';
+      const minusBg = hexWithOpacity(a.color, 0.25);
+      return `
+        <div class="activity-card" data-act="${a.id}">
+          <div class="accent" style="background:${a.color};"></div>
+          <h4>${escapeHtml(a.title)}</h4>
+          <div class="sub">${escapeHtml(a.sub)}</div>
+          <div class="hint">${escapeHtml(a.hint || '')}</div>
+          <div class="counter">
+            <div class="count-value" id="cnt_${a.id}">${count}</div>
+            <div class="btn-group">
+              <button class="btn-minus" data-act="${a.id}" data-delta="-1"
+                style="background:${minusBg};color:${a.color};"
+                ${enabled && count > 0 ? '' : 'disabled'}>−</button>
+              <button class="btn-plus" data-act="${a.id}" data-delta="1"
+                style="background:${a.color};" ${enabled ? '' : 'disabled'}>+</button>
+            </div>
+          </div>
+          <div class="last" id="last_${a.id}">${last}</div>
+        </div>`;
+    }).join('');
+    grid.querySelectorAll('button[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        changeActivity(btn.dataset.act, parseInt(btn.dataset.delta));
+      });
+    });
+  }
+
+  function hexWithOpacity(hex, alpha) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function renderLog() {
+    const list = document.getElementById('logList');
+    if (!list) return;
+    if (!state.log.length) {
+      list.innerHTML = '<div class="tracker-log-empty">Журнал пуст. Начните смену.</div>';
+      return;
+    }
+    const typeLabel = { shift:'СМЕНА', activity:'АКТ', break:'ПЕРЕРЫВ', lunch:'ОБЕД', end:'СТОП', sync:'SYNC' };
+    list.innerHTML = state.log.map(e => `
+      <div class="log-item">
+        <span class="time">${formatClock(e.ts)}</span>
+        <span class="label">${escapeHtml(e.text)}</span>
+        <span class="badge">${typeLabel[e.type] || e.type}</span>
+      </div>`).join('');
+  }
+
+  function renderStats() {
+    const total = totalActivities();
+    document.getElementById('totalActivities').textContent = total;
+    document.getElementById('breakTimeLabel').textContent = Math.round(state.breakTotalMs / 60000) + ' мин';
+    document.getElementById('lunchTimeLabel').textContent = Math.round(state.lunchTotalMs / 60000) + ' мин';
+    document.getElementById('breakTotalMin').textContent = Math.round(state.breakTotalMs / 60000) + ' мин';
+    document.getElementById('lunchCount').textContent = state.lunchCount + '/2';
+    document.getElementById('startTimeLabel').textContent = state.startedAt ? formatClock(state.startedAt) : '—';
+    const stateLabel = document.getElementById('shiftStateLabel');
+    if (state.endedAt) stateLabel.textContent = 'завершена';
+    else if (state.startedAt) stateLabel.textContent = 'активна';
+    else stateLabel.textContent = 'не начата';
+    document.getElementById('shiftClock').textContent = formatTime(state.accumulatedMs);
+  }
+
+  function updatePauseUI() {
+    const wrap = document.getElementById('trackerMotivation');
+    const text = document.getElementById('trackerMotivationText');
+    const pauseBox = document.getElementById('trackerPauseInfo');
+    const pauseLabel = document.getElementById('trackerPauseLabel');
+    const pauseTimer = document.getElementById('trackerPauseTimer');
+    if (!wrap || !text || !pauseBox) return;
+    if (isOnPause()) {
+      wrap.classList.add('on-pause');
+      text.textContent = state.pauseType === 'break'
+        ? '☕ Время для кофе, медитации или разминки'
+        : '🍽️ Приятного аппетита!';
+      pauseBox.style.display = '';
+      pauseLabel.textContent = state.pauseType === 'break' ? 'Перерыв' : 'Обед';
+      pauseTimer.textContent = formatTime(pauseRemainingMs());
+    } else {
+      wrap.classList.remove('on-pause');
+      pauseBox.style.display = 'none';
+      if (state.endedAt) text.textContent = 'Смена завершена. Отдыхай! 🎉';
+      else if (state.startedAt) text.textContent = 'Смена продолжается. Так держать! 💪';
+      else text.textContent = 'Нажмите «Старт смены»';
+    }
+  }
+
+  function scheduleTick() {
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = setInterval(tick, 1000);
+    tick();
+  }
+  function tick() {
+    if (!state.startedAt || state.endedAt) return;
+    const now = Date.now();
+    if (state.lastTickAt) state.accumulatedMs += now - state.lastTickAt;
+    state.lastTickAt = now;
+    if (!state._lastSave || now - state._lastSave > 10000) {
+      state._lastSave = now; saveStateNow();
+    }
+    document.getElementById('shiftClock').textContent = formatTime(state.accumulatedMs);
+    if (isOnPause()) {
+      const pauseTimer = document.getElementById('trackerPauseTimer');
+      if (pauseTimer) pauseTimer.textContent = formatTime(pauseRemainingMs());
+    } else if (state.pauseType && state.pauseUntil && now >= state.pauseUntil) {
+      endPause(false);
+    }
+  }
+
+  function startShift() {
+    const op = Auth.getOperator();
+    if (!op) { showToast('Сначала войдите в систему'); return; }
+    if (state.startedAt && !state.endedAt) { showToast('Смена уже идёт'); return; }
+    const now = Date.now();
+    state = Object.assign(freshState(), {
+      sessionId: 'sess_' + now + '_' + Math.random().toString(36).slice(2, 8),
+      operatorId: op.id, operatorName: op.name, supervisor: op.supervisor || '',
+      line: op.line, startedAt: now, lastTickAt: now
+    });
+    saveStateNow();
+    log('shift', 'Смена начата · ' + op.name);
+    pendingRows.push({
+      ts: now, sessionId: state.sessionId,
+      operator: state.operatorName, operatorId: state.operatorId,
+      supervisor: state.supervisor, line: LINES[state.line]?.title || '',
+      startedAt: now, endedAt: null,
+      activity: 'Смена: старт', eventType: 'shift_start',
+      count: 1, weight: 0, workMin: 0, activityAt: now,
+      pauseType: '', isPause: false
+    });
+    saveQueue();
+    scheduleSyncSoon();
+    setControlsEnabled(true);
+    renderOperatorInfo(); renderActivities(); renderStats();
+    scheduleTick(); startSyncTimer();
+    setMotivation('Хорошего дня! ✨');
+    showToast('Смена начата');
+  }
+
+  function endShift() {
+    if (!state.startedAt || state.endedAt) return;
+    const total = totalActivities();
+    Confirm.open('Завершить смену?',
+      `Выполнено активностей: ${total}. Таймер остановится, смена будет зафиксирована.`,
+      () => { finishShift(); showEndShiftPopup(total); },
+      'Завершить');
+  }
+
+  function finishShift() {
+    if (!state.startedAt || state.endedAt) return;
+    if (state.pauseType) {
+      state.pauseType = null; state.pauseUntil = null;
+      state.pauseStartedAt = null; state.pauseDurationMin = 0;
+    }
+    const now = Date.now();
+    if (state.lastTickAt) state.accumulatedMs += now - state.lastTickAt;
+    state.lastTickAt = now;
+    state.endedAt = now;
+    saveStateNow();
+    const total = totalActivities();
+    log('end', `Смена завершена · активностей ${total}`);
+    pendingRows.push({
+      ts: now, sessionId: state.sessionId,
+      operator: state.operatorName, operatorId: state.operatorId,
+      supervisor: state.supervisor, line: LINES[state.line]?.title || '',
+      startedAt: state.startedAt, endedAt: now,
+      activity: 'Смена: стоп', eventType: 'shift_end',
+      count: 1, weight: 0, workMin: 0, activityAt: now,
+      pauseType: '', isPause: false
+    });
+    saveQueue();
+    forceSync();
+    setControlsEnabled(false);
+    updatePauseUI(); renderStats(); renderActivities();
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
+  }
+
+  function showEndShiftPopup(total) {
+    setTimeout(() => {
+      Confirm.open('✅ Смена завершена',
+        `Выполнено активностей: ${total}.\n\n⚠️ Не забудь проверить заметки — неразрешённых запросов не должно оставаться.\n\n💛 Спасибо за работу и вовлечённость! Отдыхай.`,
+        () => { setMotivation('Смена завершена. Отдыхай! 🎉'); showToast('Смена завершена'); },
+        'Ок');
+    }, 300);
+  }
+
+  function stopOnLogout() {
+    if (state && state.startedAt && !state.endedAt) finishShift();
+  }
+
+  function setControlsEnabled(on) {
+    const effective = on && !isOnPause();
+    ['addBreakBtn','addLunchBtn'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.disabled = !effective;
+    });
+    const bm = document.getElementById('breakMinutes');
+    if (bm) bm.disabled = !effective;
+    const sb = document.getElementById('startBtn'), eb = document.getElementById('endBtn');
+    if (sb) sb.disabled = on;
+    if (eb) eb.disabled = !on;
+    const ab = document.getElementById('addBreakBtn');
+    const al = document.getElementById('addLunchBtn');
+    if (ab) ab.classList.toggle('active', isOnPause() && state.pauseType === 'break');
+    if (al) al.classList.toggle('active', isOnPause() && state.pauseType === 'lunch');
+  }
+
+  function buildActivityRow(activity, ts, deltaSign) {
+    const lineTitle = LINES[state.line]?.title || '';
+    const weight = activity.weightMin || 1;
+    return {
+      ts: ts, sessionId: state.sessionId,
+      operator: state.operatorName || '', operatorId: state.operatorId || '',
+      supervisor: state.supervisor || '', line: lineTitle,
+      startedAt: state.startedAt, endedAt: state.endedAt || null,
+      activity: activity.title, eventType: 'activity',
+      count: deltaSign, weight: weight, workMin: weight * deltaSign,
+      activityAt: ts, pauseType: '', isPause: false
+    };
+  }
+
+  function changeActivity(id, delta) {
+    if (!state.startedAt || state.endedAt) return;
+    if (isOnPause()) { showToast('Идёт перерыв или обед — активности недоступны'); return; }
+    const cur = state.activities[id] || 0;
+    const next = Math.max(0, cur + delta);
+    if (next === cur) return;
+    const now = Date.now();
+    const activity = currentSet().find(x => x.id === id);
+    state.activities[id] = next;
+    state.lastActivityAt[id] = now;
+    saveState();
+    pendingRows.push(buildActivityRow(activity, now, delta > 0 ? 1 : -1));
+    saveQueue();
+    scheduleSyncSoon();
+    log('activity', `${activity.title}: ${next} (${delta > 0 ? '+1' : '−1'})`);
+    const cnt = document.getElementById('cnt_' + id);
+    if (cnt) cnt.textContent = next;
+    const last = document.getElementById('last_' + id);
+    if (last) last.textContent = 'Последнее: ' + formatClock(now);
+    renderStats();
+    if (delta > 0) {
+      const total = totalActivities();
+      if (total === 15 || (total > 15 && (total - 15) % 10 === 0)) {
+        if (state.lastConfettiTotal !== total) {
+          state.lastConfettiTotal = total; saveState();
+          showConfetti(50); showMotivationPopup(Motivation.pickActivity());
+        }
+      }
+    }
+    renderActivities();
+  }
+
+  function startPause(type, durationMin) {
+    if (!state.startedAt || state.endedAt) return;
+    if (isOnPause()) { showToast('Сначала дождись окончания текущей паузы'); return; }
+    const now = Date.now();
+    const until = now + durationMin * 60000;
+    state.pauseType = type;
+    state.pauseStartedAt = now;
+    state.pauseUntil = until;
+    state.pauseDurationMin = durationMin;
+    if (type === 'break') {
+      state.breakTotalMs += durationMin * 60000;
+      log('break', `Перерыв ${durationMin} мин — до ${formatClock(until)}`);
+    } else {
+      state.lunchCount++;
+      state.lunchTotalMs += durationMin * 60000;
+      log('lunch', `Обед ${durationMin} мин — до ${formatClock(until)}`);
+    }
+    saveState();
+    pendingRows.push({
+      ts: now, sessionId: state.sessionId,
+      operator: state.operatorName, operatorId: state.operatorId,
+      supervisor: state.supervisor, line: LINES[state.line]?.title || '',
+      startedAt: state.startedAt, endedAt: null,
+      activity: type === 'break' ? 'Перерыв' : 'Обед',
+      eventType: type,
+      count: 1, weight: durationMin, workMin: durationMin,
+      activityAt: now, pauseType: type, isPause: true
+    });
+    saveQueue();
+    scheduleSyncSoon();
+    setControlsEnabled(true);
+    renderActivities(); renderStats(); updatePauseUI();
+  }
+
+  function endPause(early = false) {
+    if (!state.pauseType) return;
+    const type = state.pauseType;
+    const plannedMs = (state.pauseDurationMin || 0) * 60000;
+    const actualMs = state.pauseStartedAt ? (Date.now() - state.pauseStartedAt) : plannedMs;
+    if (early && actualMs < plannedMs) {
+      const plannedMin = state.pauseDurationMin;
+      const actualMin = Math.max(1, Math.round(actualMs / 60000));
+      const diffMin = plannedMin - actualMin;
+      if (diffMin > 0) {
+        if (type === 'break') state.breakTotalMs = Math.max(0, state.breakTotalMs - diffMin * 60000);
+        else state.lunchTotalMs = Math.max(0, state.lunchTotalMs - diffMin * 60000);
+        log(type, (type === 'break' ? 'Перерыв' : 'Обед') + ` завершён досрочно (${actualMin} из ${plannedMin} мин)`);
+      } else {
+        log(type, (type === 'break' ? 'Перерыв' : 'Обед') + ' завершён');
+      }
+    } else {
+      log(type, (type === 'break' ? 'Перерыв' : 'Обед') + ' завершён');
+    }
+    state.pauseType = null; state.pauseUntil = null;
+    state.pauseStartedAt = null; state.pauseDurationMin = 0;
+    saveState();
+    setControlsEnabled(true);
+    renderActivities(); renderStats(); updatePauseUI();
+    if (early) {
+      showToast(type === 'break' ? 'Перерыв завершён досрочно — в работу!' : 'Обед завершён досрочно — в работу!');
+    } else {
+      AudioEngine.playClaxon();
+      showToast(type === 'break' ? 'Перерыв окончен — в работу!' : 'Обед окончен — в работу!');
+    }
+  }
+  function endPauseManually() {
+    if (!isOnPause()) { showToast('Пауза не активна'); return; }
+    Confirm.open('Завершить паузу досрочно?',
+      state.pauseType === 'break'
+        ? 'Перерыв будет остановлен, рабочее время пересчитано по факту.'
+        : 'Обед будет остановлен, рабочее время пересчитано по факту.',
+      () => endPause(true), 'Завершить');
+  }
+  function addBreak() {
+    if (!state.startedAt || state.endedAt) return;
+    const min = parseInt(document.getElementById('breakMinutes').value) || 0;
+    if (min <= 0) { showToast('Укажите минуты'); return; }
+    startPause('break', min);
+    showToast(`Перерыв ${min} мин — приятного отдыха!`);
+  }
+  function addLunch() {
+    if (!state.startedAt || state.endedAt) return;
+    if (state.lunchCount >= 2) { showToast('Обед уже 2 раза'); return; }
+    startPause('lunch', 30);
+    showToast('Обед 30 мин — приятного аппетита!');
+  }
+
+  function scheduleSyncSoon() {
+    if (syncDebounceTimer) return;
+    syncDebounceTimer = setTimeout(() => { syncDebounceTimer = null; forceSync(); }, SYNC_DEBOUNCE);
+  }
+
+  function buildRowsForSheets() {
+    const rows = [];
+    const fmtD = (ts) => { if (!ts) return ''; const d = new Date(ts);
+      return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`; };
+    const fmtT = (ts) => { if (!ts) return ''; const d = new Date(ts);
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+    pendingRows.forEach(r => {
+      const d = new Date(r.ts);
+      const hour = pad(d.getHours());
+      rows.push([
+        new Date(r.ts).toISOString(),
+        fmtD(r.startedAt),
+        hour,
+        r.operator, r.operatorId || '', r.line, r.supervisor || '',
+        fmtT(r.startedAt),
+        r.endedAt ? fmtT(r.endedAt) : '',
+        r.activity, r.eventType || 'activity',
+        r.count, r.weight, r.workMin,
+        fmtT(r.activityAt || r.ts),
+        r.sessionId || '',
+        r.pauseType || '',
+        r.isPause ? 'true' : 'false'
+      ]);
+    });
+    return rows;
+  }
+
+  function updateSyncStatus(status, text) {
+    const el = document.getElementById('cloudStatus');
+    const txt = document.getElementById('cloudStatusText');
+    if (!el || !txt) return;
+    el.classList.remove('online', 'offline', 'syncing');
+    if (status) el.classList.add(status);
+    txt.textContent = text;
+  }
+
+  async function forceSync() {
+    if (isSyncing) return;
+    if (pendingRows.length === 0) {
+      updateSyncStatus('online', 'синхронизировано');
+      return;
+    }
+    isSyncing = true;
+    updateSyncStatus('syncing', 'отправка…');
+    try {
+      const data = await API.post('log', { token: Auth.getToken(), rows: buildRowsForSheets() });
+      if (data && data.ok) {
+        pendingRows = []; saveQueue();
+        state.lastSyncAt = Date.now(); saveStateNow();
+        updateSyncStatus('online', 'логи ' + formatClock(state.lastSyncAt));
+      } else {
+        updateSyncStatus('offline', 'ошибка: ' + (data.error || '?'));
+      }
+    } catch (e) {
+      console.warn('Sync error:', e);
+      updateSyncStatus('offline', 'нет связи');
+    } finally { isSyncing = false; }
+  }
+
+  function flushPendingBeacon() {
+    if (pendingRows.length === 0) return;
+    const payload = JSON.stringify({
+      action: 'log',
+      token: Auth.getToken(),
+      rows: buildRowsForSheets()
+    });
+    const blob = new Blob([payload], { type: 'text/plain;charset=utf-8' });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(SHEETS_URL, blob);
+    }
+  }
+
+  function startSyncTimer() {
+    if (syncTimer) clearInterval(syncTimer);
+    syncTimer = setInterval(forceSync, SYNC_INTERVAL);
+  }
+
+  function showConfetti(count = 50) {
+    const wrap = document.createElement('div');
+    wrap.className = 'confetti-container';
+    document.body.appendChild(wrap);
+    const colors = ['#8b64d6', '#7c4ecf', '#a488e3', '#16a34a', '#d97706', '#e11d48'];
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'confetti-piece';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.animationDuration = (2 + Math.random() * 2) + 's';
+      p.style.animationDelay = (Math.random() * 0.4) + 's';
+      wrap.appendChild(p);
+    }
+    setTimeout(() => wrap.remove(), 4500);
+  }
+  function showMotivationPopup(text) {
+    const el = document.createElement('div');
+    el.className = 'motiv-popup'; el.textContent = text;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 3200);
+  }
+  function setMotivation(text) {
+    if (isOnPause()) return;
+    const el = document.getElementById('trackerMotivationText');
+    if (el) el.textContent = text;
+  }
+
+  function applyOperator(op) {
+    if (!op) return;
+    state.operatorId = op.id;
+    state.operatorName = op.name;
+    state.line = op.line;
+    state.supervisor = op.supervisor || '';
+    saveStateNow();
+    renderOperatorInfo(); renderActivities(); renderStats(); renderLog();
+    setControlsEnabled(!!state.startedAt && !state.endedAt);
+    updatePauseUI();
+  }
+
+  function init() {
+    loadState(); loadQueue();
+    if (state.pauseType && state.pauseUntil && Date.now() >= state.pauseUntil) {
+      state.pauseType = null; state.pauseUntil = null;
+      state.pauseStartedAt = null; state.pauseDurationMin = 0;
+      saveStateNow();
+    }
+    renderOperatorInfo(); renderActivities(); renderStats(); renderLog();
+    const isActive = !!state.startedAt && !state.endedAt;
+    setControlsEnabled(isActive); updatePauseUI();
+    if (isActive) {
+      if (!isOnPause()) setMotivation('Смена продолжается. Так держать! 💪');
+      scheduleTick(); startSyncTimer();
+      updateSyncStatus('online', 'локально');
+    } else if (state.endedAt) {
+      setMotivation('Смена завершена. Отдыхай! 🎉');
+      updateSyncStatus('online', 'локально');
+    } else {
+      setMotivation('Нажмите «Старт смены»');
+      updateSyncStatus('offline', 'локальный режим');
+    }
+    if (!listenersBound) {
+      listenersBound = true;
+      const sb = document.getElementById('startBtn'); if (sb) sb.addEventListener('click', startShift);
+      const eb = document.getElementById('endBtn'); if (eb) eb.addEventListener('click', endShift);
+      const ab = document.getElementById('addBreakBtn'); if (ab) ab.addEventListener('click', addBreak);
+      const al = document.getElementById('addLunchBtn'); if (al) al.addEventListener('click', addLunch);
+      const pstop = document.getElementById('trackerPauseStop'); if (pstop) pstop.addEventListener('click', endPauseManually);
+      window.addEventListener('beforeunload', flushPendingBeacon);
+    }
+  }
+  function refresh() {
+    const isActive = !!state.startedAt && !state.endedAt;
+    renderOperatorInfo(); renderActivities(); renderStats(); renderLog();
+    setControlsEnabled(isActive); updatePauseUI();
+    if (isActive) scheduleTick();
+    if (pendingRows.length > 0) forceSync();
+  }
+  function getState() { return state; }
+
+  return { init, refresh, applyOperator, stopOnLogout, endPauseManually,
+           forceSync, scheduleSyncSoon, getState };
+})();
+window.Tracker = Tracker;
+
+/* ══════════════════════════════════════════════
+   НАПОМИНАНИЯ
+   ══════════════════════════════════════════════ */
+const CATS = {
+  tours:       { label: 'Туры',        icon: '🏝', cls: 'cat-tours' },
+  hotels:      { label: 'Отели',       icon: '🏨', cls: 'cat-hotels' },
+  flights:     { label: 'Авиабилеты',  icon: '✈️', cls: 'cat-flights' },
+  experiences: { label: 'Впечатления', icon: '🎡', cls: 'cat-experiences' },
+  other:       { label: 'Другое',      icon: '📦', cls: 'cat-other' }
+};
+const WAITING = {
+  line2: { label: 'Вторая линия',    cls: 'wait-line2', full: 'Решение от второй линии' },
+  tech:  { label: 'Тех.специалисты', cls: 'wait-tech',  full: 'Решение от тех.специалистов' },
+  sv:    { label: 'СВ',              cls: 'wait-sv',    full: 'Решение от СВ' },
+  claim: { label: 'Отдел претензий', cls: 'wait-claim', full: 'Решение от отдела претензий' },
+  tours: { label: 'Туры',            cls: 'wait-tours', full: 'Решение от туров' }
+};
+const SOUNDS = {
+  birds: { label: 'Птицы',      short: 'Птицы', priority: 1 },
+  alert: { label: 'Звонок', short: 'Звонок', priority: 0 }
+};
+const REPEATS = {
+  10000: '10 сек', 30000: '30 сек',
+  60000: '1 мин', 120000: '2 мин', 300000: '5 мин', 600000: '10 мин'
+};
+const DEFAULT_SOUND = 'birds';
+const DEFAULT_REPEAT = 30000;
+const NOTE_MAX_LENGTH = 100;
+const REMINDER_ALARM_INTERVAL = 30000;
+
+const Reminders = (() => {
+  const STORAGE_KEY = 'wb_reminders_v1';
+  const SYNC_INTERVAL = 60 * 1000;   // 60 сек — обновление списка
+  let orders = [];
+  let view = 'active';
+  let activeFilter = 'all';
+  let syncTimer = null;
+  let isSyncing = false;
+  let syncDebounceTimer = null;
+  let renderScheduled = false;
+
+  function load() {
+    const saved = Storage.get(STORAGE_KEY, []);
+    orders = Array.isArray(saved) ? saved : [];
+  }
+  function save() { Storage.set(STORAGE_KEY, orders); }
+
+  function visibleOrders() {
+    const me = Auth.getOperator();
+    if (!me) return [];
+    // СВ видит все линии
+    if (me.line === 'sv') return orders;
+    // Остальные — только свою
+    return orders.filter(o => o.line === me.line);
+  }
+
+  function activeCount() {
+    return visibleOrders().filter(o => !o.archived).length;
+  }
+
+  function createFromForm() {
+    const me = Auth.getOperator();
+    if (!me) { showToast('Войдите в систему'); return false; }
+    const numRaw = document.getElementById('orderNum').value.trim();
+    const num = numRaw || '—';
+    const cat = document.getElementById('category').value;
+    const wait = document.getElementById('waiting').value;
+    const sound = document.getElementById('sound').value;
+    const repeat = parseInt(document.getElementById('repeat').value) || DEFAULT_REPEAT;
+    const note = document.getElementById('note').value.trim().slice(0, NOTE_MAX_LENGTH);
+    const h = parseInt(document.getElementById('hours').value) || 0;
+    const m = parseInt(document.getElementById('minutes').value) || 0;
+    const totalMs = (h * 3600 + m * 60) * 1000;
+    if (totalMs <= 0) return false;
+    const o = {
+      id: 'ord_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      num, cat, wait: wait || null, sound: sound || DEFAULT_SOUND, repeat,
+      created: Date.now(), endTime: Date.now() + totalMs,
+      alarmed: false, taken: false, takenAt: null, takenBy: null,
+      archived: false, archivedAt: null, lastPlayed: 0,
+      line: me.line, authorId: me.id, authorName: me.name,
+      note: note, _dirty: true
+    };
+    orders.push(o); save(); scheduleSync();
+    document.getElementById('orderNum').value = '';
+    document.getElementById('hours').value = 0;
+    document.getElementById('minutes').value = 30;
+    document.getElementById('note').value = '';
+    updateNoteCounter();
+    document.getElementById('orderNum').focus();
+    scheduleRender();
+    return true;
+  }
+
+  function addOrder() {
+    const numRaw = document.getElementById('orderNum').value.trim();
+    const h = parseInt(document.getElementById('hours').value) || 0;
+    const m = parseInt(document.getElementById('minutes').value) || 0;
+    const totalMs = (h * 3600 + m * 60) * 1000;
+    if (!numRaw) return alert('Введите WB ID');
+    if (totalMs <= 0) return alert('Укажите время больше 0');
+    createFromForm();
+    showToast('Напоминание добавлено');
+  }
+
+  function takeOrder(id) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    o.taken = true; o.takenAt = Date.now(); o._dirty = true;
+    save(); scheduleSync(); scheduleRender();
+  }
+  function undoTake(id) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    o.taken = false; o.takenAt = null;
+    if (Date.now() >= o.endTime) { o.alarmed = true; o.lastPlayed = 0; }
+    o._dirty = true;
+    save(); scheduleSync(); scheduleRender();
+  }
+  function archiveOrder(id) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    o.archived = true; o.archivedAt = Date.now(); o._dirty = true;
+    save(); scheduleSync(); scheduleRender();
+  }
+  function restoreFromArchive(id) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    o.archived = false; o.archivedAt = null; o._dirty = true;
+    save(); scheduleSync(); scheduleRender();
+  }
+   function deleteOrder(id) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    const me = Auth.getOperator();
+    if (!me) return;
+    // Удалять может: автор, оператор той же линии, СВ
+    const isSupervisor = me.line === 'sv';
+    const canDelete = o.authorId === me.id || o.line === me.line || isSupervisor;
+    if (!canDelete) {
+      showToast('Нельзя удалить чужое напоминание другой линии'); return;
+    }
+    Confirm.open('Удалить напоминание?', `WB ID: ${o.num}. Это действие необратимо.`, () => {
+      orders = orders.filter(x => x.id !== id); save();
+      API.post('reminders_delete', { token: Auth.getToken(), id }).catch(e => console.warn('Delete error:', e));
+      scheduleRender(); showToast('Напоминание удалено');
+    });
+  }
+
+  function switchView(v) {
+    view = v;
+    document.getElementById('tabActive').classList.toggle('active', v === 'active');
+    document.getElementById('tabArchive').classList.toggle('active', v === 'archive');
+    document.getElementById('formCard').style.display = v === 'active' ? '' : 'none';
+    document.getElementById('archiveToolbar').style.display = v === 'archive' ? '' : 'none';
+    scheduleRender();
+  }
+  function setFilter(k) { activeFilter = k; scheduleRender(); }
+
+  function renderFilters() {
+    const wrap = document.getElementById('filters');
+    if (!wrap) return;
+    const pool = view === 'active'
+      ? visibleOrders().filter(o => !o.archived)
+      : visibleOrders().filter(o => o.archived);
+    const counts = { all: pool.length };
+    Object.keys(CATS).forEach(k => counts[k] = 0);
+    pool.forEach(o => { if (counts[o.cat] !== undefined) counts[o.cat]++; });
+    const btn = (key, label) => `
+      <button class="filter-btn ${activeFilter === key ? 'active' : ''}" onclick="setReminderFilter('${key}')">
+        ${label}<span class="count">${counts[key] || 0}</span>
+      </button>`;
+    wrap.innerHTML = btn('all', '📋 Все') +
+      Object.entries(CATS).map(([k, c]) => btn(k, `${c.icon} ${c.label}`)).join('');
+  }
+
+  function renderStats() {
+    const el = document.getElementById('stats');
+    if (!el) return;
+    const pool = visibleOrders();
+    const activeOrders = pool.filter(o => !o.archived);
+    const overdue = activeOrders.filter(o => !o.taken && Date.now() >= o.endTime).length;
+    const pending = activeOrders.filter(o => !o.taken && Date.now() < o.endTime).length;
+    const inWork  = activeOrders.filter(o => o.taken).length;
+    const archived = pool.filter(o => o.archived).length;
+    el.innerHTML =
+      `<span>Активных: <b>${activeOrders.length}</b></span>` +
+      `<span>⏳ Ждут: <b>${pending}</b></span>` +
+      `<span style="color:#16a34a">🟢 В работе: <b>${inWork}</b></span>` +
+      `<span style="color:#e11d48">🔔 Нужен ответ: <b>${overdue}</b></span>` +
+      `<span style="color:#6d3fd6">📁 Обработано: <b>${archived}</b></span>`;
+  }
+
+  function scheduleRender() {
+    if (renderScheduled) return;
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+      renderScheduled = false;
+      render();
+    });
+  }
+
+  function render() {
+    if (!document.getElementById('ordersList')) return;
+    renderFilters();
+    const me = Auth.getOperator();
+    const pool = visibleOrders();
+    const activeCnt = pool.filter(o => !o.archived).length;
+    const archiveCnt = pool.filter(o => o.archived).length;
+    const overdueCnt = pool.filter(o => !o.archived && !o.taken && Date.now() >= o.endTime).length;
+    const elActive = document.getElementById('cntActiveRem');
+    if (elActive) {
+      elActive.textContent = activeCnt;
+      elActive.classList.toggle('alarm', overdueCnt > 0);
+    }
+    const elArch = document.getElementById('cntArchiveRem');
+    if (elArch) elArch.textContent = archiveCnt;
+    const sectionCnt = document.getElementById('remindersActiveCount');
+    if (sectionCnt) sectionCnt.textContent = activeCnt;
+
+    const cntNotes = document.getElementById('cntNotes');
+    if (cntNotes) {
+      const stickerCount = (typeof Stickers !== 'undefined') ? Stickers.count() : 0;
+      cntNotes.textContent = stickerCount + activeCnt;
+    }
+    const stickersCntEl = document.getElementById('stickersCount');
+    if (stickersCntEl && typeof Stickers !== 'undefined') {
+      stickersCntEl.textContent = Stickers.count();
+    }
+
+    const list = document.getElementById('ordersList');
+    const query = (document.getElementById('search').value || '').trim().toLowerCase();
+    let filtered = pool.filter(o => view === 'active' ? !o.archived : o.archived);
+    filtered = filtered.filter(o => activeFilter === 'all' || o.cat === activeFilter);
+    if (query) filtered = filtered.filter(o => String(o.num).toLowerCase().includes(query));
+
+    filtered.sort((a, b) => {
+      if (view === 'archive') return (b.archivedAt || 0) - (a.archivedAt || 0);
+      const rank = o => { if (o.taken) return 2; if (Date.now() >= o.endTime) return 0; return 1; };
+      const ra = rank(a), rb = rank(b);
+      if (ra !== rb) return ra - rb;
+      return a.endTime - b.endTime;
+    });
+
+    if (filtered.length === 0) {
+      list.innerHTML = view === 'active'
+        ? '<div class="empty">Здесь пока нет напоминаний</div>'
+        : '<div class="empty">В архиве пока пусто</div>';
+      renderStats(); return;
+    }
+    list.innerHTML = filtered.map(o => renderOrder(o, me)).join('');
+    renderStats();
+  }
+
+     /* Компактная карточка: всё в одну строку с wrap */
+  function renderOrder(o, me) {
+    const left = o.endTime - Date.now();
+    const cat = CATS[o.cat] || CATS.tours;
+    const wait = o.wait ? WAITING[o.wait] : null;
+    const snd = SOUNDS[o.sound || DEFAULT_SOUND] || SOUNDS[DEFAULT_SOUND];
+    const repLabel = REPEATS[o.repeat || DEFAULT_REPEAT] || '';
+    const isMine = o.authorId === me.id;
+
+    // Определяем статус
+    let cls = '';
+    let metaText = '';
+    if (o.archived) {
+      cls = 'archived';
+      metaText = `📁 Обработан в ${formatClock(o.archivedAt || o.takenAt)}`;
+    } else if (o.taken) {
+      cls = 'taken';
+      metaText = `🟢 В работе с ${formatClock(o.takenAt)}`;
+    } else if (left <= 0) {
+      cls = 'overdue';
+      metaText = `🔔 <b style="color:var(--red)">Нужен ответ! Просрочен на ${formatLeftMin(left)}</b>`;
+    } else {
+      if (left < 60000) cls = 'warning';
+      metaText = `Осталось: <span class="timer">${formatLeftMin(left)}</span>`;
+    }
+
+        // Определяем права
+    const isSupervisor = me.line === 'sv';
+    const sameLine = me.line === o.line;
+    // Может редактировать (изменять, удалять навсегда) — только автор
+    const canEdit = isMine;
+    // Может брать в работу, завершать, отменять — автор, своя линия, СВ
+    const canManage = isMine || sameLine || isSupervisor;
+    // Может удалять (навсегда, из архива) — автор, своя линия, СВ
+    const canDelete = isMine || sameLine || isSupervisor;
+
+    // Кнопки
+    let actionHtml = '';
+    if (o.archived) {
+      actionHtml = `
+        ${canManage ? `<button class="btn-sm btn-undo" onclick="restoreReminder('${o.id}')">↺ Вернуть</button>` : ''}
+        ${canDelete ? `<button class="btn-sm btn-del"  onclick="deleteReminder('${o.id}')">✕ Удалить</button>` : ''}`;
+    } else if (o.taken) {
+      actionHtml = `
+        ${canManage ? `<button class="btn-sm btn-undo"  onclick="undoTakeReminder('${o.id}')">↺ Отменить</button>` : ''}
+        ${canManage ? `<button class="btn-sm btn-close" onclick="archiveReminder('${o.id}')">✕ Завершить</button>` : ''}`;
+    } else if (left <= 0) {
+      actionHtml = `
+        ${canManage ? `<button class="btn-sm btn-take" onclick="takeReminder('${o.id}')">✅ Взял</button>` : ''}
+        ${canManage ? `<button class="btn-sm btn-del"  onclick="archiveReminder('${o.id}')">🗑 Завершить</button>` : ''}`;
+    } else {
+      actionHtml = `
+        ${canManage ? `<button class="btn-sm btn-take" onclick="takeReminder('${o.id}')">✅ Взял</button>` : ''}
+        ${canManage ? `<button class="btn-sm btn-del"  onclick="archiveReminder('${o.id}')">🗑 Завершить</button>` : ''}`;
+    }
+    // «Изменить» — только автору
+    if (canEdit && !o.archived) {
+      actionHtml = `<button class="btn-sm btn-edit" onclick="openReminderModal('${o.id}')">✏ Изменить</button>` + actionHtml;
+    }
+
+    // Бейджи
+    const waitBadge = wait
+      ? `<span class="wait-badge ${wait.cls}" title="${wait.full}">❓ ${wait.label}</span>`
+      : `<span class="wait-badge wait-none">ждём не указано</span>`;
+        const repeatBadge = `<span class="repeat-badge">🔁 ${repLabel}</span>`;
+    const authorBadge = isMine
+      ? `<span class="author-badge mine">👤 я</span>`
+      : `<span class="author-badge">👤 ${escapeHtml(o.authorName || '—')}</span>`;
+    const createdBadge = `<span class="created-badge" title="Создано">📅 ${formatDate(o.created)}</span>`;
+
+    // Комментарий — inline, если есть
+    const noteInline = o.note
+      ? `<span class="order-sep">·</span><span class="order-note-inline" title="${escapeHtml(o.note)}"><i class="fas fa-comment-alt"></i> ${escapeHtml(o.note)}</span>`
+      : '';
+
+    return `
+      <div class="order-item ${cls}">
+        <div class="order-main">
+          <span class="order-num">WB ID: ${escapeHtml(String(o.num))}</span>
+          <span class="order-sep">·</span>
+          <span class="cat-badge ${cat.cls}">${cat.icon} ${cat.label}</span>
+          ${waitBadge}
+          ${repeatBadge}
+          ${authorBadge}
+ 	  ${createdBadge}
+          <span class="order-sep">·</span>
+          <span class="order-meta">${metaText}</span>
+          ${noteInline}
+        </div>
+        <div class="order-actions">${actionHtml}</div>
+      </div>`;
+  }
+
+  function openModal(id) {
+    const o = orders.find(x => x.id === id); if (!o) return;
+    const me = Auth.getOperator();
+    if (!me || o.authorId !== me.id) { showToast('Редактировать может только автор'); return; }
+    document.getElementById('editReminderId').value = o.id;
+    document.getElementById('editNum').value = o.num;
+    document.getElementById('editCategory').value = o.cat;
+    document.getElementById('editWaiting').value = o.wait || '';
+    document.getElementById('editSound').value = o.sound || DEFAULT_SOUND;
+    document.getElementById('editRepeat').value = String(o.repeat || DEFAULT_REPEAT);
+    document.getElementById('editNote').value = o.note || '';
+    updateEditNoteCounter();
+    document.getElementById('editHours').value = 0;
+    document.getElementById('editMinutes').value = 0;
+    const left = o.endTime - Date.now();
+    const d = new Date(o.endTime);
+    const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const leftStr = left > 0 ? formatLeftMin(left) : 'уже просрочено';
+    document.getElementById('editCurrentHint').textContent =
+      `Сейчас стоит на ${timeStr} · ${left > 0 ? 'через ' + leftStr : leftStr}. Введите новое время от текущего момента.`;
+    document.getElementById('reminderModalOverlay').classList.add('show');
+  }
+  function closeModal() { document.getElementById('reminderModalOverlay').classList.remove('show'); }
+
+  function submitEdit(e) {
+    e.preventDefault();
+    const id = document.getElementById('editReminderId').value;
+    const o = orders.find(x => String(x.id) === String(id));
+    if (!o) return;
+    const me = Auth.getOperator();
+    if (!me || o.authorId !== me.id) return;
+    o.num = document.getElementById('editNum').value.trim() || '—';
+    o.cat = document.getElementById('editCategory').value;
+    o.wait = document.getElementById('editWaiting').value || null;
+    o.sound = document.getElementById('editSound').value;
+    o.repeat = parseInt(document.getElementById('editRepeat').value) || DEFAULT_REPEAT;
+    o.note = document.getElementById('editNote').value.trim().slice(0, NOTE_MAX_LENGTH);
+    const h = parseInt(document.getElementById('editHours').value) || 0;
+    const m = parseInt(document.getElementById('editMinutes').value) || 0;
+    const newMs = (h * 3600 + m * 60) * 1000;
+    o.endTime = Date.now() + newMs;
+    o.alarmed = false; o.taken = false; o.takenAt = null; o.lastPlayed = 0;
+    o._dirty = true;
+    save(); scheduleSync(); closeModal(); scheduleRender();
+    showToast(newMs > 0 ? 'Напоминание обновлено' : 'Напоминание сразу сработает');
+  }
+
+  function updateNoteCounter() {
+    const el = document.getElementById('note');
+    const cnt = document.getElementById('noteCounter');
+    if (!el || !cnt) return;
+    const len = el.value.length;
+    cnt.textContent = `${len} / ${NOTE_MAX_LENGTH}`;
+    cnt.classList.toggle('warn', len > 80 && len <= NOTE_MAX_LENGTH);
+    cnt.classList.toggle('over', len > NOTE_MAX_LENGTH);
+  }
+  function updateEditNoteCounter() {
+    const el = document.getElementById('editNote');
+    const cnt = document.getElementById('editNoteCounter');
+    if (!el || !cnt) return;
+    const len = el.value.length;
+    cnt.textContent = `${len} / ${NOTE_MAX_LENGTH}`;
+    cnt.classList.toggle('warn', len > 80 && len <= NOTE_MAX_LENGTH);
+    cnt.classList.toggle('over', len > NOTE_MAX_LENGTH);
+  }
+
+  function exportArchive() {
+    const archived = visibleOrders().filter(o => o.archived);
+    if (archived.length === 0) return alert('Архив пуст');
+    const rows = [['WB ID','Категория','Что ждём','Комментарий','Напоминание','Повтор','Создан','Срок','Взят в работу','В архив','Автор']];
+    archived.forEach(o => {
+      rows.push([
+        o.num, CATS[o.cat]?.label || '',
+        o.wait ? WAITING[o.wait]?.full || '' : '',
+        o.note || '',
+        SOUNDS[o.sound || DEFAULT_SOUND]?.label || '',
+        REPEATS[o.repeat || DEFAULT_REPEAT] || '',
+        formatDate(o.created), formatDate(o.endTime),
+        o.takenAt ? formatDate(o.takenAt) : '',
+        o.archivedAt ? formatDate(o.archivedAt) : '',
+        o.authorName || ''
+      ]);
+    });
+    const csv = '\uFEFF' + rows.map(r =>
+      r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';')
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Обработанные_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+  }
+  function clearArchive() {
+    const cnt = visibleOrders().filter(o => o.archived).length;
+    if (cnt === 0) { showToast('Архив пуст'); return; }
+    Confirm.open('Очистить архив?', `Все ${cnt} записей из папки «Обработанные» будут удалены.`, () => {
+      const toDelete = visibleOrders().filter(o => o.archived);
+      toDelete.forEach(o => API.post('reminders_delete', { token: Auth.getToken(), id: o.id }).catch(() => {}));
+      orders = orders.filter(o => !o.archived);
+      save(); scheduleRender(); showToast('Архив очищен');
+    }, 'Очистить');
+  }
+
+  function scheduleSync() {
+    if (syncDebounceTimer) return;
+    syncDebounceTimer = setTimeout(() => { syncDebounceTimer = null; syncNow(); }, 1500);
+  }
+
+  async function syncNow() {
+    const me = Auth.getOperator();
+    if (!me) return;
+    const dirty = orders.filter(o => o._dirty);
+    if (dirty.length > 0) {
+      try {
+        const payload = dirty.map(o => ({
+          id: o.id, num: o.num, cat: o.cat, wait: o.wait,
+          sound: o.sound, repeat: o.repeat, created: o.created, endTime: o.endTime,
+          alarmed: o.alarmed, taken: o.taken, takenAt: o.takenAt, takenBy: o.takenBy,
+          archived: o.archived, archivedAt: o.archivedAt, lastPlayed: o.lastPlayed,
+          note: o.note || ''
+        }));
+        const data = await API.post('reminders_upsert', { token: Auth.getToken(), reminders: payload });
+        if (data.ok) { dirty.forEach(o => { o._dirty = false; }); save(); }
+      } catch (e) { console.warn('Reminders upsert error:', e); }
+    }
+    await fetchFromServer();
+  }
+
+  async function fetchFromServer() {
+    if (isSyncing) return;
+    isSyncing = true;
+    try {
+      const data = await API.get('reminders', { token: Auth.getToken() });
+      if (data.ok && Array.isArray(data.reminders)) mergeServerData(data.reminders);
+    } catch (e) { console.warn('Reminders fetch error:', e); }
+    finally { isSyncing = false; }
+  }
+
+  function mergeServerData(serverList) {
+    const byId = Object.fromEntries(orders.map(o => [o.id, o]));
+    serverList.forEach(s => {
+      const local = byId[s.id];
+      if (!local) orders.push(s);
+      else if (local._dirty) { /* не перетираем */ }
+      else if ((s.updatedAt || 0) > (local.updatedAt || 0)) Object.assign(local, s);
+    });
+    save(); scheduleRender();
+  }
+
+  async function reload() { await fetchFromServer(); scheduleRender(); }
+  function startSyncTimer() {
+    if (syncTimer) clearInterval(syncTimer);
+    syncTimer = setInterval(fetchFromServer, SYNC_INTERVAL);
+  }
+
+  function tick() {
+    const now = Date.now();
+    let changed = false;
+    visibleOrders().forEach(o => {
+      if (!o.archived && !o.taken && !o.alarmed && now >= o.endTime) {
+        o.alarmed = true;
+        o._dirty = true;
+        changed = true;
+      }
+    });
+    if (changed) { save(); scheduleSync(); }
+
+    if (!AudioEngine.isMuted()) {
+      const due = visibleOrders().filter(o => !o.archived && !o.taken && now >= o.endTime);
+      if (due.length > 0) {
+        const lastPlayed = due.reduce((max, o) => Math.max(max, o.lastPlayed || 0), 0);
+        if (now - lastPlayed >= REMINDER_ALARM_INTERVAL) {
+          due.sort((a, b) =>
+            (SOUNDS[b.sound || DEFAULT_SOUND]?.priority || 0) -
+            (SOUNDS[a.sound || DEFAULT_SOUND]?.priority || 0));
+          AudioEngine.play(due[0].sound || DEFAULT_SOUND);
+          due.forEach(o => { o.lastPlayed = now; o._dirty = true; });
+          save(); scheduleSync();
+        }
+      }
+    }
+
+    const banner = document.getElementById('alarmBanner');
+    const overdue = visibleOrders().filter(o => !o.archived && !o.taken && now >= o.endTime).length;
+    if (banner) {
+      if (overdue > 0) {
+        banner.classList.add('show');
+        banner.textContent = `🔔 ВНИМАНИЕ! ${overdue} WB ID — нужен ответ!`;
+      } else banner.classList.remove('show');
+    }
+  }
+
+  return { load, save, render, addOrder, createFromForm, activeCount,
+    takeOrder, undoTake, archiveOrder, restoreFromArchive, deleteOrder,
+    switchView, setFilter, openModal, closeModal, submitEdit,
+    exportArchive, clearArchive, reload, startSyncTimer, tick, fetchFromServer,
+    updateNoteCounter, updateEditNoteCounter, scheduleRender };
+})();
+
+/* ══════════════════════════════════════════════
+   СТИКЕРЫ
+   ══════════════════════════════════════════════ */
+const Stickers = (() => {
+  const STORAGE_KEY = 'wb_stickers_v2';
+  const MAX_WORDS = 25;
+  const COLOR_CONFIG = {
+    yellow: { label: 'Жёлтый', interval: 2 * 60 * 60 * 1000, sound: 'playStickerYellow', intervalLabel: '2 часа' },
+    pink:   { label: 'Розовый', interval: 10 * 60 * 1000,    sound: 'playStickerPink',   intervalLabel: '10 минут' },
+    green:  { label: 'Зелёный', interval: null,             sound: null,                intervalLabel: 'к завершению смены' }
+  };
+  let stickers = [];
+  let isListening = false;
+  let recognition = null;
+  let editingId = null;
+
+  function load() {
+    const saved = Storage.get(STORAGE_KEY, []);
+    stickers = Array.isArray(saved) ? saved : [];
+  }
+  function save() { Storage.set(STORAGE_KEY, stickers); Bookmarks.updateCounters(); }
+  function count() { return stickers.length; }
+
+  function normalizeVoiceText(raw) {
+    let s = String(raw || '');
+    for (let i = 0; i < 3; i++) s = s.replace(/(\d)[\s,.](\d)/g, '$1$2');
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
+  function render() {
+    const grid = document.getElementById('stickersGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (stickers.length === 0) {
+      grid.innerHTML = '<div class="empty-state">Стикеров пока нет</div>';
+      const sc = document.getElementById('stickersCount');
+      if (sc) sc.textContent = '0';
+      return;
+    }
+    stickers.forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'sticker ' + s.color;
+      el.dataset.id = s.id;
+      el.innerHTML = `
+        <div class="sticker-top">
+          <div class="sticker-color-select">
+            <span class="color-dot yellow ${s.color==='yellow'?'active':''}" data-color="yellow" title="Жёлтый (2 часа)"></span>
+            <span class="color-dot pink ${s.color==='pink'?'active':''}" data-color="pink" title="Розовый (10 мин)"></span>
+            <span class="color-dot green ${s.color==='green'?'active':''}" data-color="green" title="Зелёный (к завершению)"></span>
+          </div>
+          <div class="sticker-actions">
+            <button class="sticker-edit" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="sticker-remove" title="Удалить"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <div class="sticker-text">${escapeHtml(s.text)}</div>
+        <div class="sticker-footer">
+          <span class="sticker-time">${formatDate(s.created)}</span>
+          <span class="sticker-wordcount">${s.wordCount || 0} / ${MAX_WORDS} слов</span>
+        </div>`;
+      grid.appendChild(el);
+      el.querySelectorAll('.color-dot').forEach(dot => {
+        dot.addEventListener('click', (e) => { e.stopPropagation(); changeColor(s.id, dot.dataset.color); });
+      });
+      el.querySelector('.sticker-edit').addEventListener('click', (e) => { e.stopPropagation(); openModal('edit', s.id); });
+      el.querySelector('.sticker-remove').addEventListener('click', (e) => { e.stopPropagation(); confirmDelete(s.id); });
+    });
+    const sc = document.getElementById('stickersCount');
+    if (sc) sc.textContent = stickers.length;
+  }
+
+  function openModal(mode, id = null) {
+    const overlay = document.getElementById('stickerModalOverlay');
+    const ta = document.getElementById('stickerText');
+    const colorSel = document.getElementById('stickerColor');
+    if (mode === 'edit' && id) {
+      const s = stickers.find(x => x.id === id); if (!s) return;
+      editingId = id;
+      document.getElementById('stickerModalTitle').textContent = 'Редактировать стикер';
+      ta.value = s.text; colorSel.value = s.color;
+    } else {
+      editingId = null;
+      document.getElementById('stickerModalTitle').textContent = 'Добавить стикер';
+      ta.value = ''; colorSel.value = 'yellow';
+    }
+    updateWordCount();
+    overlay.classList.add('show');
+    setTimeout(() => ta.focus(), 100);
+  }
+  function closeModal() { document.getElementById('stickerModalOverlay').classList.remove('show'); editingId = null; }
+
+  function updateWordCount() {
+    const ta = document.getElementById('stickerText');
+    const cnt = document.getElementById('stickerWordCount');
+    if (!ta || !cnt) return;
+    const words = ta.value.trim().split(/\s+/).filter(Boolean);
+    cnt.textContent = Math.min(words.length, MAX_WORDS);
+    cnt.style.color = words.length > MAX_WORDS ? 'var(--red)' : '';
+  }
+
+  function saveFromModal() {
+    const ta = document.getElementById('stickerText');
+    const colorSel = document.getElementById('stickerColor');
+    const text = ta.value.trim();
+    if (!text) { showToast('Введите текст'); return; }
+    const words = text.split(/\s+/).filter(Boolean);
+    const capped = words.slice(0, MAX_WORDS).join(' ');
+    const wordCount = Math.min(words.length, MAX_WORDS);
+    if (editingId) {
+      const s = stickers.find(x => x.id === editingId);
+      if (s) { s.text = capped; s.wordCount = wordCount; s.color = colorSel.value; s.lastPlayed = 0; }
+      showToast('Стикер обновлён');
+    } else {
+      stickers.push({
+        id: 'st_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        text: capped, color: colorSel.value, created: Date.now(), lastPlayed: 0, wordCount
+      });
+      showToast('Стикер добавлен');
+    }
+    save(); render(); closeModal();
+  }
+
+  function confirmDelete(id) {
+    const s = stickers.find(x => x.id === id); if (!s) return;
+    const preview = s.text.length > 60 ? s.text.slice(0, 60) + '…' : s.text;
+    Confirm.open('Удалить стикер?', `«${preview}» будет удалён.`, () => {
+      stickers = stickers.filter(x => x.id !== id);
+      save(); render(); showToast('Стикер удалён');
+    });
+  }
+
+  function changeColor(id, color) {
+    const s = stickers.find(x => x.id === id); if (!s) return;
+    s.color = color; s.lastPlayed = 0;
+    save(); render();
+    const cfg = COLOR_CONFIG[color];
+    showToast('Стикер: ' + cfg.label + ' — напоминание ' + cfg.intervalLabel);
+  }
+
+  function tick() {
+    const now = Date.now();
+    let changed = false;
+    stickers.forEach(s => {
+      const cfg = COLOR_CONFIG[s.color];
+      if (!cfg || !cfg.interval) return;
+      if (now - (s.lastPlayed || 0) >= cfg.interval) {
+        const el = document.querySelector(`.sticker[data-id="${s.id}"]`);
+        if (el) {
+          el.classList.add('flash');
+          setTimeout(() => el.classList.remove('flash'), 4000);
+        }
+        if (AudioEngine[cfg.sound]) AudioEngine[cfg.sound]();
+        s.lastPlayed = now; changed = true;
+      }
+    });
+    if (changed) save();
+  }
+
+  function voiceSticker() {
+    const btn = document.getElementById('stickerVoiceBtn');
+    const txt = document.getElementById('stickerVoiceText');
+    if (isListening) {
+      if (recognition) { try { recognition.stop(); } catch (e) {} }
+      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
+      return;
+    }
+    if (!window.isSecureContext) { showToast('Микрофон недоступен без HTTPS/localhost'); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { showToast('Голосовой ввод не поддерживается'); return; }
+    if (!recognition) {
+      recognition = new SR();
+      recognition.lang = 'ru-RU';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+    }
+    recognition.onresult = (e) => {
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      }
+      final = normalizeVoiceText(final);
+      if (final.trim()) {
+        const words = final.trim().split(/\s+/).filter(Boolean);
+        stickers.push({
+          id: 'st_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          text: words.slice(0, MAX_WORDS).join(' '),
+          color: 'yellow',
+          created: Date.now(),
+          lastPlayed: 0,
+          wordCount: Math.min(words.length, MAX_WORDS)
+        });
+        save(); render();
+      }
+    };
+    recognition.onend = () => { isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать'; };
+    recognition.onerror = (e) => {
+      if (e.error !== 'aborted') showToast('Ошибка распознавания: ' + e.error);
+      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
+    };
+    try {
+      recognition.start();
+      isListening = true; btn.classList.add('recording'); txt.textContent = 'Готово';
+      showToast('Диктуйте стикер...');
+    } catch (e) {
+      showToast('Не удалось запустить распознавание');
+      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
+    }
+  }
+
+  function init() {
+    load(); render();
+    setInterval(tick, 5000);
+    const ta = document.getElementById('stickerText');
+    if (ta) ta.addEventListener('input', updateWordCount);
+    const saveBtn = document.getElementById('stickerSaveBtn');
+    if (saveBtn) saveBtn.addEventListener('click', saveFromModal);
+    const overlay = document.getElementById('stickerModalOverlay');
+    if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+  }
+
+  return { load, render, count, init, openModal, closeModal, voiceSticker };
+})();
+
+/* ══════════════════════════════════════════════
+   ДАШБОРД (с ленивой загрузкой Chart.js)
+   ══════════════════════════════════════════════ */
+const Dashboard = (() => {
+  let period = 'today';
+  let line = 'all';
+  let lastData = null;
+  let charts = { hourly: null, line1: null, line2: null };
+  let sortKey = 'minutes';
+  let sortAsc = false;
+  let initialized = false;
+  let chartJsLoaded = false;
+
+  const PALETTE = [
+    '#7c4ecf', '#ec4899', '#14b8a6', '#f59e0b',
+    '#3b82f6', '#10b981', '#ef4444', '#8b5cf6',
+    '#06b6d4', '#f97316', '#84cc16', '#a855f7'
+  ];
+
+  function ensureChartJs() {
+    return new Promise((resolve, reject) => {
+      if (chartJsLoaded || window.Chart) { chartJsLoaded = true; resolve(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+      s.onload = () => { chartJsLoaded = true; resolve(); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  function setPeriod(p) {
+    period = p;
+    document.querySelectorAll('.db-filter-btn[data-period]').forEach(b =>
+      b.classList.toggle('active', b.dataset.period === p));
+    reload();
+  }
+  function setLine(l) {
+    line = l;
+    document.querySelectorAll('.db-filter-btn[data-line]').forEach(b =>
+      b.classList.toggle('active', b.dataset.line === l));
+    reload();
+  }
+  function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = false; }
+    renderTable();
+  }
+
+  async function reload() {
+    const me = Auth.getOperator();
+    if (!me) return;
+    try {
+      const data = await API.get('dashboard', {
+        token: Auth.getToken(), period: period, line: line
+      });
+      if (!data.ok) { console.warn('Dashboard error:', data.error); return; }
+      lastData = data;
+      await ensureChartJs();
+      renderSummary(); renderHourly(); renderPie('line1'); renderPie('line2'); renderTable();
+    } catch (e) { console.warn('Dashboard fetch error:', e); }
+  }
+
+  function renderSummary() {
+    const el = document.getElementById('dbSummary');
+    if (!el || !lastData) return;
+    const s = lastData.summary || {};
+    el.innerHTML = `
+      <div class="db-kpi"><div class="label">Активных операторов</div>
+        <div class="value">${s.activeOperators || 0}</div></div>
+      <div class="db-kpi"><div class="label">Всего активностей</div>
+        <div class="value">${s.totalActivities || 0}</div></div>
+      <div class="db-kpi"><div class="label">Нагрузка</div>
+        <div class="value">${s.totalMinutes || 0}<span class="unit">мин</span></div></div>
+      <div class="db-kpi"><div class="label">Смен</div>
+        <div class="value">${s.shifts || 0}</div></div>
+      <div class="db-kpi"><div class="label">Средняя смена</div>
+        <div class="value">${s.avgShiftMin || 0}<span class="unit">мин</span></div></div>
+    `;
+  }
+
+  function renderHourly() {
+    const canvas = document.getElementById('chartHourly');
+    if (!canvas || !lastData || !window.Chart) return;
+    if (charts.hourly) charts.hourly.destroy();
+    const labels = lastData.hourly.map(h => h.hour + ':00');
+    const minutes = lastData.hourly.map(h => h.minutes);
+    const activities = lastData.hourly.map(h => h.activities);
+    charts.hourly = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Минут', data: minutes, backgroundColor: '#7c4ecf', borderRadius: 6, yAxisID: 'y' },
+          { label: 'Активностей', data: activities, type: 'line', borderColor: '#10b981',
+            backgroundColor: '#10b981', tension: .3, pointRadius: 3, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Минут' }, position: 'left' },
+          y1: { beginAtZero: true, title: { display: true, text: 'Активностей' }, position: 'right',
+            grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+  }
+
+  function renderPie(lineCode) {
+    const canvas = document.getElementById('chart' + (lineCode === 'line1' ? 'Line1' : 'Line2'));
+    if (!canvas || !lastData || !window.Chart) return;
+    if (charts[lineCode]) charts[lineCode].destroy();
+    const data = lineCode === 'line1' ? lastData.byActivityLine1 : lastData.byActivityLine2;
+    if (!data || data.length === 0) {
+      charts[lineCode] = new Chart(canvas, {
+        type: 'doughnut',
+        data: { labels: ['Нет данных'], datasets: [{ data: [1], backgroundColor: ['#e4d9f5'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+      return;
+    }
+    charts[lineCode] = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: data.map(d => d.name),
+        datasets: [{ data: data.map(d => d.minutes), backgroundColor: PALETTE.slice(0, data.length) }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed} мин` } } }
+      }
+    });
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector('#dbOperatorTable tbody');
+    if (!tbody || !lastData) return;
+    const rows = [...(lastData.byOperator || [])];
+    rows.sort((a, b) => {
+      const va = a[sortKey], vb = b[sortKey];
+      if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      return sortAsc ? va - vb : vb - va;
+    });
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="db-empty">Нет данных за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.operator)}</td>
+        <td>${escapeHtml(r.line)}</td>
+        <td class="num">${r.activities}</td>
+        <td class="num">${r.minutes}</td>
+        <td class="num">${r.shifts}</td>
+        <td class="num">${r.avgShiftMin} мин</td>
+      </tr>`).join('');
+  }
+
+  function init() {
+    if (!Auth.isSupervisor()) { showToast('Дашборд доступен только супервайзерам'); return; }
+    if (initialized) { reload(); return; }
+    initialized = true;
+    setTimeout(reload, 100);
+  }
+
+  function buildExportRows() {
+    const rows = [];
+    if (!lastData) return rows;
+    rows.push(['Период', lastData.period]);
+    rows.push(['Линия', lastData.line]);
+    rows.push([]);
+    rows.push(['=== СВОДКА ===']);
+    const s = lastData.summary || {};
+    rows.push(['Активных операторов', s.activeOperators || 0]);
+    rows.push(['Всего активностей', s.totalActivities || 0]);
+    rows.push(['Нагрузка, мин', s.totalMinutes || 0]);
+    rows.push(['Смен', s.shifts || 0]);
+    rows.push(['Средняя смена, мин', s.avgShiftMin || 0]);
+    rows.push([]);
+    rows.push(['=== АКТИВНОСТЬ ПО ЧАСАМ ===']);
+    rows.push(['Час', 'Минут', 'Активностей']);
+    (lastData.hourly || []).forEach(h => rows.push([h.hour + ':00', h.minutes, h.activities]));
+    rows.push([]);
+    rows.push(['=== ПЕРВАЯ ЛИНИЯ ===']);
+    rows.push(['Активность', 'Минут']);
+    (lastData.byActivityLine1 || []).forEach(d => rows.push([d.name, d.minutes]));
+    rows.push([]);
+    rows.push(['=== ВТОРАЯ ЛИНИЯ ===']);
+    rows.push(['Активность', 'Минут']);
+    (lastData.byActivityLine2 || []).forEach(d => rows.push([d.name, d.minutes]));
+    rows.push([]);
+    rows.push(['=== ПРЕТЕНЗИИ ===']);
+    rows.push(['Активность', 'Минут']);
+    (lastData.byActivityLine3 || []).forEach(d => rows.push([d.name, d.minutes]));
+    rows.push([]);
+    rows.push(['=== ПО ОПЕРАТОРАМ ===']);
+    rows.push(['Оператор', 'Линия', 'Активностей', 'Минут', 'Смен', 'Ср. смена, мин']);
+    (lastData.byOperator || []).forEach(r => rows.push([
+      r.operator, r.line, r.activities, r.minutes, r.shifts, r.avgShiftMin
+    ]));
+    return rows;
+  }
+
+  function exportCSV() {
+    const rows = buildExportRows();
+    if (!rows.length) { showToast('Нет данных'); return; }
+    const csv = '\uFEFF' + rows.map(r =>
+      r.map(cell => `"${String(cell === undefined || cell === null ? '' : cell).replace(/"/g, '""')}"`).join(';')
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Дашборд_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  return { init, reload, setPeriod, setLine, sortBy, exportCSV };
+})();
+
+/* ══════════════════════════════════════════════
+   ПРОБРОС В WINDOW
+   ══════════════════════════════════════════════ */
+window.switchMainTab         = Bookmarks.switchTab;
+window.openBookmarkModal     = Bookmarks.openModal;
+window.closeBookmarkModal    = Bookmarks.closeModal;
+window.confirmDeleteBookmark = Bookmarks.confirmDelete;
+window.switchReminderView    = Reminders.switchView;
+window.setReminderFilter     = Reminders.setFilter;
+window.addOrder              = Reminders.addOrder;
+window.takeReminder          = Reminders.takeOrder;
+window.undoTakeReminder      = Reminders.undoTake;
+window.archiveReminder       = Reminders.archiveOrder;
+window.restoreReminder       = Reminders.restoreFromArchive;
+window.deleteReminder        = Reminders.deleteOrder;
+window.openReminderModal     = Reminders.openModal;
+window.closeReminderModal    = Reminders.closeModal;
+window.exportArchive         = Reminders.exportArchive;
+window.clearArchive          = Reminders.clearArchive;
+window.scheduleRenderReminders = Reminders.scheduleRender;
+window.openStickerModal      = Stickers.openModal;
+window.closeStickerModal     = Stickers.closeModal;
+window.voiceSticker          = Stickers.voiceSticker;
+window.toggleMute            = AudioEngine.toggleMute;
+window.testCurrentSound      = AudioEngine.testCurrentSound;
+window.openConfirm           = Confirm.open;
+window.closeConfirm          = Confirm.close;
+window.Auth = Auth;
+window.API = API;
+window.Tracker = Tracker;
+window.Reminders = Reminders;
+window.Stickers = Stickers;
+window.Dashboard = Dashboard;
+window.Bookmarks = Bookmarks;
+
+/* ══════════════════════════════════════════════
+   ИНИЦИАЛИЗАЦИЯ
+   ══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', async () => {
+  Motivation.render();
+  Confirm.init();
+  Auth.init();
+
+  Bookmarks.load();
+  Bookmarks.render();
+  Stickers.init();
+  Tracker.init();
+
+  if (Auth.isLoggedIn()) {
+    const op = await Auth.restore();
+    if (op) {
+      Auth.renderUserBar();
+      Auth.renderDashboardTab();
+      Auth.renderReminderAuthorNote();
+      Motivation.render();
+      Tracker.applyOperator(op);
+      await Reminders.load();
+      Reminders.scheduleRender();
+      Reminders.startSyncTimer();
+    } else {
+      Auth.showLogin();
+    }
+  } else {
+    Auth.showLogin();
+  }
+
+  document.getElementById('bookmarkForm').addEventListener('submit', (e) => Bookmarks.submitForm(e));
+  document.getElementById('bookmarkModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) Bookmarks.closeModal();
+  });
+  document.getElementById('reminderModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) Reminders.closeModal();
+  });
+  document.getElementById('reminderForm').addEventListener('submit', (e) => Reminders.submitEdit(e));
+
+  const noteEl = document.getElementById('note');
+  if (noteEl) noteEl.addEventListener('input', Reminders.updateNoteCounter);
+  const editNoteEl = document.getElementById('editNote');
+  if (editNoteEl) editNoteEl.addEventListener('input', Reminders.updateEditNoteCounter);
+
+  ['orderNum','hours','minutes','note'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') Reminders.addOrder(); });
+  });
+
+  document.addEventListener('click', AudioEngine.unlock, { once: true });
+
+  // Тик напоминаний — раз в 5 сек для проверки просрочки (звук играет не чаще 30 сек)
+  setInterval(() => Reminders.tick(), 5000);
+  // Перерисовка таймеров — раз в 60 сек
+  setInterval(() => Reminders.scheduleRender(), 60000);
+});
+</script>
+</body>
+</html>
