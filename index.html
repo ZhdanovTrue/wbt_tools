@@ -1915,7 +1915,7 @@ const ACTIVITY_SETS = {
   line2: [
     { id: 'call',    title: 'Звонки',                 sub: 'все входящие и исходящие',      hint: '', color: '#7c4ecf', weightMin: 2 },
     { id: 'chat',    title: 'Чаты с клиентами',       sub: 'исходящие в чате',              hint: '', color: '#8b64d6', weightMin: 2 },
-    { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 1 },
+    { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 2 },
     { id: 'mailkc',  title: 'Почта Веб КЦ',           sub: 'входящие и исходящие',          hint: '', color: '#6d3fd6', weightMin: 1 },
     { id: 'sched',   title: 'Изменение в расписании', sub: 'информирование клиента',        hint: '', color: '#bda5e5', weightMin: 3 },
     { id: 'problem', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 2 },
@@ -1923,22 +1923,22 @@ const ACTIVITY_SETS = {
     { id: 'mailhot', title: 'Почта отели',            sub: 'письма провайдерам',            hint: '', color: '#a488e3', weightMin: 1 }
   ],
   line3: [
-    { id: 'claim_in', title: 'Приём претензий',       sub: 'регистрация входящих',  hint: 'новые',    color: '#a488e3', weightMin: 2 },
-    { id: 'claim_de', title: 'Решения по претензиям', sub: 'вынесение решения',     hint: 'закрытия', color: '#7c4ecf', weightMin: 3 },
-    { id: 'report',   title: 'Отчётность',            sub: 'отчёты и выгрузки',     hint: '',         color: '#8b64d6', weightMin: 2 },
+    { id: 'claim_in', title: 'Приём претензий',       sub: 'регистрация входящих',  hint: 'новые',    color: '#a488e3', weightMin: 10 },
+    { id: 'claim_de', title: 'Решения по претензиям', sub: 'вынесение решения',     hint: 'закрытия', color: '#7c4ecf', weightMin: 5 },
+    { id: 'report',   title: 'Отчётность',            sub: 'отчёты и выгрузки',     hint: '',         color: '#8b64d6', weightMin: 5 },
     { id: 'contact',  title: 'Связь с клиентом',      sub: 'уведомления и звонки',  hint: '',         color: '#6d3fd6', weightMin: 2 }
   ],
   sv: [
-    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 3 },
-    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 2 },
-    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 3 },
-    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 2 }
+    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 15 },
+    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 10 },
+    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 15 },
+    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 5 }
   ],
   tours: [
-    { id: 'book', title: 'Брони',     sub: 'оформление', hint: 'новые брони',     color: '#6d3fd6', weightMin: 1 },
-    { id: 'mod',  title: 'Изменения', sub: 'правки',     hint: 'переносы/отмены', color: '#8b64d6', weightMin: 1 },
-    { id: 'visa', title: 'Документы', sub: 'визы',       hint: 'проверки',        color: '#a488e3', weightMin: 1 },
-    { id: 'sup',  title: 'Поддержка', sub: 'туры',       hint: 'ответы по турам', color: '#7c4ecf', weightMin: 1 }
+    { id: 'book', title: 'Чаты с клиентами',     sub: 'запросы', hint: '',     color: '#6d3fd6', weightMin: 3 },
+    { id: 'mod',  title: 'Изменения', sub: 'правки',     hint: '', color: '#8b64d6', weightMin: 5 },
+    { id: 'visa', title: 'Документы', sub: 'отправка',       hint: '',        color: '#a488e3', weightMin: 1 },
+    { id: 'sup',  title: 'Звонки', sub: 'информирование',       hint: '', color: '#7c4ecf', weightMin: 2 }
   ]
 };
 
