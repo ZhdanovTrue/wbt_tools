@@ -1562,16 +1562,29 @@ const Confirm = (() => {
 })();
 
 const API = (() => {
+  function clean(v) {
+    if (typeof v !== 'string') return v;
+    var s = v.trim();
+    while (s.startsWith('"') && s.endsWith('"') && s.length >= 2) {
+      s = s.slice(1, -1);
+    }
+    return s;
+  }
+
   async function get(action, params = {}) {
-    const qs = new URLSearchParams({ action, ...params });
+    var cleaned = {};
+    Object.keys(params).forEach(function(k) { cleaned[k] = clean(params[k]); });
+    const qs = new URLSearchParams({ action: action, ...cleaned });
     const res = await fetch(SHEETS_URL + '?' + qs.toString());
     return await res.json();
   }
   async function post(action, payload = {}) {
+    var cleaned = {};
+    Object.keys(payload).forEach(function(k) { cleaned[k] = clean(payload[k]); });
     const res = await fetch(SHEETS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action, ...payload })
+      body: JSON.stringify({ action: action, ...cleaned })
     });
     return await res.json();
   }
