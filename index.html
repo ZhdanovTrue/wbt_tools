@@ -29,7 +29,6 @@
   .header-top .user-bar{flex-shrink:0;}
   .header-top .actions{margin-left:auto;flex-shrink:0;display:flex;gap:10px;}
 
-  /* Строка мотивации со скроллом по горизонтали */
   .header-bottom{
     display:flex;
     overflow-x:auto;
@@ -174,29 +173,23 @@
   @keyframes bannerPulse{from{background:#e11d48;box-shadow:0 0 0 0 rgba(225,29,72,.7);}
     to{background:#be123c;box-shadow:0 0 0 14px rgba(225,29,72,0);}}
 
-  /* ══════════ ДВУХКОЛОНОЧНЫЙ LAYOUT ЗАМЕТОК ══════════ */
+  /* ══════════ ДВУХКОЛОНОЧНЫЙ LAYOUT ══════════ */
   .notes-layout{display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;}
   @media(max-width:1100px){.notes-layout{grid-template-columns:1fr;}}
   .notes-left{min-width:0;}
-  .notes-right{
-    position:sticky;top:20px;
-    min-width:0;
-  }
+  .notes-right{position:sticky;top:20px;min-width:0;}
 
   /* ══════════ НАПОМИНАНИЯ ══════════ */
   .reminder-section{display:flex;flex-direction:column;gap:14px;}
   .reminder-title{
     display:flex;justify-content:center;align-items:center;gap:10px;
-    font-size:18px;font-weight:800;color:var(--lav-700);
-    padding:6px 0;
-  }
+    font-size:18px;font-weight:800;color:var(--lav-700);padding:6px 0;}
   .reminder-title i{color:var(--lav-600);}
   .section-counter{
     background:var(--lav-100);color:var(--lav-700);
     font-size:12px;font-weight:800;
     padding:2px 10px;border-radius:12px;
-    min-width:24px;text-align:center;
-  }
+    min-width:24px;text-align:center;}
   .reminder-card{background:#fff;padding:16px;border-radius:14px;
     box-shadow:0 2px 10px rgba(109,63,214,.1);border:1px solid var(--line);}
   .grid-form{display:grid;grid-template-columns:1.2fr .9fr 1.6fr 1.2fr 1fr 1.8fr;gap:10px;}
@@ -206,24 +199,20 @@
     .grid-form .col-wait,.grid-form .col-sound,.grid-form .col-repeat,
     .grid-form .col-time{grid-column:1/-1;}}
 
-  /* Время чч/мм */
   .time-row-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .time-field{position:relative;}
   .time-field input{width:100%;padding:10px 34px 10px 10px;text-align:left;}
   .time-field .time-label{
     position:absolute;right:12px;top:50%;transform:translateY(-50%);
-    color:var(--text-soft);font-size:12px;font-weight:700;pointer-events:none;
-  }
+    color:var(--text-soft);font-size:12px;font-weight:700;pointer-events:none;}
 
-  /* Звук + кнопка проверки */
   .sound-row{display:flex;gap:6px;align-items:stretch;}
   .sound-row select{flex:1;}
   .sound-row .btn-sound-test{
     padding:0 12px;border:none;border-radius:8px;cursor:pointer;
     background:#fef3c7;color:#92400e;font-size:14px;
     display:flex;align-items:center;justify-content:center;
-    flex-shrink:0;transition:.15s;
-  }
+    flex-shrink:0;transition:.15s;}
   .sound-row .btn-sound-test:hover{background:#fde68a;}
 
   .grid-form label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--text-soft);}
@@ -232,14 +221,12 @@
   .grid-form input:focus,.grid-form select:focus{outline:2px solid var(--lav-500);
     border-color:transparent;background:#fff;}
 
-  /* Комментарий + компактная кнопка */
   .note-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-top:10px;}
   .note-field{min-width:0;}
   .note-field label{display:block;font-weight:700;font-size:13px;margin-bottom:5px;color:var(--text-soft);}
   .note-field input{
     width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;
-    font-size:15px;background:var(--lav-50);color:var(--text);outline:none;
-  }
+    font-size:15px;background:var(--lav-50);color:var(--text);outline:none;}
   .note-field input:focus{border-color:var(--lav-500);background:#fff;
     box-shadow:0 0 0 3px rgba(139,100,214,.15);}
   .primary-compact{
@@ -248,8 +235,7 @@
     cursor:pointer;font-size:14px;font-weight:800;
     box-shadow:0 4px 12px rgba(109,63,214,.35);
     display:flex;align-items:center;gap:6px;white-space:nowrap;
-    height:42px;transition:.15s;
-  }
+    height:42px;transition:.15s;}
   .primary-compact:hover{background:var(--lav-700);transform:translateY(-1px);}
 
   .reminder-author-note{background:var(--lav-50);border:1px dashed var(--lav-300);
@@ -286,72 +272,35 @@
     border-radius:10px;font-size:14px;background:var(--lav-50);color:var(--text);}
   .search-row input:focus{outline:2px solid var(--lav-500);border-color:transparent;background:#fff;}
 
-   /* ══════════ КОМПАКТНЫЕ КАРТОЧКИ НАПОМИНАНИЙ ══════════ */
+  /* ══════════ КОМПАКТНЫЕ КАРТОЧКИ НАПОМИНАНИЙ ══════════ */
   .order-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:6px 12px;
-    border-radius:10px;
-    background:var(--lav-50);
-    margin-bottom:5px;
-    border-left:5px solid var(--lav-500);
-    transition:.2s;
-    border-top:1px solid var(--line);
-    border-right:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-    min-height:52px;
-  }
+    display:flex;align-items:center;gap:10px;padding:6px 12px;
+    border-radius:10px;background:var(--lav-50);margin-bottom:5px;
+    border-left:5px solid var(--lav-500);transition:.2s;
+    border-top:1px solid var(--line);border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);min-height:52px;}
   .order-item.warning{border-left-color:var(--amber);background:#fffbeb;}
-  .order-item.overdue{border-left-color:var(--red);background:#ffe4e6;
-    animation:blink 1s infinite;}
+  .order-item.overdue{border-left-color:var(--red);background:#ffe4e6;animation:blink 1s infinite;}
   @keyframes blink{0%,100%{background:#ffe4e6;box-shadow:0 0 0 0 rgba(225,29,72,.5);}
     50%{background:#fecdd3;box-shadow:0 0 0 6px rgba(225,29,72,0);}}
   .order-item.taken{border-left-color:var(--green);background:#dcfce7;animation:none;}
   .order-item.archived{border-left-color:#b8a3f5;background:var(--lav-100);opacity:.92;}
 
-  /* Основной контент — одна строка с переносом */
-  .order-main{
-    flex:1;
-    min-width:0;
-    display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    gap:5px 8px;
-    font-size:12.5px;
-    line-height:1.3;
-  }
+  .order-main{flex:1;min-width:0;display:flex;flex-wrap:wrap;
+    align-items:center;gap:5px 8px;font-size:12.5px;line-height:1.3;}
   .order-num{font-weight:800;font-size:13px;color:var(--text);}
   .order-sep{color:var(--lav-400);font-weight:800;}
   .order-meta{color:var(--text-soft);font-size:12.5px;}
   .order-note-inline{
-    color:var(--text-soft);
-    font-size:12px;
-    display:inline-flex;
-    align-items:center;
-    gap:4px;
-    font-style:italic;
-    max-width:400px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
+    color:var(--text-soft);font-size:12px;display:inline-flex;
+    align-items:center;gap:4px;font-style:italic;
+    max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .order-note-inline i{color:var(--lav-500);flex-shrink:0;font-size:11px;}
 
-  /* Кнопки справа */
-  .order-actions{
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-    flex-shrink:0;
-    align-self:center;
-  }
-  .order-actions .btn-sm{
-    padding:4px 9px;
-    font-size:11px;
-  }
+  .order-actions{display:flex;flex-direction:column;gap:3px;
+    flex-shrink:0;align-self:center;}
+  .order-actions .btn-sm{padding:4px 9px;font-size:11px;}
 
-  /* Бейджи в одну строку */
   .cat-badge,.wait-badge,.sound-badge,.repeat-badge,.author-badge{
     padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:800;
     text-transform:uppercase;letter-spacing:.2px;white-space:nowrap;line-height:1.4;}
@@ -374,16 +323,8 @@
   .overdue .timer{color:var(--red);}
   .warning .timer{color:var(--amber);}
   .created-badge{
-    background:#f1f5f9;
-    color:#475569;
-    padding:2px 8px;
-    border-radius:10px;
-    font-size:10.5px;
-    font-weight:700;
-    white-space:nowrap;
-    line-height:1.4;
-    text-transform:none;
-  }
+    background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:10px;
+    font-size:10.5px;font-weight:700;white-space:nowrap;line-height:1.4;text-transform:none;}
 
   .btn-sm{border:none;padding:6px 10px;border-radius:6px;cursor:pointer;
     font-size:11.5px;font-weight:800;white-space:nowrap;transition:.15s;}
@@ -420,9 +361,7 @@
   .stickers-toolbar{display:flex;flex-direction:column;gap:10px;}
   .stickers-title{
     display:flex;justify-content:center;align-items:center;gap:10px;
-    font-size:18px;font-weight:800;color:var(--text);
-    padding:6px 0;
-  }
+    font-size:18px;font-weight:800;color:var(--text);padding:6px 0;}
   .stickers-title i{color:var(--lav-600);}
   .stickers-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
   .btn-sticker-voice{background:var(--lav-600);color:#fff;border:none;padding:8px 14px;
@@ -433,7 +372,6 @@
   @keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.55);}
     70%{box-shadow:0 0 0 12px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
 
-  /* Одна колонка стикеров в правой панели */
   .stickers-grid{display:grid;grid-template-columns:1fr;
     gap:14px;max-height:calc(100vh - 260px);overflow-y:auto;padding:4px;}
 
@@ -463,28 +401,14 @@
   .sticker-time{font-size:11px;color:var(--text-soft);}
   .sticker-wordcount{font-size:11px;color:var(--text-soft);font-style:italic;}
 
-  /* Легенда цветов с CSS-кружками */
   .sticker-legend{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    font-size:11.5px;
-    color:var(--text-soft);
-    font-style:italic;
-    padding:8px 10px;
-    background:var(--lav-50);
-    border-radius:10px;
-  }
-  .sticker-legend .legend-row{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
+    display:flex;flex-direction:column;gap:6px;
+    font-size:11.5px;color:var(--text-soft);font-style:italic;
+    padding:8px 10px;background:var(--lav-50);border-radius:10px;}
+  .sticker-legend .legend-row{display:flex;align-items:center;gap:8px;}
   .sticker-legend .legend-dot{
     width:14px;height:14px;border-radius:50%;
-    border:2px solid rgba(0,0,0,.15);
-    flex-shrink:0;
-  }
+    border:2px solid rgba(0,0,0,.15);flex-shrink:0;}
   .sticker-legend .legend-dot.yellow{background:#fde047;}
   .sticker-legend .legend-dot.pink{background:#ec4899;}
   .sticker-legend .legend-dot.green{background:#22c55e;}
@@ -520,6 +444,28 @@
   .tracker-shiftbtns .btn-shift.end{background:var(--red);color:#fff;}
   .tracker-shiftbtns .btn-shift:disabled{opacity:.45;cursor:not-allowed;}
 
+  /* Прогресс-бар пауз */
+  .pause-progress-wrap{
+    margin-top:12px;padding:10px 14px;
+    background:rgba(255,255,255,.15);
+    border-radius:10px;border:1px solid rgba(255,255,255,.25);}
+  .pause-progress-header{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:6px;font-size:.85rem;font-weight:700;}
+  .pause-progress-value b{font-size:1rem;}
+  .pause-progress-bar{
+    height:8px;background:rgba(255,255,255,.25);
+    border-radius:10px;overflow:hidden;}
+  .pause-progress-fill{
+    height:100%;background:#10b981;
+    border-radius:10px;transition:width .3s, background .3s;}
+  .pause-progress-fill.warn{background:#f59e0b;}
+  .pause-progress-fill.danger{background:#ef4444;}
+  .pause-progress-details{
+    display:flex;gap:8px;flex-wrap:wrap;
+    margin-top:6px;font-size:.78rem;opacity:.9;}
+  .pause-progress-details b{font-size:.85rem;}
+
   .tracker-motivation{
     background:linear-gradient(135deg,var(--lav-100),var(--lav-50));
     color:var(--lav-800);text-align:center;padding:14px 20px;font-weight:800;font-size:1.05rem;
@@ -538,19 +484,10 @@
     cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;margin-left:8px;}
   .tracker-motivation .tm-pause-stop:hover{background:rgba(255,255,255,.95);transform:scale(1.05);}
 
-  /* Перерывы/обед — по центру */
   .tracker-breakbar{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    align-items:center;
-    gap:24px;
-    background:var(--lav-50);
-    border:1px solid var(--lav-200);
-    border-radius:16px;
-    padding:14px 18px;
-    margin:18px;
-  }
+    display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:24px;
+    background:var(--lav-50);border:1px solid var(--lav-200);border-radius:16px;
+    padding:14px 18px;margin:18px;}
   .tracker-break-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .tracker-break-group input{width:80px;border:1px solid var(--line);border-radius:40px;
     padding:9px 12px;font-weight:700;text-align:center;font-family:inherit;color:var(--text);}
@@ -585,16 +522,54 @@
   .activity-card .btn-plus,.activity-card .btn-minus{
     width:56px;height:56px;border-radius:50%;border:none;
     cursor:pointer;font-size:1.8rem;font-weight:700;
-    display:flex;align-items:center;justify-content:center;font-family:inherit;
-    transition:.15s;}
+    display:flex;align-items:center;justify-content:center;font-family:inherit;transition:.15s;}
   .activity-card .btn-plus{color:#fff;}
   .activity-card .btn-plus:hover{transform:scale(1.08);}
-  .activity-card .btn-minus{
-    color:var(--lav-700);
-    font-size:2rem;}
+  .activity-card .btn-minus{color:var(--lav-700);font-size:2rem;}
   .activity-card .btn-minus:hover{transform:scale(1.08);}
   .activity-card .btn-plus:disabled,.activity-card .btn-minus:disabled{opacity:.35;cursor:not-allowed;transform:none;}
   .activity-card .last{margin-left:10px;font-size:.75rem;color:var(--text-soft);margin-top:6px;}
+
+  /* Блок «Смена» */
+  .shift-status-wrap{margin:0 18px 20px;}
+  .shift-kpi{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  @media(max-width:600px){.shift-kpi{grid-template-columns:repeat(2,1fr);}}
+  .shift-kpi-card{
+    background:var(--lav-50);border:1px solid var(--lav-200);border-radius:12px;
+    padding:10px 12px;text-align:center;}
+  .shift-kpi-label{
+    font-size:.72rem;font-weight:800;color:var(--text-soft);
+    text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;}
+  .shift-kpi-value{
+    font-size:1.6rem;font-weight:800;color:var(--lav-700);
+    font-variant-numeric:tabular-nums;line-height:1.1;}
+  .shift-operators{
+    background:var(--lav-50);border:1px solid var(--line);border-radius:12px;
+    overflow:hidden;max-height:400px;overflow-y:auto;}
+  .shift-op-row{
+    display:grid;grid-template-columns:1fr auto auto auto auto;gap:12px;
+    padding:10px 14px;border-bottom:1px solid var(--lav-100);
+    align-items:center;font-size:.85rem;}
+  .shift-op-row:last-child{border-bottom:none;}
+  .shift-op-row:hover{background:var(--lav-100);}
+  .shift-op-name{font-weight:700;color:var(--text);}
+  .shift-op-status{
+    padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:800;
+    text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+  .shift-op-status.online{background:#dcfce7;color:#166534;}
+  .shift-op-status.lunch{background:#fed7aa;color:#9a3412;}
+  .shift-op-status.break{background:#fef3c7;color:#92400e;}
+  .shift-op-status.offline{background:#e5e7eb;color:#4b5563;}
+  .shift-op-time{font-size:.78rem;color:var(--text-soft);
+    font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .shift-op-remaining{font-size:.78rem;font-weight:700;
+    color:var(--green);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .shift-op-remaining.overdue{color:var(--red);}
+  .shift-op-used{font-size:.72rem;color:var(--text-soft);
+    font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .shift-empty{padding:20px;text-align:center;
+    color:var(--text-soft);font-style:italic;font-size:.85rem;}
 
   .tracker-log-title{font-weight:700;color:var(--text);margin:0 18px 10px;}
   .log-list{max-height:220px;overflow-y:auto;background:var(--lav-50);border:1px solid var(--line);
@@ -670,13 +645,6 @@
     max-width:340px;}
   @keyframes slideInRight{from{transform:translateX(100%);opacity:0;}
     to{transform:translateX(0);opacity:1;}}
-
-  .section-divider{margin:26px 0 20px;display:flex;align-items:center;gap:14px;}
-  .section-divider::before,.section-divider::after{content:'';flex:1;height:2px;
-    background:linear-gradient(90deg,transparent,var(--lav-300),transparent);}
-  .section-divider span{font-weight:800;color:var(--lav-700);font-size:13px;
-    letter-spacing:2px;text-transform:uppercase;padding:6px 16px;background:var(--lav-100);
-    border-radius:20px;border:1px solid var(--lav-200);}
 
   @media(max-width:820px){
     .header-top{flex-direction:column;align-items:flex-start;gap:10px;}
@@ -764,11 +732,9 @@
     <div class="cards-grid" id="cardsGrid"></div>
   </div>
 
-  <!-- ЗАМЕТКИ — ДВЕ КОЛОНКИ -->
+  <!-- ЗАМЕТКИ -->
   <div id="tabContentNotes" style="display:none;">
     <div class="notes-layout">
-
-      <!-- ЛЕВАЯ КОЛОНКА: НАПОМИНАНИЯ -->
       <div class="notes-left">
         <div class="reminder-section">
           <div class="reminder-title">
@@ -879,7 +845,6 @@
         </div>
       </div>
 
-      <!-- ПРАВАЯ КОЛОНКА: СТИКЕРЫ -->
       <div class="notes-right">
         <div class="stickers-wrap">
           <div class="stickers-toolbar">
@@ -913,7 +878,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -943,6 +907,25 @@
           <div class="tracker-shiftbtns">
             <button class="btn-shift" id="startBtn">▶ Старт смены</button>
             <button class="btn-shift end" id="endBtn" disabled>■ Завершить</button>
+          </div>
+        </div>
+
+        <div class="pause-progress-wrap" id="pauseProgressWrap" style="display:none;">
+          <div class="pause-progress-header">
+            <span class="pause-progress-label">⏸️ Паузы (обед + перерывы)</span>
+            <span class="pause-progress-value">
+              <b id="pauseUsedValue">0</b> / <b id="pauseLimitValue">90</b> мин
+            </span>
+          </div>
+          <div class="pause-progress-bar">
+            <div class="pause-progress-fill" id="pauseProgressFill" style="width:0%"></div>
+          </div>
+          <div class="pause-progress-details">
+            <span>Обедов: <b id="pauseLunchCount">0</b></span>
+            <span>·</span>
+            <span>Перерывов: <b id="pauseBreakCount">0</b></span>
+            <span>·</span>
+            <span>Осталось: <b id="pauseRemaining">90</b> мин</span>
           </div>
         </div>
       </div>
@@ -982,6 +965,34 @@
         <span class="tracker-linechip" id="lineChip">—</span>
       </div>
       <div class="activity-grid" id="activityGrid"></div>
+
+      <div class="shift-status-wrap">
+        <div class="tracker-act-title" style="margin-top:20px;">
+          👥 Смена
+          <span class="tracker-linechip" id="shiftLineChip">—</span>
+        </div>
+        <div class="shift-kpi" id="shiftKpi">
+          <div class="shift-kpi-card">
+            <div class="shift-kpi-label">🟢 На линии</div>
+            <div class="shift-kpi-value" id="kpiOnline">0</div>
+          </div>
+          <div class="shift-kpi-card">
+            <div class="shift-kpi-label">🍽️ Обед</div>
+            <div class="shift-kpi-value" id="kpiLunch">0</div>
+          </div>
+          <div class="shift-kpi-card">
+            <div class="shift-kpi-label">☕ Перерыв</div>
+            <div class="shift-kpi-value" id="kpiBreak">0</div>
+          </div>
+          <div class="shift-kpi-card">
+            <div class="shift-kpi-label">🔴 Ушли</div>
+            <div class="shift-kpi-value" id="kpiOffline">0</div>
+          </div>
+        </div>
+        <div class="shift-operators" id="shiftOperators">
+          <div class="shift-empty">Загрузка...</div>
+        </div>
+      </div>
 
       <div class="tracker-log-title">🧾 Журнал событий</div>
       <div class="log-list" id="logList">
@@ -1292,7 +1303,7 @@ const Storage = (() => {
 })();
 
 /* ══════════════════════════════════════════════
-   МОТИВАЦИЯ ПО ЛИНИЯМ
+   МОТИВАЦИЯ
    ══════════════════════════════════════════════ */
 const Motivation = (() => {
   const SHARED_PHRASES = [
@@ -1634,6 +1645,10 @@ const Auth = (() => {
       if (typeof Tracker !== 'undefined' && Tracker.applyOperator) Tracker.applyOperator(op);
       if (typeof Reminders !== 'undefined' && Reminders.reload) await Reminders.reload();
       if (typeof Reminders !== 'undefined' && Reminders.startSyncTimer) Reminders.startSyncTimer();
+      if (typeof ShiftStatus !== 'undefined') {
+        ShiftStatus.init();
+        ShiftStatus.start();
+      }
       showToast(`Добро пожаловать, ${op.name}!`);
     } catch (e) {
       const map = {
@@ -1700,7 +1715,7 @@ const Auth = (() => {
     document.getElementById('loginCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
     document.getElementById('loginEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('loginCode').focus(); });
   }
-    return { init, login, restore, logout, getToken, getOperator, isLoggedIn, isSupervisor,
+  return { init, login, restore, logout, getToken, getOperator, isLoggedIn, isSupervisor,
            showLogin, hideLogin, renderUserBar, renderDashboardTab, renderReminderAuthorNote };
 })();
 
@@ -1725,7 +1740,7 @@ const Bookmarks = (() => {
   const TAB_TO_CATEGORY = { tools: 'Инструменты', important: 'Важное' };
   const STORAGE_KEY = 'wb_travel_bookmarks';
   const VERSION_KEY = 'wb_bookmarks_version';
-  const BM_VERSION = 2;
+  const BM_VERSION = 3;
   let bookmarks = [];
   let currentTab = 'all';
 
@@ -1766,6 +1781,7 @@ const Bookmarks = (() => {
       if (typeof Reminders !== 'undefined' && Reminders.render) Reminders.render();
     } else if (isTracker) {
       if (typeof Tracker !== 'undefined' && Tracker.refresh) Tracker.refresh();
+      if (typeof ShiftStatus !== 'undefined' && ShiftStatus.refresh) ShiftStatus.refresh();
     } else if (isDashboard) {
       if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
     } else {
@@ -1915,7 +1931,7 @@ const ACTIVITY_SETS = {
   line2: [
     { id: 'call',    title: 'Звонки',                 sub: 'все входящие и исходящие',      hint: '', color: '#7c4ecf', weightMin: 2 },
     { id: 'chat',    title: 'Чаты с клиентами',       sub: 'исходящие в чате',              hint: '', color: '#8b64d6', weightMin: 2 },
-    { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 2 },
+    { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 1 },
     { id: 'mailkc',  title: 'Почта Веб КЦ',           sub: 'входящие и исходящие',          hint: '', color: '#6d3fd6', weightMin: 1 },
     { id: 'sched',   title: 'Изменение в расписании', sub: 'информирование клиента',        hint: '', color: '#bda5e5', weightMin: 3 },
     { id: 'problem', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 2 },
@@ -1923,22 +1939,22 @@ const ACTIVITY_SETS = {
     { id: 'mailhot', title: 'Почта отели',            sub: 'письма провайдерам',            hint: '', color: '#a488e3', weightMin: 1 }
   ],
   line3: [
-    { id: 'claim_in', title: 'Приём претензий',       sub: 'регистрация входящих',  hint: 'новые',    color: '#a488e3', weightMin: 10 },
-    { id: 'claim_de', title: 'Решения по претензиям', sub: 'вынесение решения',     hint: 'закрытия', color: '#7c4ecf', weightMin: 5 },
-    { id: 'report',   title: 'Отчётность',            sub: 'отчёты и выгрузки',     hint: '',         color: '#8b64d6', weightMin: 5 },
+    { id: 'claim_in', title: 'Приём претензий',       sub: 'регистрация входящих',  hint: 'новые',    color: '#a488e3', weightMin: 2 },
+    { id: 'claim_de', title: 'Решения по претензиям', sub: 'вынесение решения',     hint: 'закрытия', color: '#7c4ecf', weightMin: 3 },
+    { id: 'report',   title: 'Отчётность',            sub: 'отчёты и выгрузки',     hint: '',         color: '#8b64d6', weightMin: 2 },
     { id: 'contact',  title: 'Связь с клиентом',      sub: 'уведомления и звонки',  hint: '',         color: '#6d3fd6', weightMin: 2 }
   ],
   sv: [
-    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 15 },
-    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 10 },
-    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 15 },
-    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 5 }
+    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 3 },
+    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 2 },
+    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 3 },
+    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 2 }
   ],
   tours: [
-    { id: 'book', title: 'Чаты с клиентами',     sub: 'запросы', hint: '',     color: '#6d3fd6', weightMin: 3 },
-    { id: 'mod',  title: 'Изменения', sub: 'правки',     hint: '', color: '#8b64d6', weightMin: 5 },
-    { id: 'visa', title: 'Документы', sub: 'отправка',       hint: '',        color: '#a488e3', weightMin: 1 },
-    { id: 'sup',  title: 'Звонки', sub: 'информирование',       hint: '', color: '#7c4ecf', weightMin: 2 }
+    { id: 'book', title: 'Брони',     sub: 'оформление', hint: 'новые брони',     color: '#6d3fd6', weightMin: 1 },
+    { id: 'mod',  title: 'Изменения', sub: 'правки',     hint: 'переносы/отмены', color: '#8b64d6', weightMin: 1 },
+    { id: 'visa', title: 'Документы', sub: 'визы',       hint: 'проверки',        color: '#a488e3', weightMin: 1 },
+    { id: 'sup',  title: 'Поддержка', sub: 'туры',       hint: 'ответы по турам', color: '#7c4ecf', weightMin: 1 }
   ]
 };
 
@@ -2141,6 +2157,14 @@ const Tracker = (() => {
     });
     saveStateNow();
     log('shift', 'Смена начата · ' + op.name);
+
+    // Событие на сервер
+    if (typeof ShiftStatus !== 'undefined') {
+      ShiftStatus.sendEvent('shift_start').then(function() {
+        ShiftStatus.refresh();
+      });
+    }
+
     pendingRows.push({
       ts: now, sessionId: state.sessionId,
       operator: state.operatorName, operatorId: state.operatorId,
@@ -2181,6 +2205,14 @@ const Tracker = (() => {
     saveStateNow();
     const total = totalActivities();
     log('end', `Смена завершена · активностей ${total}`);
+
+    // Событие на сервер
+    if (typeof ShiftStatus !== 'undefined') {
+      ShiftStatus.sendEvent('shift_end').then(function() {
+        ShiftStatus.refresh();
+      });
+    }
+
     pendingRows.push({
       ts: now, sessionId: state.sessionId,
       operator: state.operatorName, operatorId: state.operatorId,
@@ -2276,6 +2308,21 @@ const Tracker = (() => {
   function startPause(type, durationMin) {
     if (!state.startedAt || state.endedAt) return;
     if (isOnPause()) { showToast('Сначала дождись окончания текущей паузы'); return; }
+
+    // Проверка лимита через ShiftStatus
+    if (typeof ShiftStatus !== 'undefined' && ShiftStatus.getMyLimit) {
+      const myLimit = ShiftStatus.getMyLimit();
+      if (myLimit && myLimit.remainingMin < durationMin) {
+        const remaining = myLimit.remainingMin;
+        if (remaining <= 0) {
+          showToast('Лимит пауз исчерпан (90 мин).');
+          return;
+        }
+        showToast('Осталось ' + remaining + ' мин, нужно ' + durationMin + '.');
+        return;
+      }
+    }
+
     const now = Date.now();
     const until = now + durationMin * 60000;
     state.pauseType = type;
@@ -2291,6 +2338,15 @@ const Tracker = (() => {
       log('lunch', `Обед ${durationMin} мин — до ${formatClock(until)}`);
     }
     saveState();
+
+    // Событие на сервер
+    if (typeof ShiftStatus !== 'undefined') {
+      const eventType = type === 'break' ? 'break_start' : 'lunch_start';
+      ShiftStatus.sendEvent(eventType).then(function() {
+        ShiftStatus.refresh();
+      });
+    }
+
     pendingRows.push({
       ts: now, sessionId: state.sessionId,
       operator: state.operatorName, operatorId: state.operatorId,
@@ -2331,6 +2387,15 @@ const Tracker = (() => {
     saveState();
     setControlsEnabled(true);
     renderActivities(); renderStats(); updatePauseUI();
+
+    // Событие на сервер
+    if (typeof ShiftStatus !== 'undefined') {
+      const eventType = type === 'break' ? 'break_end' : 'lunch_end';
+      ShiftStatus.sendEvent(eventType).then(function() {
+        ShiftStatus.refresh();
+      });
+    }
+
     if (early) {
       showToast(type === 'break' ? 'Перерыв завершён досрочно — в работу!' : 'Обед завершён досрочно — в работу!');
     } else {
@@ -2529,6 +2594,198 @@ const Tracker = (() => {
 window.Tracker = Tracker;
 
 /* ══════════════════════════════════════════════
+   МОДУЛЬ «СМЕНА» — статус операторов
+   ══════════════════════════════════════════════ */
+const ShiftStatus = (() => {
+  const POLL_INTERVAL = 30 * 1000;
+  let pollTimer = null;
+  let lastData = null;
+  let bound = false;
+
+  async function sendEvent(eventType, note) {
+    try {
+      const data = await API.post('shift-event', {
+        token: Auth.getToken(),
+        eventType: eventType,
+        note: note || ''
+      });
+      return data;
+    } catch (e) {
+      console.warn('Shift event fetch error:', e);
+      return { ok: false, error: String(e) };
+    }
+  }
+
+  async function fetchStatus() {
+    const me = Auth.getOperator();
+    if (!me) return null;
+    try {
+      const data = await API.get('shift-status', {
+        token: Auth.getToken(),
+        line: me.line === 'sv' ? 'all' : me.line
+      });
+      if (data.ok) {
+        lastData = data;
+        render();
+        updatePauseProgress();
+      }
+      return data;
+    } catch (e) {
+      console.warn('Shift status error:', e);
+      return null;
+    }
+  }
+
+  function render() {
+    if (!lastData) return;
+    const kpi = lastData.kpi || {};
+    const kpiOnlineEl = document.getElementById('kpiOnline');
+    const kpiLunchEl = document.getElementById('kpiLunch');
+    const kpiBreakEl = document.getElementById('kpiBreak');
+    const kpiOfflineEl = document.getElementById('kpiOffline');
+    if (kpiOnlineEl) kpiOnlineEl.textContent = kpi.online || 0;
+    if (kpiLunchEl) kpiLunchEl.textContent = kpi.onLunch || 0;
+    if (kpiBreakEl) kpiBreakEl.textContent = kpi.onBreak || 0;
+    if (kpiOfflineEl) kpiOfflineEl.textContent = kpi.offline || 0;
+
+    const wrap = document.getElementById('shiftOperators');
+    if (!wrap) return;
+
+    const me = Auth.getOperator();
+    const list = lastData.operators || [];
+    if (list.length === 0) {
+      wrap.innerHTML = '<div class="shift-empty">Пока никого нет на смене</div>';
+      return;
+    }
+
+    const statusLabels = {
+      online: '🟢 Работа',
+      lunch: '🍽️ Обед',
+      break: '☕ Перерыв',
+      offline: '🔴 Ушёл'
+    };
+
+    wrap.innerHTML = list.map(function(op) {
+      const isMe = me && op.operatorId === me.id;
+      const statusLabel = statusLabels[op.status] || op.status;
+
+      let sinceStr = '—';
+      if (op.sinceTs) sinceStr = formatClock(op.sinceTs);
+
+      let remainingStr = '—';
+      let remainingCls = '';
+      if (op.remainingMs > 0) {
+        remainingStr = formatLeftMin(op.remainingMs);
+      } else if (op.overdueMs > 0) {
+        remainingStr = '⚠ ' + formatLeftMin(op.overdueMs);
+        remainingCls = 'overdue';
+      }
+
+      const usedStr = op.usedMin + '/' + op.limitMin + ' мин';
+
+      return `
+        <div class="shift-op-row">
+          <div class="shift-op-name">${escapeHtml(op.operatorName)}${isMe ? ' (я)' : ''}</div>
+          <div class="shift-op-status ${op.status}">${statusLabel}</div>
+          <div class="shift-op-time">с ${sinceStr}</div>
+          <div class="shift-op-remaining ${remainingCls}">${remainingStr}</div>
+          <div class="shift-op-used">${usedStr}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function updatePauseProgress() {
+    const me = Auth.getOperator();
+    const wrap = document.getElementById('pauseProgressWrap');
+    if (!me || !wrap) return;
+
+    if (!lastData || !lastData.operators) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    const myRow = lastData.operators.find(function(o) {
+      return o.operatorId === me.id;
+    });
+
+    if (!myRow || !myRow.sinceTs) {
+      wrap.style.display = 'none';
+      return;
+    }
+
+    wrap.style.display = '';
+
+    const used = myRow.usedMin || 0;
+    const limit = myRow.limitMin || 90;
+    const remaining = myRow.remainingMin != null ? myRow.remainingMin : Math.max(0, limit - used);
+    const pct = Math.min(100, Math.round((used / limit) * 100));
+
+    document.getElementById('pauseUsedValue').textContent = used;
+    document.getElementById('pauseLimitValue').textContent = limit;
+    document.getElementById('pauseRemaining').textContent = remaining;
+    document.getElementById('pauseLunchCount').textContent = myRow.lunches || 0;
+    document.getElementById('pauseBreakCount').textContent = myRow.breaks || 0;
+
+    const fill = document.getElementById('pauseProgressFill');
+    fill.style.width = pct + '%';
+    fill.classList.remove('warn', 'danger');
+    if (pct >= 100) fill.classList.add('danger');
+    else if (pct >= 80) fill.classList.add('warn');
+
+    const breakTotalEl = document.getElementById('breakTotalMin');
+    const lunchCountEl = document.getElementById('lunchCount');
+    if (breakTotalEl) breakTotalEl.textContent = (myRow.breaks * 15) + ' мин';
+    if (lunchCountEl) lunchCountEl.textContent = (myRow.lunches || 0) + ' / 2';
+  }
+
+  function getMyLimit() {
+    const me = Auth.getOperator();
+    if (!me || !lastData || !lastData.operators) return null;
+    const row = lastData.operators.find(function(o) {
+      return o.operatorId === me.id;
+    });
+    if (!row) return null;
+    return {
+      usedMin: row.usedMin,
+      remainingMin: row.remainingMin,
+      limitMin: row.limitMin
+    };
+  }
+
+  function start() {
+    if (pollTimer) clearInterval(pollTimer);
+    fetchStatus();
+    pollTimer = setInterval(fetchStatus, POLL_INTERVAL);
+  }
+
+  function stop() {
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  async function refresh() {
+    return await fetchStatus();
+  }
+
+  function renderLineChip() {
+    const el = document.getElementById('shiftLineChip');
+    if (!el) return;
+    const me = Auth.getOperator();
+    if (!me) { el.textContent = '—'; return; }
+    const line = LINES[me.line];
+    el.textContent = line ? line.title : me.line;
+  }
+
+  function init() {
+    if (bound) return;
+    bound = true;
+    renderLineChip();
+  }
+
+  return { init, start, stop, refresh, sendEvent, fetchStatus, getMyLimit };
+})();
+window.ShiftStatus = ShiftStatus;
+
+/* ══════════════════════════════════════════════
    НАПОМИНАНИЯ
    ══════════════════════════════════════════════ */
 const CATS = {
@@ -2546,7 +2803,7 @@ const WAITING = {
   tours: { label: 'Туры',            cls: 'wait-tours', full: 'Решение от туров' }
 };
 const SOUNDS = {
-  birds: { label: 'Птицы',      short: 'Птицы', priority: 1 },
+  birds: { label: 'Птицы',  short: 'Птицы',  priority: 1 },
   alert: { label: 'Звонок', short: 'Звонок', priority: 0 }
 };
 const REPEATS = {
@@ -2560,7 +2817,7 @@ const REMINDER_ALARM_INTERVAL = 30000;
 
 const Reminders = (() => {
   const STORAGE_KEY = 'wb_reminders_v1';
-  const SYNC_INTERVAL = 60 * 1000;   // 60 сек — обновление списка
+  const SYNC_INTERVAL = 60 * 1000;
   let orders = [];
   let view = 'active';
   let activeFilter = 'all';
@@ -2578,9 +2835,7 @@ const Reminders = (() => {
   function visibleOrders() {
     const me = Auth.getOperator();
     if (!me) return [];
-    // СВ видит все линии
     if (me.line === 'sv') return orders;
-    // Остальные — только свою
     return orders.filter(o => o.line === me.line);
   }
 
@@ -2655,16 +2910,13 @@ const Reminders = (() => {
     o.archived = false; o.archivedAt = null; o._dirty = true;
     save(); scheduleSync(); scheduleRender();
   }
-   function deleteOrder(id) {
+  function deleteOrder(id) {
     const o = orders.find(x => x.id === id); if (!o) return;
     const me = Auth.getOperator();
     if (!me) return;
-    // Удалять может: автор, оператор той же линии, СВ
     const isSupervisor = me.line === 'sv';
     const canDelete = o.authorId === me.id || o.line === me.line || isSupervisor;
-    if (!canDelete) {
-      showToast('Нельзя удалить чужое напоминание другой линии'); return;
-    }
+    if (!canDelete) { showToast('Нельзя удалить чужое напоминание другой линии'); return; }
     Confirm.open('Удалить напоминание?', `WB ID: ${o.num}. Это действие необратимо.`, () => {
       orders = orders.filter(x => x.id !== id); save();
       API.post('reminders_delete', { token: Auth.getToken(), id }).catch(e => console.warn('Delete error:', e));
@@ -2777,16 +3029,13 @@ const Reminders = (() => {
     renderStats();
   }
 
-     /* Компактная карточка: всё в одну строку с wrap */
   function renderOrder(o, me) {
     const left = o.endTime - Date.now();
     const cat = CATS[o.cat] || CATS.tours;
     const wait = o.wait ? WAITING[o.wait] : null;
-    const snd = SOUNDS[o.sound || DEFAULT_SOUND] || SOUNDS[DEFAULT_SOUND];
     const repLabel = REPEATS[o.repeat || DEFAULT_REPEAT] || '';
     const isMine = o.authorId === me.id;
 
-    // Определяем статус
     let cls = '';
     let metaText = '';
     if (o.archived) {
@@ -2803,17 +3052,12 @@ const Reminders = (() => {
       metaText = `Осталось: <span class="timer">${formatLeftMin(left)}</span>`;
     }
 
-        // Определяем права
     const isSupervisor = me.line === 'sv';
     const sameLine = me.line === o.line;
-    // Может редактировать (изменять, удалять навсегда) — только автор
     const canEdit = isMine;
-    // Может брать в работу, завершать, отменять — автор, своя линия, СВ
     const canManage = isMine || sameLine || isSupervisor;
-    // Может удалять (навсегда, из архива) — автор, своя линия, СВ
     const canDelete = isMine || sameLine || isSupervisor;
 
-    // Кнопки
     let actionHtml = '';
     if (o.archived) {
       actionHtml = `
@@ -2823,31 +3067,24 @@ const Reminders = (() => {
       actionHtml = `
         ${canManage ? `<button class="btn-sm btn-undo"  onclick="undoTakeReminder('${o.id}')">↺ Отменить</button>` : ''}
         ${canManage ? `<button class="btn-sm btn-close" onclick="archiveReminder('${o.id}')">✕ Завершить</button>` : ''}`;
-    } else if (left <= 0) {
-      actionHtml = `
-        ${canManage ? `<button class="btn-sm btn-take" onclick="takeReminder('${o.id}')">✅ Взял</button>` : ''}
-        ${canManage ? `<button class="btn-sm btn-del"  onclick="archiveReminder('${o.id}')">🗑 Завершить</button>` : ''}`;
     } else {
       actionHtml = `
         ${canManage ? `<button class="btn-sm btn-take" onclick="takeReminder('${o.id}')">✅ Взял</button>` : ''}
         ${canManage ? `<button class="btn-sm btn-del"  onclick="archiveReminder('${o.id}')">🗑 Завершить</button>` : ''}`;
     }
-    // «Изменить» — только автору
     if (canEdit && !o.archived) {
       actionHtml = `<button class="btn-sm btn-edit" onclick="openReminderModal('${o.id}')">✏ Изменить</button>` + actionHtml;
     }
 
-    // Бейджи
     const waitBadge = wait
       ? `<span class="wait-badge ${wait.cls}" title="${wait.full}">❓ ${wait.label}</span>`
       : `<span class="wait-badge wait-none">ждём не указано</span>`;
-        const repeatBadge = `<span class="repeat-badge">🔁 ${repLabel}</span>`;
+    const repeatBadge = `<span class="repeat-badge">🔁 ${repLabel}</span>`;
     const authorBadge = isMine
       ? `<span class="author-badge mine">👤 я</span>`
       : `<span class="author-badge">👤 ${escapeHtml(o.authorName || '—')}</span>`;
     const createdBadge = `<span class="created-badge" title="Создано">📅 ${formatDate(o.created)}</span>`;
 
-    // Комментарий — inline, если есть
     const noteInline = o.note
       ? `<span class="order-sep">·</span><span class="order-note-inline" title="${escapeHtml(o.note)}"><i class="fas fa-comment-alt"></i> ${escapeHtml(o.note)}</span>`
       : '';
@@ -2861,7 +3098,7 @@ const Reminders = (() => {
           ${waitBadge}
           ${repeatBadge}
           ${authorBadge}
- 	  ${createdBadge}
+          ${createdBadge}
           <span class="order-sep">·</span>
           <span class="order-meta">${metaText}</span>
           ${noteInline}
@@ -3014,7 +3251,7 @@ const Reminders = (() => {
     serverList.forEach(s => {
       const local = byId[s.id];
       if (!local) orders.push(s);
-      else if (local._dirty) { /* не перетираем */ }
+      else if (local._dirty) { }
       else if ((s.updatedAt || 0) > (local.updatedAt || 0)) Object.assign(local, s);
     });
     save(); scheduleRender();
@@ -3294,7 +3531,7 @@ const Stickers = (() => {
 })();
 
 /* ══════════════════════════════════════════════
-   ДАШБОРД (с ленивой загрузкой Chart.js)
+   ДАШБОРД
    ══════════════════════════════════════════════ */
 const Dashboard = (() => {
   let period = 'today';
@@ -3545,6 +3782,7 @@ window.closeConfirm          = Confirm.close;
 window.Auth = Auth;
 window.API = API;
 window.Tracker = Tracker;
+window.ShiftStatus = ShiftStatus;
 window.Reminders = Reminders;
 window.Stickers = Stickers;
 window.Dashboard = Dashboard;
@@ -3574,6 +3812,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       await Reminders.load();
       Reminders.scheduleRender();
       Reminders.startSyncTimer();
+      if (typeof ShiftStatus !== 'undefined') {
+        ShiftStatus.init();
+        ShiftStatus.start();
+      }
     } else {
       Auth.showLogin();
     }
@@ -3602,9 +3844,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.addEventListener('click', AudioEngine.unlock, { once: true });
 
-  // Тик напоминаний — раз в 5 сек для проверки просрочки (звук играет не чаще 30 сек)
   setInterval(() => Reminders.tick(), 5000);
-  // Перерисовка таймеров — раз в 60 сек
   setInterval(() => Reminders.scheduleRender(), 60000);
 });
 </script>
