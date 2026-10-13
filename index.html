@@ -951,10 +951,13 @@
           <button class="btn-break" id="addBreakBtn" disabled>Добавить</button>
           <span>Всего: <b id="breakTotalMin">0 мин</b></span>
         </div>
-        <div class="tracker-break-group tracker-lunch-group">
+         <div class="tracker-break-group tracker-lunch-group">
           <span style="font-size:1.4rem;">🍽️</span>
           <span class="tracker-breaklabel">Обед</span>
-          <span class="tracker-lunch-fixed">30 мин</span>
+          <select id="lunchDuration" style="width:auto;padding:8px 14px;border-radius:40px;border:1px solid var(--line);font-weight:700;font-family:inherit;color:var(--text);background:#fff;">
+            <option value="30">30 мин</option>
+            <option value="60">60 мин (2 обеда)</option>
+          </select>
           <button class="btn-lunch" id="addLunchBtn" disabled>Добавить</button>
           <span>Раз: <b id="lunchCount">0/2</b></span>
         </div>
@@ -1012,8 +1015,6 @@
           <button class="db-filter-btn" data-line="all" onclick="Dashboard.setLine('all')">Все линии</button>
           <button class="db-filter-btn" data-line="line1" onclick="Dashboard.setLine('line1')">Первая</button>
           <button class="db-filter-btn" data-line="line2" onclick="Dashboard.setLine('line2')">Вторая</button>
-          <button class="db-filter-btn" data-line="line3" onclick="Dashboard.setLine('line3')">Претензии</button>
-          <button class="db-filter-btn" data-line="sv" onclick="Dashboard.setLine('sv')">Супервайзеры</button>
           <button class="db-filter-btn" data-line="tours" onclick="Dashboard.setLine('tours')">Туры</button>
         </div>
         <div class="db-actions">
@@ -1943,12 +1944,15 @@ const ACTIVITY_SETS = {
   ],
   line2: [
     { id: 'call',    title: 'Звонки',                 sub: 'все входящие и исходящие',      hint: '', color: '#7c4ecf', weightMin: 2 },
-    { id: 'chat',    title: 'Чаты с клиентами',       sub: 'исходящие в чате',              hint: '', color: '#8b64d6', weightMin: 2 },
+    { id: 'chat',    title: 'Чаты с клиентами',       sub: 'исходящие в чате',              hint: '', color: '#8b64d6', weightMin: 1 },
     { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 1 },
     { id: 'mailkc',  title: 'Почта Веб КЦ',           sub: 'входящие и исходящие',          hint: '', color: '#6d3fd6', weightMin: 1 },
     { id: 'sched',   title: 'Изменение в расписании', sub: 'информирование клиента',        hint: '', color: '#bda5e5', weightMin: 3 },
     { id: 'problem', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 2 },
-    { id: 'partner', title: 'Обработка партнёрки',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 3 },
+    { id: 'partner_fs', title: 'Обработка FS',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
+    { id: 'partner_rzd', title: 'Обработка РЖД',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
+    { id: 'partner_pb', title: 'Обработка ПБ',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
+    { id: 'partner_ma', title: 'Обработка МА',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
     { id: 'mailhot', title: 'Почта отели',            sub: 'письма провайдерам',            hint: '', color: '#a488e3', weightMin: 1 }
   ],
   line3: [
@@ -1958,10 +1962,10 @@ const ACTIVITY_SETS = {
     { id: 'contact',  title: 'Связь с клиентом',      sub: 'уведомления и звонки',  hint: '',         color: '#6d3fd6', weightMin: 2 }
   ],
   sv: [
-    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 3 },
-    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 2 },
-    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 3 },
-    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 2 }
+    { id: 'error_meet', title: 'Встреча по ошибкам',          sub: 'разбор с командой',   hint: '', color: '#a488e3', weightMin: 15 },
+    { id: 'claim_rev',  title: 'Разбор запроса от претензий', sub: 'консультация',        hint: '', color: '#7c4ecf', weightMin: 15 },
+    { id: 'training',   title: 'Обучающие сессии',            sub: 'проведение обучения', hint: '', color: '#8b64d6', weightMin: 30 },
+    { id: 'report_sv',  title: 'Отчётность',                  sub: 'отчёты и мониторинг', hint: '', color: '#6d3fd6', weightMin: 10 }
   ],
   tours: [
     { id: 'book', title: 'Брони',     sub: 'оформление', hint: 'новые брони',     color: '#6d3fd6', weightMin: 1 },
@@ -2256,11 +2260,23 @@ const Tracker = (() => {
     if (state && state.startedAt && !state.endedAt) finishShift();
   }
 
-  function setControlsEnabled(on) {
+    function setControlsEnabled(on) {
     const effective = on && !isOnPause();
-    ['addBreakBtn','addLunchBtn'].forEach(id => {
-      const el = document.getElementById(id); if (el) el.disabled = !effective;
-    });
+
+    const breakBtn = document.getElementById('addBreakBtn');
+    if (breakBtn) breakBtn.disabled = !effective;
+
+    const lunchBtn = document.getElementById('addLunchBtn');
+    if (lunchBtn) {
+      const lunchBlocked = state.lunchCount >= 2;
+      lunchBtn.disabled = !effective || lunchBlocked;
+    }
+
+    // Поле длительности обеда — тоже блокируем
+    const lunchDur = document.getElementById('lunchDuration');
+    if (lunchDur) lunchDur.disabled = !effective || state.lunchCount >= 2;
+
+    // Остальное — как было
     const bm = document.getElementById('breakMinutes');
     if (bm) bm.disabled = !effective;
     const sb = document.getElementById('startBtn'), eb = document.getElementById('endBtn');
@@ -2433,9 +2449,24 @@ const Tracker = (() => {
   }
   function addLunch() {
     if (!state.startedAt || state.endedAt) return;
-    if (state.lunchCount >= 2) { showToast('Обед уже 2 раза'); return; }
-    startPause('lunch', 30);
-    showToast('Обед 30 мин — приятного аппетита!');
+
+    const duration = parseInt(document.getElementById('lunchDuration').value) || 30;
+    const lunchesNeeded = duration === 60 ? 2 : 1;
+
+    if (state.lunchCount + lunchesNeeded > 2) {
+      showToast('Нельзя: остался только 1 обед, а выбран 60 мин');
+      return;
+    }
+
+    startPause('lunch', duration);
+
+    if (duration === 60) {
+      // 60 мин — списываем 2 обеда
+      state.lunchCount += 1;  // startPause добавит ещё 1 → итого 2
+      saveState();
+    }
+
+    showToast(`Обед ${duration} мин — приятного аппетита!`);
   }
 
   function scheduleSyncSoon() {
@@ -2448,28 +2479,32 @@ const Tracker = (() => {
     const fmtD = (ts) => { if (!ts) return ''; const d = new Date(ts);
       return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`; };
     const fmtT = (ts) => { if (!ts) return ''; const d = new Date(ts);
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
-    pendingRows.forEach(r => {
-      const d = new Date(r.ts);
-      const hour = pad(d.getHours());
-      rows.push([
-        new Date(r.ts).toISOString(),
-        fmtD(r.startedAt),
-        hour,
-        r.operator, r.operatorId || '', r.line, r.supervisor || '',
-        fmtT(r.startedAt),
-        r.endedAt ? fmtT(r.endedAt) : '',
-        r.activity, r.eventType || 'activity',
-        r.count, r.weight, r.workMin,
-        fmtT(r.activityAt || r.ts),
-        r.sessionId || '',
-        r.pauseType || '',
-        r.isPause ? 'true' : 'false'
-      ]);
-    });
-    return rows;
-  }
+    // Линии, которые не отправляем на сервер (по НАЗВАНИЯМ, как они лежат в r.line)
+  const EXCLUDED_TITLES = ['Супервайзеры', 'Претензии', 'Туры'];
 
+  pendingRows.forEach(r => {
+    // Пропускаем исключённые линии
+    if (EXCLUDED_TITLES.indexOf(r.line) !== -1) return;
+
+    const d = new Date(r.ts);
+    const hour = pad(d.getHours());
+    rows.push([
+      new Date(r.ts).toISOString(),
+      fmtD(r.startedAt),
+      hour,
+      r.operator, r.operatorId || '', r.line, r.supervisor || '',
+      fmtT(r.startedAt),
+      r.endedAt ? fmtT(r.endedAt) : '',
+      r.activity, r.eventType || 'activity',
+      r.count, r.weight, r.workMin,
+      fmtT(r.activityAt || r.ts),
+      r.sessionId || '',
+      r.pauseType || '',
+      r.isPause ? 'true' : 'false'
+    ]);
+  });
+  return rows;
+}
   function updateSyncStatus(status, text) {
     const el = document.getElementById('cloudStatus');
     const txt = document.getElementById('cloudStatusText');
@@ -3735,10 +3770,6 @@ const Dashboard = (() => {
     rows.push(['=== ВТОРАЯ ЛИНИЯ ===']);
     rows.push(['Активность', 'Минут']);
     (lastData.byActivityLine2 || []).forEach(d => rows.push([d.name, d.minutes]));
-    rows.push([]);
-    rows.push(['=== ПРЕТЕНЗИИ ===']);
-    rows.push(['Активность', 'Минут']);
-    (lastData.byActivityLine3 || []).forEach(d => rows.push([d.name, d.minutes]));
     rows.push([]);
     rows.push(['=== ПО ОПЕРАТОРАМ ===']);
     rows.push(['Оператор', 'Линия', 'Активностей', 'Минут', 'Смен', 'Ср. смена, мин']);
