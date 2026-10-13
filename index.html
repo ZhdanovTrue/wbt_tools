@@ -1015,8 +1015,7 @@
           <button class="db-filter-btn" data-line="all" onclick="Dashboard.setLine('all')">Все линии</button>
           <button class="db-filter-btn" data-line="line1" onclick="Dashboard.setLine('line1')">Первая</button>
           <button class="db-filter-btn" data-line="line2" onclick="Dashboard.setLine('line2')">Вторая</button>
-          <button class="db-filter-btn" data-line="tours" onclick="Dashboard.setLine('tours')">Туры</button>
-        </div>
+         </div>
         <div class="db-actions">
           <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="Dashboard.reload()">
             <i class="fas fa-sync"></i> Обновить
@@ -2474,37 +2473,45 @@ const Tracker = (() => {
     syncDebounceTimer = setTimeout(() => { syncDebounceTimer = null; forceSync(); }, SYNC_DEBOUNCE);
   }
 
-  function buildRowsForSheets() {
+    function buildRowsForSheets() {
     const rows = [];
-    const fmtD = (ts) => { if (!ts) return ''; const d = new Date(ts);
-      return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`; };
-    const fmtT = (ts) => { if (!ts) return ''; const d = new Date(ts);
+    const fmtD = (ts) => {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+    };
+    const fmtT = (ts) => {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    };
+
     // Линии, которые не отправляем на сервер (по НАЗВАНИЯМ, как они лежат в r.line)
-  const EXCLUDED_TITLES = ['Супервайзеры', 'Претензии', 'Туры'];
+    const EXCLUDED_TITLES = ['Супервайзеры', 'Претензии', 'Туры'];
 
-  pendingRows.forEach(r => {
-    // Пропускаем исключённые линии
-    if (EXCLUDED_TITLES.indexOf(r.line) !== -1) return;
+    pendingRows.forEach(r => {
+      // Пропускаем исключённые линии
+      if (EXCLUDED_TITLES.indexOf(r.line) !== -1) return;
 
-    const d = new Date(r.ts);
-    const hour = pad(d.getHours());
-    rows.push([
-      new Date(r.ts).toISOString(),
-      fmtD(r.startedAt),
-      hour,
-      r.operator, r.operatorId || '', r.line, r.supervisor || '',
-      fmtT(r.startedAt),
-      r.endedAt ? fmtT(r.endedAt) : '',
-      r.activity, r.eventType || 'activity',
-      r.count, r.weight, r.workMin,
-      fmtT(r.activityAt || r.ts),
-      r.sessionId || '',
-      r.pauseType || '',
-      r.isPause ? 'true' : 'false'
-    ]);
-  });
-  return rows;
-}
+      const d = new Date(r.ts);
+      const hour = pad(d.getHours());
+      rows.push([
+        new Date(r.ts).toISOString(),
+        fmtD(r.startedAt),
+        hour,
+        r.operator, r.operatorId || '', r.line, r.supervisor || '',
+        fmtT(r.startedAt),
+        r.endedAt ? fmtT(r.endedAt) : '',
+        r.activity, r.eventType || 'activity',
+        r.count, r.weight, r.workMin,
+        fmtT(r.activityAt || r.ts),
+        r.sessionId || '',
+        r.pauseType || '',
+        r.isPause ? 'true' : 'false'
+      ]);
+    });
+    return rows;
+  }
   function updateSyncStatus(status, text) {
     const el = document.getElementById('cloudStatus');
     const txt = document.getElementById('cloudStatusText');
