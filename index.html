@@ -2493,8 +2493,11 @@ const Tracker = (() => {
       // Пропускаем исключённые линии
       if (EXCLUDED_TITLES.indexOf(r.line) !== -1) return;
 
+      // Считаем московский час (UTC+3)
       const d = new Date(r.ts);
-      const hour = pad(d.getHours());
+      const moscowMs = d.getTime() + 3 * 60 * 60 * 1000;
+      const moscowDate = new Date(moscowMs);
+      const hour = pad(moscowDate.getUTCHours());
       rows.push([
         new Date(r.ts).toISOString(),
         fmtD(r.startedAt),
@@ -2697,56 +2700,9 @@ const ShiftStatus = (() => {
     const kpiOnlineEl = document.getElementById('kpiOnline');
     const kpiLunchEl = document.getElementById('kpiLunch');
     const kpiBreakEl = document.getElementById('kpiBreak');
-    const kpiOfflineEl = document.getElementById('kpiOffline');
     if (kpiOnlineEl) kpiOnlineEl.textContent = kpi.online || 0;
     if (kpiLunchEl) kpiLunchEl.textContent = kpi.onLunch || 0;
     if (kpiBreakEl) kpiBreakEl.textContent = kpi.onBreak || 0;
-    if (kpiOfflineEl) kpiOfflineEl.textContent = kpi.offline || 0;
-
-    const wrap = document.getElementById('shiftOperators');
-    if (!wrap) return;
-
-    const me = Auth.getOperator();
-    const list = lastData.operators || [];
-    if (list.length === 0) {
-      wrap.innerHTML = '<div class="shift-empty">Пока никого нет на смене</div>';
-      return;
-    }
-
-    const statusLabels = {
-      online: '🟢 Работа',
-      lunch: '🍽️ Обед',
-      break: '☕ Перерыв',
-      offline: '🔴 Ушёл'
-    };
-
-    wrap.innerHTML = list.map(function(op) {
-      const isMe = me && op.operatorId === me.id;
-      const statusLabel = statusLabels[op.status] || op.status;
-
-      let sinceStr = '—';
-      if (op.sinceTs) sinceStr = formatClock(op.sinceTs);
-
-      let remainingStr = '—';
-      let remainingCls = '';
-      if (op.remainingMs > 0) {
-        remainingStr = formatLeftMin(op.remainingMs);
-      } else if (op.overdueMs > 0) {
-        remainingStr = '⚠ ' + formatLeftMin(op.overdueMs);
-        remainingCls = 'overdue';
-      }
-
-      const usedStr = op.usedMin + '/' + op.limitMin + ' мин';
-
-      return `
-        <div class="shift-op-row">
-          <div class="shift-op-name">${escapeHtml(op.operatorName)}${isMe ? ' (я)' : ''}</div>
-          <div class="shift-op-status ${op.status}">${statusLabel}</div>
-          <div class="shift-op-time">с ${sinceStr}</div>
-          <div class="shift-op-remaining ${remainingCls}">${remainingStr}</div>
-          <div class="shift-op-used">${usedStr}</div>
-        </div>`;
-    }).join('');
   }
 
   function updatePauseProgress() {
