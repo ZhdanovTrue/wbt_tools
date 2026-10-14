@@ -2945,7 +2945,9 @@ const Reminders = (() => {
 
   function takeOrder(id) {
     const o = orders.find(x => x.id === id); if (!o) return;
-    o.taken = true; o.takenAt = Date.now(); o._dirty = true;
+    o.taken = true; o.takenAt = Date.now();
+    o._dirty = true;
+    o._localChangedAt = Date.now();
     save(); scheduleSync(); scheduleRender();
   }
   function undoTake(id) {
@@ -2953,16 +2955,21 @@ const Reminders = (() => {
     o.taken = false; o.takenAt = null;
     if (Date.now() >= o.endTime) { o.alarmed = true; o.lastPlayed = 0; }
     o._dirty = true;
+    o._localChangedAt = Date.now();
     save(); scheduleSync(); scheduleRender();
   }
   function archiveOrder(id) {
     const o = orders.find(x => x.id === id); if (!o) return;
-    o.archived = true; o.archivedAt = Date.now(); o._dirty = true;
+    o.archived = true; o.archivedAt = Date.now();
+    o._dirty = true;
+    o._localChangedAt = Date.now();
     save(); scheduleSync(); scheduleRender();
   }
   function restoreFromArchive(id) {
     const o = orders.find(x => x.id === id); if (!o) return;
-    o.archived = false; o.archivedAt = null; o._dirty = true;
+    o.archived = false; o.archivedAt = null;
+    o._dirty = true;
+    o._localChangedAt = Date.now();
     save(); scheduleSync(); scheduleRender();
   }
   function deleteOrder(id) {
@@ -3205,6 +3212,7 @@ const Reminders = (() => {
     o.endTime = Date.now() + newMs;
     o.alarmed = false; o.taken = false; o.takenAt = null; o.lastPlayed = 0;
     o._dirty = true;
+    o._localChangedAt = Date.now();
     save(); scheduleSync(); closeModal(); scheduleRender();
     showToast(newMs > 0 ? 'Напоминание обновлено' : 'Напоминание сразу сработает');
   }
@@ -3282,10 +3290,19 @@ const Reminders = (() => {
           sound: o.sound, repeat: o.repeat, created: o.created, endTime: o.endTime,
           alarmed: o.alarmed, taken: o.taken, takenAt: o.takenAt, takenBy: o.takenBy,
           archived: o.archived, archivedAt: o.archivedAt, lastPlayed: o.lastPlayed,
-          note: o.note || ''
+          note: o.note || '',
+          // Передаём метку изменения: клиент знает, когда правил
+          updatedAt: o._localChangedAt || Date.now()
         }));
         const data = await API.post('reminders_upsert', { token: Auth.getToken(), reminders: payload });
-        if (data.ok) { dirty.forEach(o => { o._dirty = false; }); save(); }
+        if (data.ok) {
+          dirty.forEach(o => {
+            o._dirty = false;
+            // Сохраняем серверный updatedAt как подтверждённый
+            o.updatedAt = o._localChangedAt || Date.now();
+          });
+          save();
+        }
       } catch (e) { console.warn('Reminders upsert error:', e); }
     }
     await fetchFromServer();
@@ -3303,12 +3320,38 @@ const Reminders = (() => {
 
   function mergeServerData(serverList) {
     const byId = Object.fromEntries(orders.map(o => [o.id, o]));
+
     serverList.forEach(s => {
       const local = byId[s.id];
-      if (!local) orders.push(s);
-      else if (local._dirty) { }
-      else if ((s.updatedAt || 0) > (local.updatedAt || 0)) Object.assign(local, s);
+      const serverUpdatedAt = Number(s.updatedAt) || 0;
+
+      if (!local) {
+        // Новое напоминание с сервера — добавляем
+        orders.push(s);
+        return;
+      }
+
+      const localUpdatedAt = Number(local.updatedAt) || 0;
+      const localChangedAt = Number(local._localChangedAt) || 0;
+
+      if (local._dirty) {
+        // У нас есть локальные несохранённые правки.
+        // Сравниваем: серверная версия новее наших локальных правок?
+        // Если ДА — кто-то другой изменил строку раньше нас. Сервер побеждает.
+        if (serverUpdatedAt > localChangedAt) {
+          Object.assign(local, s);
+          delete local._dirty;
+          delete local._localChangedAt;
+        }
+        // Если НЕТ — оставляем наши локальные правки (они ещё не улетели)
+      } else {
+        // Локальных правок нет — просто применяем серверную версию, если она новее
+        if (serverUpdatedAt > localUpdatedAt) {
+          Object.assign(local, s);
+        }
+      }
     });
+
     save(); scheduleRender();
   }
 
@@ -3325,6 +3368,7 @@ const Reminders = (() => {
       if (!o.archived && !o.taken && !o.alarmed && now >= o.endTime) {
         o.alarmed = true;
         o._dirty = true;
+        o._localChangedAt = now;
         changed = true;
       }
     });
@@ -3339,7 +3383,11 @@ const Reminders = (() => {
             (SOUNDS[b.sound || DEFAULT_SOUND]?.priority || 0) -
             (SOUNDS[a.sound || DEFAULT_SOUND]?.priority || 0));
           AudioEngine.play(due[0].sound || DEFAULT_SOUND);
-          due.forEach(o => { o.lastPlayed = now; o._dirty = true; });
+          due.forEach(o => {
+            o.lastPlayed = now;
+            o._dirty = true;
+            o._localChangedAt = now;
+          });
           save(); scheduleSync();
         }
       }
