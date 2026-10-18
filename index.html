@@ -3221,11 +3221,16 @@ const Reminders = (() => {
         const payload = dirty.map(o => ({
           id: o.id, num: o.num, cat: o.cat, wait: o.wait,
           sound: o.sound, repeat: o.repeat, created: o.created, endTime: o.endTime,
-          alarmed: o.alarmed, taken: o.taken, takenAt: o.takenAt, takenBy: o.takenBy,
-          archived: o.archived, archivedAt: o.archivedAt, lastPlayed: o.lastPlayed,
+          alarmed: !!o.alarmed, taken: !!o.taken,
+          takenAt: o.takenAt, takenBy: o.takenBy,
+          archived: !!o.archived, archivedAt: o.archivedAt,
+          lastPlayed: o.lastPlayed || 0,
           note: o.note || '',
-          // Передаём метку изменения: клиент знает, когда правил
-          updatedAt: o._localChangedAt || Date.now()
+          // Передаём автора и линию — сервер сохранит их для существующих записей
+          authorId: o.authorId || '',
+          authorName: o.authorName || '',
+          line: o.line || '',
+          updatedAt: o._localChangedAt || nowTs
         }));
         const data = await API.post('reminders_upsert', { token: Auth.getToken(), reminders: payload });
         if (data.ok) {
