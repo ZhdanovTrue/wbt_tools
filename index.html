@@ -544,7 +544,24 @@
   .shift-kpi-value{
     font-size:1.6rem;font-weight:800;color:var(--lav-700);
     font-variant-numeric:tabular-nums;line-height:1.1;}
-  
+
+  /* Принудительное закрытие смен */
+  .force-close-row{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:10px 14px;border-radius:12px;background:var(--lav-50);
+    border:1px solid var(--lav-200);margin-bottom:8px;}
+  .force-close-row .fc-name{font-weight:800;color:var(--text);}
+  .force-close-row .fc-line{font-size:11px;font-weight:800;padding:2px 8px;
+    border-radius:10px;background:var(--lav-100);color:var(--lav-700);text-transform:uppercase;}
+  .force-close-row .fc-status{font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;}
+  .force-close-row .fc-status.online{background:#dcfce7;color:#166534;}
+  .force-close-row .fc-status.lunch{background:#fef3c7;color:#92400e;}
+  .force-close-row .fc-status.break{background:#fee2e2;color:#991b1b;}
+  .force-close-row .fc-btn{margin-left:auto;background:var(--red);color:#fff;border:none;
+    padding:8px 14px;border-radius:8px;font-weight:800;font-size:12px;cursor:pointer;transition:.15s;}
+  .force-close-row .fc-btn:hover{background:#be123c;}
+  .force-close-row .fc-btn:disabled{opacity:.4;cursor:not-allowed;}
+
   .tracker-log-title{font-weight:700;color:var(--text);margin:0 18px 10px;}
   .log-list{max-height:220px;overflow-y:auto;background:var(--lav-50);border:1px solid var(--line);
     border-radius:12px;padding:8px 4px;margin:0 18px 20px;font-size:.85rem;}
@@ -962,6 +979,14 @@
             <div class="shift-kpi-value" id="kpiBreak">0</div>
           </div>
          </div>
+
+        <div id="forceCloseWrap" style="display:none; margin-top:14px;">
+          <div class="tracker-act-title" style="font-size:.95rem; margin-bottom:8px;">
+            🛠️ Принудительное закрытие смен
+            <span class="tracker-linechip">только супервайзер</span>
+          </div>
+          <div id="forceCloseList"></div>
+        </div>
        </div>
 
       <div class="tracker-log-title">🧾 Журнал событий</div>
@@ -2141,7 +2166,6 @@ const Tracker = (() => {
     saveStateNow();
     log('shift', 'Смена начата · ' + op.name);
 
-    // Событие на сервер
     if (typeof ShiftStatus !== 'undefined') {
       ShiftStatus.sendEvent('shift_start').then(function() {
         ShiftStatus.refresh();
@@ -2189,7 +2213,6 @@ const Tracker = (() => {
     const total = totalActivities();
     log('end', `Смена завершена · активностей ${total}`);
 
-    // Событие на сервер
     if (typeof ShiftStatus !== 'undefined') {
       ShiftStatus.sendEvent('shift_end').then(function() {
         ShiftStatus.refresh();
@@ -2226,7 +2249,7 @@ const Tracker = (() => {
     if (state && state.startedAt && !state.endedAt) finishShift();
   }
 
-    function setControlsEnabled(on) {
+  function setControlsEnabled(on) {
     const effective = on && !isOnPause();
 
     const breakBtn = document.getElementById('addBreakBtn');
@@ -2238,11 +2261,9 @@ const Tracker = (() => {
       lunchBtn.disabled = !effective || lunchBlocked;
     }
 
-    // Поле длительности обеда — тоже блокируем
     const lunchDur = document.getElementById('lunchDuration');
     if (lunchDur) lunchDur.disabled = !effective || state.lunchCount >= 2;
 
-    // Остальное — как было
     const bm = document.getElementById('breakMinutes');
     if (bm) bm.disabled = !effective;
     const sb = document.getElementById('startBtn'), eb = document.getElementById('endBtn');
@@ -2304,7 +2325,6 @@ const Tracker = (() => {
     if (!state.startedAt || state.endedAt) return;
     if (isOnPause()) { showToast('Сначала дождись окончания текущей паузы'); return; }
 
-    // Проверка лимита через ShiftStatus
     if (typeof ShiftStatus !== 'undefined' && ShiftStatus.getMyLimit) {
       const myLimit = ShiftStatus.getMyLimit();
       if (myLimit && myLimit.remainingMin < durationMin) {
@@ -2334,7 +2354,6 @@ const Tracker = (() => {
     }
     saveState();
 
-    // Событие на сервер
     if (typeof ShiftStatus !== 'undefined') {
       const eventType = type === 'break' ? 'break_start' : 'lunch_start';
       ShiftStatus.sendEvent(eventType).then(function() {
@@ -2383,7 +2402,6 @@ const Tracker = (() => {
     setControlsEnabled(true);
     renderActivities(); renderStats(); updatePauseUI();
 
-    // Событие на сервер
     if (typeof ShiftStatus !== 'undefined') {
       const eventType = type === 'break' ? 'break_end' : 'lunch_end';
       ShiftStatus.sendEvent(eventType).then(function() {
@@ -2427,8 +2445,7 @@ const Tracker = (() => {
     startPause('lunch', duration);
 
     if (duration === 60) {
-      // 60 мин — списываем 2 обеда
-      state.lunchCount += 1;  // startPause добавит ещё 1 → итого 2
+      state.lunchCount += 1;
       saveState();
     }
 
@@ -2440,7 +2457,7 @@ const Tracker = (() => {
     syncDebounceTimer = setTimeout(() => { syncDebounceTimer = null; forceSync(); }, SYNC_DEBOUNCE);
   }
 
-    function buildRowsForSheets() {
+  function buildRowsForSheets() {
     const rows = [];
     const fmtD = (ts) => {
       if (!ts) return '';
@@ -2453,14 +2470,11 @@ const Tracker = (() => {
       return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     };
 
-    // Линии, которые не отправляем на сервер (по НАЗВАНИЯМ, как они лежат в r.line)
     const EXCLUDED_TITLES = ['Супервайзеры', 'Претензии', 'Туры'];
 
     pendingRows.forEach(r => {
-      // Пропускаем исключённые линии
       if (EXCLUDED_TITLES.indexOf(r.line) !== -1) return;
 
-      // Считаем московский час (UTC+3)
       const d = new Date(r.ts);
       const moscowMs = d.getTime() + 3 * 60 * 60 * 1000;
       const moscowDate = new Date(moscowMs);
@@ -2614,7 +2628,7 @@ const Tracker = (() => {
   function getState() { return state; }
 
   return { init, refresh, applyOperator, stopOnLogout, endPauseManually,
-           forceSync, scheduleSyncSoon, getState };
+           forceSync, scheduleSyncSoon, getState, finishShift };
 })();
 window.Tracker = Tracker;
 
@@ -2641,6 +2655,20 @@ const ShiftStatus = (() => {
     }
   }
 
+  async function forceCloseShift(operatorId, note) {
+    try {
+      const data = await API.post('force-close-shift', {
+        token: Auth.getToken(),
+        operatorId: operatorId,
+        note: note || ''
+      });
+      return data;
+    } catch (e) {
+      console.warn('Force close fetch error:', e);
+      return { ok: false, error: String(e) };
+    }
+  }
+
   async function fetchStatus() {
     const me = Auth.getOperator();
     if (!me) return null;
@@ -2653,6 +2681,7 @@ const ShiftStatus = (() => {
         lastData = data;
         render();
         updatePauseProgress();
+        checkMyShiftClosedRemotely(data);
       }
       return data;
     } catch (e) {
@@ -2670,6 +2699,109 @@ const ShiftStatus = (() => {
     if (kpiOnlineEl) kpiOnlineEl.textContent = kpi.online || 0;
     if (kpiLunchEl) kpiLunchEl.textContent = kpi.onLunch || 0;
     if (kpiBreakEl) kpiBreakEl.textContent = kpi.onBreak || 0;
+
+    renderForceCloseList();
+  }
+
+  function renderForceCloseList() {
+    const me = Auth.getOperator();
+    const wrap = document.getElementById('forceCloseWrap');
+    const list = document.getElementById('forceCloseList');
+    if (!wrap || !list) return;
+
+    if (!me || me.line !== 'sv') {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = '';
+
+    const operators = (lastData && lastData.operators) || [];
+    const targets = operators.filter(function(o) {
+      const code = (o.line || '').toString();
+      const isLine12 = code === 'line1' || code === 'line2';
+      const isActive = o.status !== 'offline';
+      const notMe = o.operatorId !== me.id;
+      return isLine12 && isActive && notMe;
+    });
+
+    if (targets.length === 0) {
+      list.innerHTML = '<div class="empty" style="padding:12px;">Нет активных смен на первой/второй линии</div>';
+      return;
+    }
+
+    const lineLabel = { line1: 'Линия 1', line2: 'Линия 2' };
+    const statusLabel = { online: '🟢 на линии', lunch: '🍽️ обед', break: '☕ перерыв' };
+
+    list.innerHTML = targets.map(function(o) {
+      const code = o.line;
+      return `
+        <div class="force-close-row">
+          <span class="fc-name">${escapeHtml(o.operatorName || o.operatorId)}</span>
+          <span class="fc-line">${escapeHtml(lineLabel[code] || code)}</span>
+          <span class="fc-status ${o.status}">${statusLabel[o.status] || o.status}</span>
+          <button class="fc-btn" data-op-id="${escapeHtml(o.operatorId)}" data-op-name="${escapeHtml(o.operatorName || '')}">
+            ✕ Закрыть смену
+          </button>
+        </div>`;
+    }).join('');
+
+    list.querySelectorAll('.fc-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const opId = btn.dataset.opId;
+        const opName = btn.dataset.opName || opId;
+        Confirm.open(
+          'Принудительно закрыть смену?',
+          'Оператор: ' + opName + '\n\n' +
+          'Смена будет завершена, открытые паузы закроются с фактической длительностью. ' +
+          'В журнале появится отметка «Принудительно закрыто супервайзером».',
+          async function() {
+            btn.disabled = true;
+            const res = await forceCloseShift(opId);
+            btn.disabled = false;
+            if (res && res.ok) {
+              showToast('Смена ' + opName + ' закрыта');
+              setTimeout(fetchStatus, 800);
+            } else {
+              const map = {
+                'forbidden_not_supervisor': 'Только супервайзер может закрывать смены',
+                'operator_not_found': 'Оператор не найден',
+                'unsupported_line': 'Только для первой и второй линии',
+                'shift_already_closed': 'У оператора нет активной смены',
+                'no_shift_log': 'Журнал смен пуст',
+                'unauthorized': 'Сессия истекла, войдите заново'
+              };
+              showToast('Не удалось: ' + (map[res && res.error] || (res && res.error) || 'неизвестная ошибка'));
+            }
+          },
+          'Закрыть смену'
+        );
+      });
+    });
+  }
+
+  function checkMyShiftClosedRemotely(data) {
+    const me = Auth.getOperator();
+    if (!me) return;
+    if (typeof Tracker === 'undefined' || !Tracker.getState) return;
+
+    const s = Tracker.getState();
+    const localActive = s && s.startedAt && !s.endedAt;
+    if (!localActive) return;
+
+    const myRow = (data.operators || []).find(function(o) {
+      return o.operatorId === me.id;
+    });
+    if (!myRow) return;
+
+    if (myRow.status === 'offline') {
+      if (typeof Tracker.finishShift === 'function') {
+        Tracker.finishShift();
+      } else if (Tracker.stopOnLogout) {
+        Tracker.stopOnLogout();
+      }
+      showToast('Смена закрыта супервайзером');
+      if (typeof Tracker.refresh === 'function') Tracker.refresh();
+    }
   }
 
   function updatePauseProgress() {
@@ -2759,7 +2891,8 @@ const ShiftStatus = (() => {
     renderLineChip();
   }
 
-  return { init, start, stop, refresh, sendEvent, fetchStatus, getMyLimit };
+  return { init, start, stop, refresh, sendEvent, fetchStatus, getMyLimit,
+           forceCloseShift, renderForceCloseList };
 })();
 window.ShiftStatus = ShiftStatus;
 
@@ -2842,7 +2975,9 @@ const Reminders = (() => {
       alarmed: false, taken: false, takenAt: null, takenBy: null,
       archived: false, archivedAt: null, lastPlayed: 0,
       line: me.line, authorId: me.id, authorName: me.name,
-      note: note, _dirty: true
+      note: note, _dirty: true,
+      _localChangedAt: Date.now(),
+      updatedAt: 0
     };
     orders.push(o); save(); scheduleSync();
     document.getElementById('orderNum').value = '';
@@ -2869,6 +3004,8 @@ const Reminders = (() => {
   function takeOrder(id) {
     const o = orders.find(x => x.id === id); if (!o) return;
     o.taken = true; o.takenAt = Date.now();
+    o.alarmed = false;
+    o.lastPlayed = 0;
     o._dirty = true;
     o._localChangedAt = Date.now();
     save(); scheduleSync(); scheduleRender();
@@ -2884,6 +3021,8 @@ const Reminders = (() => {
   function archiveOrder(id) {
     const o = orders.find(x => x.id === id); if (!o) return;
     o.archived = true; o.archivedAt = Date.now();
+    o.alarmed = false;
+    o.lastPlayed = 0;
     o._dirty = true;
     o._localChangedAt = Date.now();
     save(); scheduleSync(); scheduleRender();
@@ -2902,8 +3041,8 @@ const Reminders = (() => {
     const isSupervisor = me.line === 'sv';
     const canDelete = o.authorId === me.id || o.line === me.line || isSupervisor;
     if (!canDelete) { showToast('Нельзя удалить чужое напоминание другой линии'); return; }
-    Confirm.open('Удалить напоминание?', `WB ID: ${o.num}. Это действие необратимо.`, () => {
-      // Не удаляем локально — помечаем как архивное, чтобы merge не «воскрешал»
+    Confirm.open('Удалить напоминание?', `WB ID: ${o.num}. Это действие необратимо.`, async () => {
+      // 1) Локально помечаем архивным — чтобы merge не «воскрешал»
       o.archived = true;
       o.archivedAt = Date.now();
       o.alarmed = false;
@@ -2911,11 +3050,33 @@ const Reminders = (() => {
       o._dirty = true;
       o._localChangedAt = Date.now();
       save();
-      // На сервер — и через softDelete, и через upsert (для updatedAt)
-      API.post('reminders_delete', { token: Auth.getToken(), id }).catch(e => console.warn('Delete error:', e));
-      scheduleSync();
       scheduleRender();
-      showToast('Напоминание удалено');
+
+      // 2) Ждём ответ сервера
+      try {
+        const res = await API.post('reminders_delete', { token: Auth.getToken(), id });
+        if (!res || !res.ok || !res.deleted) {
+          console.warn('reminders_delete failed:', res);
+          o.archived = false;
+          o.archivedAt = null;
+          o._dirty = true;
+          o._localChangedAt = Date.now();
+          save();
+          scheduleRender();
+          showToast('Не удалось удалить на сервере. Попробуйте ещё раз.');
+          return;
+        }
+        showToast('Напоминание удалено');
+      } catch (e) {
+        console.warn('Delete error:', e);
+        o.archived = false;
+        o.archivedAt = null;
+        o._dirty = true;
+        o._localChangedAt = Date.now();
+        save();
+        scheduleRender();
+        showToast('Ошибка сети. Напоминание не удалено.');
+      }
     });
   }
 
@@ -3217,6 +3378,7 @@ const Reminders = (() => {
     if (!me) return;
     const dirty = orders.filter(o => o._dirty);
     if (dirty.length > 0) {
+      const nowTs = Date.now();
       try {
         const payload = dirty.map(o => ({
           id: o.id, num: o.num, cat: o.cat, wait: o.wait,
@@ -3226,18 +3388,17 @@ const Reminders = (() => {
           archived: !!o.archived, archivedAt: o.archivedAt,
           lastPlayed: o.lastPlayed || 0,
           note: o.note || '',
-          // Передаём автора и линию — сервер сохранит их для существующих записей
           authorId: o.authorId || '',
           authorName: o.authorName || '',
           line: o.line || '',
           updatedAt: o._localChangedAt || nowTs
         }));
         const data = await API.post('reminders_upsert', { token: Auth.getToken(), reminders: payload });
-        if (data.ok) {
+        if (data && data.ok) {
           dirty.forEach(o => {
             o._dirty = false;
-            // Сохраняем серверный updatedAt как подтверждённый
-            o.updatedAt = o._localChangedAt || Date.now();
+            o.updatedAt = o._localChangedAt || nowTs;
+            delete o._localChangedAt;
           });
           save();
         }
@@ -3264,29 +3425,44 @@ const Reminders = (() => {
       const serverUpdatedAt = Number(s.updatedAt) || 0;
 
       if (!local) {
-        // Новое напоминание с сервера — добавляем
-        orders.push(s);
+        // Защита от «воскрешения»: если пришло archived — сразу помечаем
+        const incoming = Object.assign({}, s);
+        incoming.archived = !!s.archived;
+        incoming.alarmed = incoming.archived ? false : !!s.alarmed;
+        incoming.lastPlayed = incoming.archived ? 0 : (s.lastPlayed || 0);
+        orders.push(incoming);
         return;
       }
 
       const localUpdatedAt = Number(local.updatedAt) || 0;
       const localChangedAt = Number(local._localChangedAt) || 0;
 
-      if (local._dirty) {
-        // У нас есть локальные несохранённые правки.
-        // Сравниваем: серверная версия новее наших локальных правок?
-        // Если ДА — кто-то другой изменил строку раньше нас. Сервер побеждает.
-        if (serverUpdatedAt > localChangedAt) {
-          Object.assign(local, s);
-          delete local._dirty;
-          delete local._localChangedAt;
-        }
-        // Если НЕТ — оставляем наши локальные правки (они ещё не улетели)
-      } else {
-        // Локальных правок нет — просто применяем серверную версию, если она новее
-        if (serverUpdatedAt > localUpdatedAt) {
-          Object.assign(local, s);
-        }
+      const serverIsNewer = local._dirty
+        ? serverUpdatedAt > localChangedAt
+        : serverUpdatedAt > localUpdatedAt;
+
+      const localArchived = !!local.archived;
+      const serverArchived = !!s.archived;
+      if (localArchived && !serverArchived && !serverIsNewer) {
+        return;
+      }
+      const localTaken = !!local.taken;
+      const serverTaken = !!s.taken;
+      if (localTaken && !serverTaken && !serverIsNewer) {
+        return;
+      }
+
+      if (serverIsNewer) {
+        const nextArchived = localArchived || serverArchived;
+        const nextArchivedAt = nextArchived
+          ? (Number(s.archivedAt) || local.archivedAt || null)
+          : null;
+
+        Object.assign(local, s);
+        local.archived = nextArchived;
+        local.archivedAt = nextArchivedAt;
+        delete local._dirty;
+        delete local._localChangedAt;
       }
     });
 
