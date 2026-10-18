@@ -2903,9 +2903,19 @@ const Reminders = (() => {
     const canDelete = o.authorId === me.id || o.line === me.line || isSupervisor;
     if (!canDelete) { showToast('Нельзя удалить чужое напоминание другой линии'); return; }
     Confirm.open('Удалить напоминание?', `WB ID: ${o.num}. Это действие необратимо.`, () => {
-      orders = orders.filter(x => x.id !== id); save();
+      // Не удаляем локально — помечаем как архивное, чтобы merge не «воскрешал»
+      o.archived = true;
+      o.archivedAt = Date.now();
+      o.alarmed = false;
+      o.lastPlayed = 0;
+      o._dirty = true;
+      o._localChangedAt = Date.now();
+      save();
+      // На сервер — и через softDelete, и через upsert (для updatedAt)
       API.post('reminders_delete', { token: Auth.getToken(), id }).catch(e => console.warn('Delete error:', e));
-      scheduleRender(); showToast('Напоминание удалено');
+      scheduleSync();
+      scheduleRender();
+      showToast('Напоминание удалено');
     });
   }
 
