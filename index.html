@@ -608,6 +608,35 @@
   .db-table td{padding:10px 12px;border-bottom:1px solid var(--lav-100);color:var(--text);}
   .db-table tr:hover td{background:var(--lav-50);}
   .db-table .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  /* Раскрывающиеся строки операторов */
+  .db-table tbody tr.op-row{cursor:pointer;transition:background .15s;}
+  .db-table tbody tr.op-row:hover td{background:var(--lav-100);}
+  .db-table tbody tr.op-row.expanded td{background:var(--lav-100);font-weight:800;}
+  .db-table tbody tr.op-row td:first-child::before{
+    content:'▸';display:inline-block;width:14px;margin-right:6px;
+    color:var(--lav-500);transition:transform .2s;font-weight:800;}
+  .db-table tbody tr.op-row.expanded td:first-child::before{
+    content:'▾';color:var(--lav-700);}
+  .db-table tbody tr.op-details td{
+    background:var(--lav-50);padding:0;border-bottom:2px solid var(--lav-200);}
+  .db-details-inner{padding:14px 18px;}
+  .db-details-title{
+    font-size:12px;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--text-soft);font-weight:800;margin-bottom:8px;}
+  .db-details-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .db-details-table th{
+    text-align:left;padding:6px 10px;font-size:11px;text-transform:uppercase;
+    letter-spacing:.3px;color:var(--text-soft);font-weight:800;
+    border-bottom:1px solid var(--lav-200);}
+  .db-details-table th.num{text-align:right;}
+  .db-details-table td{padding:6px 10px;border-bottom:1px solid var(--lav-100);}
+  .db-details-table td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  .db-details-table tr.total td{font-weight:800;color:var(--lav-700);
+    border-top:2px solid var(--lav-200);border-bottom:none;}
+  .db-details-meta{
+    display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;
+    font-size:12px;color:var(--text-soft);}
+  .db-details-meta b{color:var(--text);}
   .db-empty{text-align:center;color:var(--text-soft);padding:40px 20px;font-style:italic;}
 
   /* ══════════ ПРОЧЕЕ ══════════ */
@@ -3883,6 +3912,8 @@ const Dashboard = (() => {
     });
   }
 
+  let expandedOpIds = new Set();   // ← какие операторы раскрыты (по operatorId)
+
   function renderTable() {
     const tbody = document.querySelector('#dbOperatorTable tbody');
     if (!tbody || !lastData) return;
@@ -3896,15 +3927,85 @@ const Dashboard = (() => {
       tbody.innerHTML = '<tr><td colspan="6" class="db-empty">Нет данных за период</td></tr>';
       return;
     }
-    tbody.innerHTML = rows.map(r => `
+
+    tbody.innerHTML = rows.map(r => {
+      const opKey = r.operatorId || r.operator || '';
+      const isExpanded = expandedOpIds.has(opKey);
+      const mainRow = `
+        <tr class="op-row ${isExpanded ? 'expanded' : ''}" data-op-key="${escapeHtml(opKey)}">
+          <td>${escapeHtml(r.operator)}</td>
+          <td>${escapeHtml(r.line)}</td>
+          <td class="num">${r.activities}</td>
+          <td class="num">${r.minutes}</td>
+          <td class="num">${r.shifts}</td>
+          <td class="num">${r.avgShiftMin} мин</td>
+        </tr>`;
+      const detailsRow = isExpanded ? renderDetailsRow(r, opKey) : '';
+      return mainRow + detailsRow;
+    }).join('');
+
+    // Обработчик клика по строке оператора
+    tbody.querySelectorAll('tr.op-row').forEach(tr => {
+      tr.addEventListener('click', () => {
+        const key = tr.dataset.opKey;
+        if (expandedOpIds.has(key)) expandedOpIds.delete(key);
+        else expandedOpIds.add(key);
+        renderTable();
+      });
+    });
+  }
+
+  function renderDetailsRow(r, opKey) {
+    const byActivity = r.byActivity || [];
+    if (byActivity.length === 0) {
+      return `<tr class="op-details"><td colspan="6">
+        <div class="db-details-inner">
+          <div class="db-empty">Нет активностей за период</div>
+        </div>
+      </td></tr>`;
+    }
+
+    const totalCount = byActivity.reduce((s, a) => s + (a.count || 0), 0);
+    const totalMin = byActivity.reduce((s, a) => s + (a.minutes || 0), 0);
+
+    const rowsHtml = byActivity.map(a => `
       <tr>
-        <td>${escapeHtml(r.operator)}</td>
-        <td>${escapeHtml(r.line)}</td>
-        <td class="num">${r.activities}</td>
-        <td class="num">${r.minutes}</td>
-        <td class="num">${r.shifts}</td>
-        <td class="num">${r.avgShiftMin} мин</td>
+        <td>${escapeHtml(a.name)}</td>
+        <td class="num">${a.count}</td>
+        <td class="num">${a.minutes}</td>
       </tr>`).join('');
+
+    const firstAt = r.firstActivityAt ? formatClock(r.firstActivityAt) : '—';
+    const lastAt = r.lastActivityAt ? formatClock(r.lastActivityAt) : '—';
+
+    return `<tr class="op-details"><td colspan="6">
+      <div class="db-details-inner">
+        <div class="db-details-title">Активности оператора за период</div>
+        <table class="db-details-table">
+          <thead>
+            <tr>
+              <th>Активность</th>
+              <th class="num">Кол-во</th>
+              <th class="num">Минут</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+            <tr class="total">
+              <td>Итого</td>
+              <td class="num">${totalCount}</td>
+              <td class="num">${totalMin}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="db-details-meta">
+          <span>Смен: <b>${r.shifts || 0}</b></span>
+          <span>Средняя смена: <b>${r.avgShiftMin || 0} мин</b></span>
+          <span>Первая активность: <b>${firstAt}</b></span>
+          <span>Последняя активность: <b>${lastAt}</b></span>
+        </div>
+      </div>
+    </td></tr>`;
   }
 
   function init() {
@@ -3945,6 +4046,17 @@ const Dashboard = (() => {
     (lastData.byOperator || []).forEach(r => rows.push([
       r.operator, r.line, r.activities, r.minutes, r.shifts, r.avgShiftMin
     ]));
+
+    // ← НОВОЕ: детализация по активностям каждого оператора
+    rows.push([]);
+    rows.push(['=== ДЕТАЛИЗАЦИЯ ПО АКТИВНОСТЯМ ===']);
+    (lastData.byOperator || []).forEach(r => {
+      rows.push([]);
+      rows.push(['Оператор: ' + r.operator + ' (' + r.line + ')']);
+      rows.push(['Активность', 'Кол-во', 'Минут']);
+      (r.byActivity || []).forEach(a => rows.push([a.name, a.count, a.minutes]));
+      rows.push(['Итого', r.activities, r.minutes]);
+    });
     return rows;
   }
 
