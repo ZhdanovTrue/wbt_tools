@@ -3860,26 +3860,77 @@ const Dashboard = (() => {
     const canvas = document.getElementById('chartHourly');
     if (!canvas || !lastData || !window.Chart) return;
     if (charts.hourly) charts.hourly.destroy();
+
     const labels = lastData.hourly.map(h => h.hour + ':00');
-    const minutes = lastData.hourly.map(h => h.minutes);
+
+    // Минуты по линиям (byLine уже содержит коды line1/line2)
+    const line1Min = lastData.hourly.map(h => (h.byLine && h.byLine.line1) || 0);
+    const line2Min = lastData.hourly.map(h => (h.byLine && h.byLine.line2) || 0);
+
+    // Общее число активностей (линия поверх)
     const activities = lastData.hourly.map(h => h.activities);
+
     charts.hourly = new Chart(canvas, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          { label: 'Минут', data: minutes, backgroundColor: '#7c4ecf', borderRadius: 6, yAxisID: 'y' },
-          { label: 'Активностей', data: activities, type: 'line', borderColor: '#10b981',
-            backgroundColor: '#10b981', tension: .3, pointRadius: 3, yAxisID: 'y1' }
+          {
+            label: 'Линия 1 (мин)',
+            data: line1Min,
+            backgroundColor: '#7c4ecf',
+            borderRadius: 6,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            label: 'Линия 2 (мин)',
+            data: line2Min,
+            backgroundColor: '#ec4899',
+            borderRadius: 6,
+            yAxisID: 'y',
+            order: 2
+          },
+          {
+            label: 'Активностей',
+            data: activities,
+            type: 'line',
+            borderColor: '#10b981',
+            backgroundColor: '#10b981',
+            tension: .3,
+            pointRadius: 3,
+            yAxisID: 'y1',
+            order: 1
+          }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const v = ctx.parsed.y;
+                const unit = ctx.dataset.yAxisID === 'y1' ? '' : ' мин';
+                return ctx.dataset.label + ': ' + v + unit;
+              }
+            }
+          }
+        },
         scales: {
-          y: { beginAtZero: true, title: { display: true, text: 'Минут' }, position: 'left' },
-          y1: { beginAtZero: true, title: { display: true, text: 'Активностей' }, position: 'right',
-            grid: { drawOnChartArea: false } }
+          x: { stacked: false },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Минут' },
+            position: 'left'
+          },
+          y1: {
+            beginAtZero: true,
+            title: { display: true, text: 'Активностей' },
+            position: 'right',
+            grid: { drawOnChartArea: false }
+          }
         }
       }
     });
