@@ -91,9 +91,24 @@
   .main-tab.gap{pointer-events:none;background:transparent;box-shadow:none;
     min-width:20px;flex:0 0 20px;padding:0;}
   .main-tab.hidden{display:none !important;}
-  @keyframes badgePulse{0%{box-shadow:0 0 0 0 rgba(225,29,72,.8);}
-    70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}}
-
+  @keyframes badgePulse{0%{box-shadow:0 0Dashboard
+  .db-card .grid-form { margin-top: 6px; }
+  .db-card .grid-form label { font-size: 12px; }
+  .db-card .grid-form input,
+  .db-card .grid-form select {
+    width: 100%; padding: 10px; border: 1px solid var(--line);
+    border-radius: 8px; font-size: 14px; background: var(--lav-50); color: var(--text);
+  }
+  .err-row-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 800; background: var(--lav-100); color: var(--lav-700);
+  }
+  .err-row-weight {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 800; background: #fee2e2; color: #991b1b;
+  }
+  .err-row-comment { color: var(--text-soft); font-size: 12.5px; font-style: italic; }
+  
   /* ══════════ ЗАКЛАДКИ ══════════ */
   .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
   .card{background:#fff;border-radius:16px;padding:18px;
@@ -745,6 +760,9 @@
     <button class="main-tab hidden" data-tab="dashboard" id="tabDashboardBtn" onclick="switchMainTab('dashboard')">
       <i class="fas fa-chart-pie"></i> Дашборд
     </button>
+    <button class="main-tab hidden" data-tab="errors" id="tabErrorsBtn" onclick="switchMainTab('errors')">
+      <i class="fas fa-exclamation-triangle"></i> Ошибки
+    </button>
   </div>
 
   <!-- ЗАКЛАДКИ -->
@@ -1073,14 +1091,119 @@
               <tr>
                 <th onclick="Dashboard.sortBy('operator')">Оператор</th>
                 <th onclick="Dashboard.sortBy('line')">Линия</th>
-                <th onclick="Dashboard.sortBy('activities')" style="text-align:right;">Активностей</th>
-                <th onclick="Dashboard.sortBy('minutes')" style="text-align:right;">Минут</th>
-                <th onclick="Dashboard.sortBy('shifts')" style="text-align:right;">Смен</th>
-                <th onclick="Dashboard.sortBy('avgShiftMin')" style="text-align:right;">Ср. смена</th>
+                <th onclick="Dashboard.sortBy('activities')" ="text-align:right;">Активностей</th>
+                <th onclick="Dashboard.sortBy('minutes')" ="text-align:right;">Минут</th>
+                <th onclick="Dashboard.sortBy('shifts')" ="text-align:right;">Смен</th>
+                <th onclick="Dashboard.sortBy('avgShiftMin')" ="text-align:right;">Ср. смена</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+   <!-- ОШИБКИ (только супервайзер) -->
+  <div id="tabContentErrors" ="display:none;">
+    <div class="dashboard-wrap">
+      <div class="db-toolbar">
+        <div class="db-filters">
+          <button class="db-filter-btn active" data-err-period="today" onclick="Errors.setPeriod('today')">Сегодня</button>
+          <button class="db-filter-btn" data-err-period="week" onclick="Errors.setPeriod('week')">Неделя</button>
+          <button class="db-filter-btn" data-err-period="month" onclick="Errors.setPeriod('month')">Месяц</button>
+        </div>
+        <div class="db-actions">
+          <button class="btn btn-outline" ="padding:8px 16px;font-size:13px;" onclick="Errors.reload()">
+            <i class="fas fa-sync"></i> Обновить
+          </button>
+        </div>
+      </div>
+
+      <div class="db-card">
+        <h3><i class="fas fa-plus-circle"></i> Зафиксировать ошибку</h3>
+         <div class="grid-form" style="grid-template-columns:1.2fr 1.4fr 1.6fr 1fr auto;">
+          <div>
+            <label>Оператор</label>
+            <select id="errOperator"></select>
+          </div>
+          <div>
+            <label>Класс ошибки</label>
+            <select id="errClass"></select>
+          </div>
+          <div>
+            <label>Комментарий</label>
+            <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов">
+            <div class="char-counter" id="errCommentCounter">0 / 200</div>
+          </div>
+          <div>
+            <label>Потери, ₽ (если есть)</label>
+            <input type="number" id="errLossAmount" min="0" step="0.01" placeholder="0">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="primary-compact" onclick="Errors.add()">
+              <i class="fas fa-check"></i> Зафиксировать
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-summary" id="errSummary"></div>
+
+      <div class="db-grid-2">
+        <div class="db-card">
+          <h3><i class="fas fa-users"></i> По операторам</h3>
+          <div class="db-table-wrap">
+            <table class="db-table" id="errByOperatorTable">
+              <thead>
+                <tr>
+                  <th>Оператор</th>
+                  <th>Линия</th>
+                  <th style="text-align:right;">Ошибок</th>
+                  <th style="text-align:right;">Вес</th>
+                  <th style="text-align:right;">Потери, ₽</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="db-card">
+          <h3><i class="fas fa-tags"></i> По классам</h3>
+          <div class="db-table-wrap">
+            <table class="db-table" id="errByClassTable">
+              <thead>
+                <tr>
+                  <th>Класс</th>
+                  <th style="text-align:right;">Ошибок</th>
+                  <th style="text-align:right;">Вес</th>
+                  <th style="text-align:right;">Потери, ₽</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="db-card">
+        <h3><i class="fas fa-list"></i> Последние ошибки</h3>
+        <div class="db-table-wrap">
+          <table class="db-table" id="errListTable">
+              <thead>
+                <tr>
+                  <th>Время</th>
+                  <th>Оператор</th>
+                  <th>Класс</th>
+                  <th>Вес</th>
+                  <th style="text-align:right;">Потери, ₽</th>
+                  <th>Комментарий</th>
+                  <th>Внёс</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
         </div>
       </div>
     </div>
@@ -1676,6 +1799,7 @@ const Auth = (() => {
       renderUserBar();
       renderDashboardTab();
       Motivation.render();
+      if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
       if (typeof Tracker !== 'undefined' && Tracker.applyOperator) Tracker.applyOperator(op);
       if (typeof Reminders !== 'undefined' && Reminders.reload) await Reminders.reload();
       if (typeof Reminders !== 'undefined' && Reminders.startSyncTimer) Reminders.startSyncTimer();
@@ -1730,15 +1854,18 @@ const Auth = (() => {
   }
 
   function renderDashboardTab() {
-    const btn = document.getElementById('tabDashboardBtn');
-    if (!btn) return;
-    if (isSupervisor()) btn.classList.remove('hidden');
-    else {
-      btn.classList.add('hidden');
-      if (btn.classList.contains('active')) {
-        document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
-        if (typeof Bookmarks !== 'undefined') Bookmarks.switchTab('all');
-      }
+    const dashBtn = document.getElementById('tabDashboardBtn');
+    const errBtn = document.getElementById('tabErrorsBtn');
+    const isSup = isSupervisor();
+    if (dashBtn) dashBtn.classList.toggle('hidden', !isSup);
+    if (errBtn) errBtn.classList.toggle('hidden', !isSup);
+    if (!isSup) {
+      [dashBtn, errBtn].forEach(function(btn) {
+        if (btn && btn.classList.contains('active')) {
+          document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+          if (typeof Bookmarks !== 'undefined') Bookmarks.switchTab('all');
+        }
+      });
     }
   }
 
@@ -1803,15 +1930,18 @@ const Bookmarks = (() => {
     const isNotes = tab === 'notes';
     const isTracker = tab === 'tracker';
     const isDashboard = tab === 'dashboard';
+    const isErrors = tab === 'errors';
     const cardsEl = document.getElementById('tabContentCards');
     const notesEl = document.getElementById('tabContentNotes');
     const trackerEl = document.getElementById('tabContentTracker');
     const dashEl = document.getElementById('tabContentDashboard');
+    const errorsEl = document.getElementById('tabContentErrors');
 
-    if (cardsEl) cardsEl.style.display = (isNotes || isTracker || isDashboard) ? 'none' : '';
+    if (cardsEl) cardsEl.style.display = (isNotes || isTracker || isDashboard || isErrors) ? 'none' : '';
     if (notesEl) notesEl.style.display = isNotes ? '' : 'none';
     if (trackerEl) trackerEl.style.display = isTracker ? '' : 'none';
     if (dashEl) dashEl.style.display = isDashboard ? '' : 'none';
+    if (errorsEl) errorsEl.style.display = isErrors ? '' : 'none';
 
     if (isNotes) {
       if (typeof Stickers !== 'undefined') Stickers.render();
@@ -1821,7 +1951,9 @@ const Bookmarks = (() => {
       if (typeof ShiftStatus !== 'undefined' && ShiftStatus.refresh) ShiftStatus.refresh();
     } else if (isDashboard) {
       if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
-    } else {
+    } else if (isErrors) {
+      if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
+    }
       render();
     }
     updateCounters();
@@ -3842,20 +3974,21 @@ const Dashboard = (() => {
   }
 
   function renderSummary() {
-    const el = document.getElementById('dbSummary');
+    const el = document.getElementById('errSummary');
     if (!el || !lastData) return;
     const s = lastData.summary || {};
+    const totalLoss = Number(s.totalLoss) || 0;
     el.innerHTML = `
-      <div class="db-kpi"><div class="label">Активных операторов</div>
-        <div class="value">${s.activeOperators || 0}</div></div>
-      <div class="db-kpi"><div class="label">Всего активностей</div>
-        <div class="value">${s.totalActivities || 0}</div></div>
-      <div class="db-kpi"><div class="label">Нагрузка</div>
-        <div class="value">${s.totalMinutes || 0}<span class="unit">мин</span></div></div>
-      <div class="db-kpi"><div class="label">Смен</div>
-        <div class="value">${s.shifts || 0}</div></div>
-      <div class="db-kpi"><div class="label">Средняя смена</div>
-        <div class="value">${s.avgShiftMin || 0}<span class="unit">мин</span></div></div>
+      <div class="db-kpi"><div class="label">Всего ошибок</div>
+        <div class="value">${s.totalCount || 0}</div></div>
+      <div class="db-kpi"><div class="label">Суммарный вес</div>
+        <div class="value">${s.totalWeight || 0}</div></div>
+      <div class="db-kpi"><div class="label">Суммарные потери</div>
+        <div class="value">${formatMoney_(totalLoss)}<span class="unit">₽</span></div></div>
+      <div class="db-kpi"><div class="label">Операторов с ошибками</div>
+        <div class="value">${(s.byOperator || []).length}</div></div>
+      <div class="db-kpi"><div class="label">Классов задействовано</div>
+        <div class="value">${(s.byClass || []).length}</div></div>
     `;
   }
 
@@ -4132,6 +4265,296 @@ const Dashboard = (() => {
 })();
 
 /* ══════════════════════════════════════════════
+   ОШИБКИ ОПЕРАТОРОВ (только супервайзер)
+   ══════════════════════════════════════════════ */
+const Errors = (() => {
+  let classes = [];
+  let lastData = null;
+  let period = 'today';
+  let initialized = false;
+  let operatorsCache = null;
+
+  function isSupervisor() {
+    return Auth.isSupervisor();
+  }
+
+  function formatMoney_(n) {
+    const v = Number(n) || 0;
+    if (v === 0) return '0';
+    return v.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+  }
+
+  async function loadOperators() {
+    if (operatorsCache) return operatorsCache;
+    try {
+      const data = await API.get('list');
+      const all = (data && data.operators) || [];
+      operatorsCache = all.filter(function(o) {
+        return o.line === 'line1' || o.line === 'line2';
+      });
+      return operatorsCache;
+    } catch (e) {
+      console.warn('Errors: loadOperators error', e);
+      return [];
+    }
+  }
+
+  async function loadClasses() {
+    try {
+      const data = await API.get('errors_classes', { token: Auth.getToken() });
+      classes = (data && data.ok && data.classes) || [];
+      return classes;
+    } catch (e) {
+      console.warn('Errors: loadClasses error', e);
+      classes = [];
+      return [];
+    }
+  }
+
+  function setPeriod(p) {
+    period = p;
+    document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
+      b.classList.toggle('active', b.dataset.errPeriod === p));
+    reload();
+  }
+
+  async function reload() {
+    if (!isSupervisor()) return;
+    const [ops] = await Promise.all([loadOperators(), loadClasses()]);
+    fillOperatorSelect(ops);
+    fillClassSelect();
+    await reloadList();
+  }
+
+  function fillOperatorSelect(ops) {
+    const sel = document.getElementById('errOperator');
+    if (!sel) return;
+    sel.innerHTML = ops.map(function(o) {
+      const lineLabel = o.line === 'line1' ? 'Линия 1' : 'Линия 2';
+      return `<option value="${escapeHtml(o.id)}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
+    }).join('');
+  }
+
+  function fillClassSelect() {
+    const sel = document.getElementById('errClass');
+    if (!sel) return;
+    sel.innerHTML = classes.map(function(c) {
+      return `<option value="${escapeHtml(c.code)}">${escapeHtml(c.name)} · вес ${c.weight}</option>`;
+    }).join('');
+  }
+
+  async function reloadList() {
+    try {
+      const data = await API.get('errors_list', {
+        token: Auth.getToken(),
+        period: period
+      });
+      if (!data || !data.ok) return;
+      lastData = data;
+      renderSummary();
+      renderByOperator();
+      renderByClass();
+      renderList();
+    } catch (e) {
+      console.warn('Errors: reloadList error', e);
+    }
+  }
+
+  function renderSummary() {
+    const el = document.getElementById('errSummary');
+    if (!el || !lastData) return;
+    const s = lastData.summary || {};
+    el.innerHTML = `
+      <div class="db-kpi"><div class="label">Всего ошибок</div>
+        <div class="value">${s.totalCount || 0}</div></div>
+      <div class="db-kpi"><div class="label">Суммарный вес</div>
+        <div class="value">${s.totalWeight || 0}</div></div>
+      <div class="db-kpi"><div class="label">Операторов с ошибками</div>
+        <div class="value">${(s.byOperator || []).length}</div></div>
+      <div class="db-kpi"><div class="label">Классов задействовано</div>
+        <div class="value">${(s.byClass || []).length}</div></div>
+    `;
+  }
+
+    function renderByOperator() {
+    const tbody = document.querySelector('#errByOperatorTable tbody');
+    if (!tbody || !lastData) return;
+    const rows = lastData.summary.byOperator || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="db-empty">Нет ошибок за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      const lineLabel = r.line === 'line1' ? 'Линия 1' : (r.line === 'line2' ? 'Линия 2' : r.line);
+      const loss = Number(r.loss) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(r.operatorName)}</td>
+          <td><span class="err-row-badge">${escapeHtml(lineLabel)}</span></td>
+          <td class="num">${r.count}</td>
+          <td class="num">${r.weight}</td>
+          <td class="num">${lossCell}</td>
+        </tr>`;
+    }).join('');
+   }
+
+    function renderByClass() {
+    const tbody = document.querySelector('#errByClassTable tbody');
+    if (!tbody || !lastData) return;
+    const rows = lastData.summary.byClass || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="db-empty">Нет ошибок за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      const loss = Number(r.loss) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(r.className)}</td>
+          <td class="num">${r.count}</td>
+          <td class="num">${r.weight}</td>
+          <td class="num">${lossCell}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderList() {
+    const tbody = document.querySelector('#errListTable tbody');
+    if (!tbody || !lastData) return;
+    const rows = lastData.errors || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="db-empty">Нет ошибок за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(e) {
+      const time = formatClock(new Date(e.ts).getTime());
+      const loss = Number(e.lossAmount) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(time)}</td>
+          <td>${escapeHtml(e.operatorName)}</td>
+          <td><span class="err-row-badge">${escapeHtml(e.className)}</span></td>
+          <td><span class="err-row-weight">${e.weight}</span></td>
+          <td class="num">${lossCell}</td>
+          <td><span class="err-row-comment">${escapeHtml(e.comment || '')}</span></td>
+          <td>${escapeHtml(e.supervisorName || '')}</td>
+          <td><button class="btn-sm btn-del" onclick="Errors.remove('${escapeHtml(e.id)}')">✕</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  async function add() {
+    async function add() {
+    if (!isSupervisor()) { showToast('Только супервайзер может вносить ошибки'); return; }
+    const operatorId = document.getElementById('errOperator').value;
+    const classCode  = document.getElementById('errClass').value;
+    const commentEl  = document.getElementById('errComment');
+    const lossEl     = document.getElementById('errLossAmount');
+    const comment    = (commentEl.value || '').trim().slice(0, 200);
+    const lossRaw    = (lossEl.value || '').trim();
+    let lossAmount   = 0;
+    if (lossRaw !== '') {
+      const n = Number(lossRaw.replace(',', '.'));
+      if (!isFinite(n) || n < 0) { showToast('Сумма потерь должна быть числом ≥ 0'); return; }
+      lossAmount = n;
+    }
+    if (!operatorId) { showToast('Выберите оператора'); return; }
+    if (!classCode)  { showToast('Выберите класс ошибки'); return; }
+
+    try {
+      const data = await API.post('errors_add', {
+        token: Auth.getToken(),
+        operatorId: operatorId,
+        classCode: classCode,
+        comment: comment,
+        lossAmount: lossAmount
+      });
+      if (data && data.ok) {
+        showToast('Ошибка зафиксирована');
+        commentEl.value = '';
+        if (lossEl) lossEl.value = '';
+        updateCommentCounter();
+        await reloadList();
+      } else {
+        const map = {
+          'forbidden_not_supervisor': 'Только супервайзер',
+          'no_operator_id': 'Выберите оператора',
+          'no_class_code': 'Выберите класс',
+          'operator_not_found': 'Оператор не найден',
+          'unsupported_line': 'Только для line1/line2',
+          'class_not_found': 'Класс не найден',
+          'class_inactive': 'Класс отключён'
+          'loss_too_large': 'Слишком большая сумма потерь'
+        };
+        showToast('Не удалось: ' + (map[data && data.error] || (data && data.error) || 'ошибка'));
+      }
+    } catch (e) {
+      console.warn('Errors: add error', e);
+      showToast('Ошибка сети');
+    }
+  }
+
+  function remove(id) {
+    if (!isSupervisor()) return;
+    Confirm.open('Удалить запись об ошибке?', 'Это действие необратимо.', async function() {
+      try {
+        const data = await API.post('errors_delete', { token: Auth.getToken(), id: id });
+        if (data && data.ok) {
+          showToast('Удалено');
+          await reloadList();
+        } else {
+          showToast('Не удалось удалить');
+        }
+      } catch (e) {
+        showToast('Ошибка сети');
+      }
+    }, 'Удалить');
+  }
+
+  function updateCommentCounter() {
+    const el = document.getElementById('errComment');
+    const cnt = document.getElementById('errCommentCounter');
+    if (!el || !cnt) return;
+    const len = el.value.length;
+    cnt.textContent = len + ' / 200';
+    cnt.classList.toggle('warn', len > 160 && len <= 200);
+    cnt.classList.toggle('over', len > 200);
+  }
+
+  function renderDashboardTab() {
+    const btn = document.getElementById('tabErrorsBtn');
+    if (!btn) return;
+    if (isSupervisor()) btn.classList.remove('hidden');
+    else btn.classList.add('hidden');
+  }
+
+  async function init() {
+    renderDashboardTab();
+    if (!isSupervisor()) return;
+    if (initialized) { reload(); return; }
+    initialized = true;
+    await reload();
+  }
+
+  // Инициализация счётчика комментария
+  document.addEventListener('DOMContentLoaded', function() {
+    const el = document.getElementById('errComment');
+    if (el) el.addEventListener('input', updateCommentCounter);
+  });
+
+  return { init, reload, setPeriod, add, remove, renderDashboardTab };
+})();
+  
+/* ══════════════════════════════════════════════
    ПРОБРОС В WINDOW
    ══════════════════════════════════════════════ */
 window.switchMainTab         = Bookmarks.switchTab;
@@ -4166,7 +4589,8 @@ window.Reminders = Reminders;
 window.Stickers = Stickers;
 window.Dashboard = Dashboard;
 window.Bookmarks = Bookmarks;
-
+window.Errors = Errors;
+  
 /* ══════════════════════════════════════════════
    ИНИЦИАЛИЗАЦИЯ
    ══════════════════════════════════════════════ */
@@ -4188,6 +4612,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       Auth.renderReminderAuthorNote();
       Motivation.render();
       Tracker.applyOperator(op);
+      if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
       await Reminders.load();
       Reminders.scheduleRender();
       Reminders.startSyncTimer();
