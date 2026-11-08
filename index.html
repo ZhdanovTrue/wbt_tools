@@ -91,7 +91,11 @@
   .main-tab.gap{pointer-events:none;background:transparent;box-shadow:none;
     min-width:20px;flex:0 0 20px;padding:0;}
   .main-tab.hidden{display:none !important;}
-  @keyframes badgePulse{0%{box-shadow:0 0Dashboard
+  @keyframes badgePulse{
+    0%{box-shadow:0 0 0 0 rgba(225,29,72,.8);}
+    70%{box-shadow:0 0 0 10px rgba(225,29,72,0);}
+    100%{box-shadow:0 0 0 0 rgba(225,29,72,0);}
+  }
   .db-card .grid-form { margin-top: 6px; }
   .db-card .grid-form label { font-size: 12px; }
   .db-card .grid-form input,
@@ -1091,10 +1095,10 @@
               <tr>
                 <th onclick="Dashboard.sortBy('operator')">Оператор</th>
                 <th onclick="Dashboard.sortBy('line')">Линия</th>
-                <th onclick="Dashboard.sortBy('activities')" ="text-align:right;">Активностей</th>
-                <th onclick="Dashboard.sortBy('minutes')" ="text-align:right;">Минут</th>
-                <th onclick="Dashboard.sortBy('shifts')" ="text-align:right;">Смен</th>
-                <th onclick="Dashboard.sortBy('avgShiftMin')" ="text-align:right;">Ср. смена</th>
+                <th onclick="Dashboard.sortBy('activities')" style="text-align:right;">Активностей</th>
+                <th onclick="Dashboard.sortBy('minutes')" style="text-align:right;">Минут</th>
+                <th onclick="Dashboard.sortBy('shifts')" style="text-align:right;">Смен</th>
+                <th onclick="Dashboard.sortBy('avgShiftMin')" style="text-align:right;">Ср. смена</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -1105,7 +1109,7 @@
   </div>
   
    <!-- ОШИБКИ (только супервайзер) -->
-  <div id="tabContentErrors" ="display:none;">
+  <div id="tabContentErrors" style="display:none;">
     <div class="dashboard-wrap">
       <div class="db-toolbar">
         <div class="db-filters">
@@ -1114,7 +1118,7 @@
           <button class="db-filter-btn" data-err-period="month" onclick="Errors.setPeriod('month')">Месяц</button>
         </div>
         <div class="db-actions">
-          <button class="btn btn-outline" ="padding:8px 16px;font-size:13px;" onclick="Errors.reload()">
+          <button class="btn btn-outline"  style="padding:8px 16px;font-size:13px;" onclick="Errors.reload()">
             <i class="fas fa-sync"></i> Обновить
           </button>
         </div>
@@ -1953,7 +1957,7 @@ const Bookmarks = (() => {
       if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
     } else if (isErrors) {
       if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
-    }
+    } else {
       render();
     }
     updateCounters();
@@ -3974,21 +3978,20 @@ const Dashboard = (() => {
   }
 
   function renderSummary() {
-    const el = document.getElementById('errSummary');
+    const el = document.getElementById('dbSummary');
     if (!el || !lastData) return;
     const s = lastData.summary || {};
-    const totalLoss = Number(s.totalLoss) || 0;
     el.innerHTML = `
-      <div class="db-kpi"><div class="label">Всего ошибок</div>
-        <div class="value">${s.totalCount || 0}</div></div>
-      <div class="db-kpi"><div class="label">Суммарный вес</div>
-        <div class="value">${s.totalWeight || 0}</div></div>
-      <div class="db-kpi"><div class="label">Суммарные потери</div>
-        <div class="value">${formatMoney_(totalLoss)}<span class="unit">₽</span></div></div>
-      <div class="db-kpi"><div class="label">Операторов с ошибками</div>
-        <div class="value">${(s.byOperator || []).length}</div></div>
-      <div class="db-kpi"><div class="label">Классов задействовано</div>
-        <div class="value">${(s.byClass || []).length}</div></div>
+      <div class="db-kpi"><div class="label">Активных операторов</div>
+        <div class="value">${s.activeOperators || 0}</div></div>
+      <div class="db-kpi"><div class="label">Всего активностей</div>
+        <div class="value">${s.totalActivities || 0}</div></div>
+      <div class="db-kpi"><div class="label">Нагрузка</div>
+        <div class="value">${s.totalMinutes || 0}<span class="unit">мин</span></div></div>
+      <div class="db-kpi"><div class="label">Смен</div>
+        <div class="value">${s.shifts || 0}</div></div>
+      <div class="db-kpi"><div class="label">Средняя смена</div>
+        <div class="value">${s.avgShiftMin || 0}<span class="unit">мин</span></div></div>
     `;
   }
 
@@ -4299,9 +4302,11 @@ const Errors = (() => {
     }
   }
 
-  async function loadClasses() {
+  async function loadClasses(line) {
     try {
-      const data = await API.get('errors_classes', { token: Auth.getToken() });
+      const params = { token: Auth.getToken() };
+      if (line) params.line = line;
+      const data = await API.get('errors_classes', params);
       classes = (data && data.ok && data.classes) || [];
       return classes;
     } catch (e) {
@@ -4320,9 +4325,8 @@ const Errors = (() => {
 
   async function reload() {
     if (!isSupervisor()) return;
-    const [ops] = await Promise.all([loadOperators(), loadClasses()]);
-    fillOperatorSelect(ops);
-    fillClassSelect();
+    const ops = await loadOperators();
+    fillOperatorSelect(ops);   // ← внутри сам подгрузит классы под линию первого оператора
     await reloadList();
   }
 
@@ -4331,16 +4335,38 @@ const Errors = (() => {
     if (!sel) return;
     sel.innerHTML = ops.map(function(o) {
       const lineLabel = o.line === 'line1' ? 'Линия 1' : 'Линия 2';
-      return `<option value="${escapeHtml(o.id)}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
+      return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
     }).join('');
+
+    // При смене оператора — перезагрузить классы под его линию
+    sel.onchange = function() {
+      const opt = sel.options[sel.selectedIndex];
+      const line = opt ? opt.dataset.line : '';
+      reloadClassesForLine(line);
+    };
+
+    // И сразу подгрузить для первого
+    if (sel.options.length > 0) {
+      reloadClassesForLine(sel.options[0].dataset.line);
+    }
+  }
+
+  async function reloadClassesForLine(line) {
+    await loadClasses(line);
+    fillClassSelect();
   }
 
   function fillClassSelect() {
     const sel = document.getElementById('errClass');
     if (!sel) return;
+    const lineLabel = { line1: 'Л1', line2: 'Л2', all: 'Все' };
     sel.innerHTML = classes.map(function(c) {
-      return `<option value="${escapeHtml(c.code)}">${escapeHtml(c.name)} · вес ${c.weight}</option>`;
+      const tag = c.line && c.line !== 'all' ? ' · ' + (lineLabel[c.line] || c.line) : '';
+      return `<option value="${escapeHtml(c.code)}">${escapeHtml(c.name)}${tag} · вес ${c.weight}</option>`;
     }).join('');
+    if (classes.length === 0) {
+      sel.innerHTML = '<option value="">— нет классов для этой линии —</option>';
+    }
   }
 
   async function reloadList() {
@@ -4364,11 +4390,14 @@ const Errors = (() => {
     const el = document.getElementById('errSummary');
     if (!el || !lastData) return;
     const s = lastData.summary || {};
+    const totalLoss = Number(s.totalLoss) || 0;
     el.innerHTML = `
       <div class="db-kpi"><div class="label">Всего ошибок</div>
         <div class="value">${s.totalCount || 0}</div></div>
       <div class="db-kpi"><div class="label">Суммарный вес</div>
         <div class="value">${s.totalWeight || 0}</div></div>
+      <div class="db-kpi"><div class="label">Суммарные потери</div>
+        <div class="value">${formatMoney_(totalLoss)}<span class="unit">₽</span></div></div>
       <div class="db-kpi"><div class="label">Операторов с ошибками</div>
         <div class="value">${(s.byOperator || []).length}</div></div>
       <div class="db-kpi"><div class="label">Классов задействовано</div>
@@ -4453,7 +4482,6 @@ const Errors = (() => {
   }
 
   async function add() {
-    async function add() {
     if (!isSupervisor()) { showToast('Только супервайзер может вносить ошибки'); return; }
     const operatorId = document.getElementById('errOperator').value;
     const classCode  = document.getElementById('errClass').value;
@@ -4469,6 +4497,13 @@ const Errors = (() => {
     }
     if (!operatorId) { showToast('Выберите оператора'); return; }
     if (!classCode)  { showToast('Выберите класс ошибки'); return; }
+
+    // Дополнительная проверка на клиенте: класс должен быть в текущем списке
+    const currentClassCodes = classes.map(c => c.code);
+    if (currentClassCodes.indexOf(classCode) === -1) {
+      showToast('Класс не соответствует линии оператора');
+      return;
+    }
 
     try {
       const data = await API.post('errors_add', {
@@ -4492,7 +4527,7 @@ const Errors = (() => {
           'operator_not_found': 'Оператор не найден',
           'unsupported_line': 'Только для line1/line2',
           'class_not_found': 'Класс не найден',
-          'class_inactive': 'Класс отключён'
+          'class_inactive': 'Класс отключён',
           'loss_too_large': 'Слишком большая сумма потерь'
         };
         showToast('Не удалось: ' + (map[data && data.error] || (data && data.error) || 'ошибка'));
