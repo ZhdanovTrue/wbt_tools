@@ -1156,8 +1156,24 @@
         </div>
       </div>
 
-      <div class="db-summary" id="errSummary"></div>
+      <!-- СВОДКА: ручные + QA-выборка -->
+      <div class="db-summary" id="combinedSummary"></div>
 
+      <!-- Кнопка CSV -->
+      <div class="db-card" style="padding:12px 18px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="Errors.reloadCombined()">
+            <i class="fas fa-sync"></i> Обновить сводку
+          </button>
+          <button class="btn" style="padding:8px 16px;font-size:13px;" onclick="Errors.exportCombinedCSV()">
+            <i class="fas fa-file-csv"></i> Выгрузить CSV (ручные + QA)
+          </button>
+          <span style="color:var(--text-soft);font-size:12px;font-style:italic;">
+            Период: тот же, что и в блоке «По операторам» (today/week/month)
+          </span>
+        </div>
+      </div>
+      
       <div class="db-grid-2">
         <div class="db-card">
           <h3><i class="fas fa-users"></i> По операторам</h3>
@@ -1191,27 +1207,6 @@
               <tbody></tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <div class="db-card">
-        <h3><i class="fas fa-list"></i> Последние ошибки</h3>
-        <div class="db-table-wrap">
-          <table class="db-table" id="errListTable">
-              <thead>
-                <tr>
-                  <th>Время</th>
-                  <th>Оператор</th>
-                  <th>Класс</th>
-                  <th>Вес</th>
-                  <th style="text-align:right;">Потери, ₽</th>
-                  <th>Комментарий</th>
-                  <th>Внёс</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
         </div>
       </div>
     </div>
@@ -3987,9 +3982,10 @@ const Dashboard = (() => {
 
   function setPeriod(p) {
     period = p;
-    document.querySelectorAll('.db-filter-btn[data-period]').forEach(b =>
-      b.classList.toggle('active', b.dataset.period === p));
+    document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
+      b.classList.toggle('active', b.dataset.errPeriod === p));
     reload();
+    reloadCombined();
   }
   function setLine(l) {
     line = l;
@@ -4316,6 +4312,7 @@ const Errors = (() => {
   let period = 'today';
   let initialized = false;
   let operatorsCache = null;
+  let combinedStats = null;
 
   function isSupervisor() {
     return Auth.isSupervisor();
@@ -4325,6 +4322,160 @@ const Errors = (() => {
     const v = Number(n) || 0;
     if (v === 0) return '0';
     return v.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+  }
+
+  async function reloadCombined() {
+    if (!isSupervisor()) return;
+    try {
+      const data = await API.get('errors_combined_stats', {
+        token: Auth.getToken(),
+        period: period
+      });
+      if (!data || !data.ok) {
+        console.warn('Errors: combined_stats error', data && data.error);
+        return;
+      }
+      combinedStats = data;
+      renderCombinedSummary();
+      renderCombinedByOperator();
+      renderCombinedByClass();
+    } catch (e) {
+      console.warn('Errors: reloadCombined error', e);
+    }
+  }
+
+  function renderCombinedSummary() {
+    const el = document.getElementById('combinedSummary');
+    if (!el || !combinedStats) return;
+    const s = combinedStats.summary || {};
+    el.innerHTML = `
+      <div class="db-kpi"><div class="label">Всего на проверку</div>
+        <div class="value">${s.totalToReview || 0}</div></div>
+      <div class="db-kpi"><div class="label">Проверено кейсов</div>
+        <div class="value">${s.reviewed || 0}</div></div>
+      <div class="db-kpi"><div class="label">С ошибками</div>
+        <div class="value" style="color:#e11d48;">${s.withErrors || 0}</div></div>
+      <div class="db-kpi"><div class="label">Доля ошибок</div>
+        <div class="value">${s.errorRate || 0}<span class="unit">%</span></div></div>
+      <div class="db-kpi"><div class="label">Суммарный вес</div>
+        <div class="value">${s.totalWeight || 0}</div></div>
+      <div class="db-kpi"><div class="label">Суммарные потери</div>
+        <div class="value">${formatMoney_(s.totalLoss || 0)}<span class="unit">₽</span></div></div>
+    `;
+  }
+
+  function renderCombinedByOperator() {
+    // Используем ту же таблицу errByOperatorTable, но данные из combinedStats
+    const tbody = document.querySelector('#errByOperatorTable tbody');
+    if (!tbody || !combinedStats) return;
+    const rows = combinedStats.byOperator || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="db-empty">Нет данных за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      const lineLabel = r.line === 'line1' ? 'Линия 1' : (r.line === 'line2' ? 'Линия 2' : r.line);
+      const loss = Number(r.loss) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(r.operatorName || '')}</td>
+          <td><span class="err-row-badge">${escapeHtml(lineLabel)}</span></td>
+          <td class="num">${r.reviewed || 0}</td>
+          <td class="num">${r.withErrors || 0}</td>
+          <td class="num">${lossCell}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderCombinedByClass() {
+    const tbody = document.querySelector('#errByClassTable tbody');
+    if (!tbody || !combinedStats) return;
+    const rows = combinedStats.byClass || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="db-empty">Нет данных за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      const loss = Number(r.loss) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(r.className || '')}</td>
+          <td class="num">${r.count || 0}</td>
+          <td class="num">${r.weight || 0}</td>
+          <td class="num">${lossCell}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function exportCombinedCSV() {
+    if (!combinedStats) { showToast('Нет данных — обновите сводку'); return; }
+    const rows = [];
+    // Сводка
+    rows.push(['=== СВОДКА ===']);
+    const s = combinedStats.summary || {};
+    rows.push(['Период', combinedStats.period]);
+    rows.push(['Всего на проверку', s.totalToReview || 0]);
+    rows.push(['Проверено кейсов', s.reviewed || 0]);
+    rows.push(['С ошибками', s.withErrors || 0]);
+    rows.push(['Доля ошибок, %', s.errorRate || 0]);
+    rows.push(['Суммарный вес', s.totalWeight || 0]);
+    rows.push(['Суммарные потери, ₽', s.totalLoss || 0]);
+    rows.push([]);
+    // По операторам
+    rows.push(['=== ПО ОПЕРАТОРАМ ===']);
+    rows.push(['Оператор', 'Линия', 'Проверено', 'С ошибками', 'Вес', 'Потери, ₽']);
+    (combinedStats.byOperator || []).forEach(function(r) {
+      rows.push([
+        r.operatorName || '', r.line || '',
+        r.reviewed || 0, r.withErrors || 0,
+        r.weight || 0, r.loss || 0
+      ]);
+    });
+    rows.push([]);
+    // По классам
+    rows.push(['=== ПО КЛАССАМ ===']);
+    rows.push(['Класс', 'Кол-во', 'Вес', 'Потери, ₽']);
+    (combinedStats.byClass || []).forEach(function(r) {
+      rows.push([r.className || '', r.count || 0, r.weight || 0, r.loss || 0]);
+    });
+    rows.push([]);
+    // Детализация
+    rows.push(['=== ВСЕ КЕЙСЫ ===']);
+    rows.push(['Тип', 'Дата', 'Оператор', 'Линия', 'Источник', 'Сущность', 'Статус', 'Класс', 'Вес', 'Потери, ₽', 'Комментарий', 'Проверил']);
+    (combinedStats.allRows || []).forEach(function(r) {
+      rows.push([
+        r.kind === 'qa' ? 'QA' : 'Ручная',
+        r.ts || '',
+        r.operatorName || '',
+        r.line || '',
+        r.source || '',
+        r.entityId || '',
+        r.status || '',
+        r.className || '',
+        r.weight || 0,
+        r.lossAmount || 0,
+        r.comment || '',
+        r.reviewedBy || ''
+      ]);
+    });
+    const csv = '\uFEFF' + rows.map(function(r) {
+      return r.map(function(cell) {
+        return `"${String(cell === undefined || cell === null ? '' : cell).replace(/"/g, '""')}"`;
+      }).join(';');
+    }).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'QA_отчет_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function loadOperators() {
@@ -4366,8 +4517,9 @@ const Errors = (() => {
   async function reload() {
     if (!isSupervisor()) return;
     const ops = await loadOperators();
-    fillOperatorSelect(ops);   // ← внутри сам подгрузит классы под линию первого оператора
+    fillOperatorSelect(ops);
     await reloadList();
+    await reloadCombined();
   }
 
   function fillOperatorSelect(ops) {
@@ -4626,8 +4778,10 @@ const Errors = (() => {
     if (el) el.addEventListener('input', updateCommentCounter);
   });
 
-  return { init, reload, setPeriod, add, remove, renderDashboardTab };
+  return { init, reload, setPeriod, add, remove, renderDashboardTab,
+           reloadCombined, exportCombinedCSV };
 })();
+window.Errors = Errors;
 
 /* ══════════════════════════════════════════════
    QA — КЛИЕНТ (только супервайзер)
