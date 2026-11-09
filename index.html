@@ -1228,8 +1228,6 @@
           </button>
         </div>
 
-        <div class="db-summary" id="qaStats" style="margin-bottom:12px;"></div>
-
         <div class="db-table-wrap">
           <table class="db-table" id="qaSamplesTable">
             <thead>
@@ -1246,7 +1244,10 @@
           </table>
         </div>
       </div>
-  
+
+    </div>
+  </div>
+
 </div>
 
 <!-- МОДАЛКА ЗАКЛАДКИ -->
@@ -3982,10 +3983,9 @@ const Dashboard = (() => {
 
   function setPeriod(p) {
     period = p;
-    document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
-      b.classList.toggle('active', b.dataset.errPeriod === p));
+    document.querySelectorAll('.db-filter-btn[data-period]').forEach(b =>
+      b.classList.toggle('active', b.dataset.period === p));
     reload();
-    reloadCombined();
   }
   function setLine(l) {
     line = l;
@@ -4645,34 +4645,6 @@ const Errors = (() => {
     }).join('');
   }
 
-  function renderList() {
-    const tbody = document.querySelector('#errListTable tbody');
-    if (!tbody || !lastData) return;
-    const rows = lastData.errors || [];
-    if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="db-empty">Нет ошибок за период</td></tr>';
-      return;
-    }
-    tbody.innerHTML = rows.map(function(e) {
-      const time = formatClock(new Date(e.ts).getTime());
-      const loss = Number(e.lossAmount) || 0;
-      const lossCell = loss > 0
-        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
-        : `<span style="color:var(--text-soft);">—</span>`;
-      return `
-        <tr>
-          <td>${escapeHtml(time)}</td>
-          <td>${escapeHtml(e.operatorName)}</td>
-          <td><span class="err-row-badge">${escapeHtml(e.className)}</span></td>
-          <td><span class="err-row-weight">${e.weight}</span></td>
-          <td class="num">${lossCell}</td>
-          <td><span class="err-row-comment">${escapeHtml(e.comment || '')}</span></td>
-          <td>${escapeHtml(e.supervisorName || '')}</td>
-          <td><button class="btn-sm btn-del" onclick="Errors.remove('${escapeHtml(e.id)}')">✕</button></td>
-        </tr>`;
-    }).join('');
-  }
-
   async function add() {
     if (!isSupervisor()) { showToast('Только супервайзер может вносить ошибки'); return; }
     const operatorId = document.getElementById('errOperator').value;
@@ -4813,7 +4785,6 @@ const Qa = (() => {
       }
       samples = data.samples || [];
       stats = data.stats || null;
-      renderStats();
       renderSamples();
     } catch (e) {
       console.warn('Qa: reload error', e);
