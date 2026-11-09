@@ -107,11 +107,15 @@
     display: inline-block; padding: 2px 8px; border-radius: 10px;
     font-size: 11px; font-weight: 800; background: var(--lav-100); color: var(--lav-700);
   }
+  .qa-status-pending { background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:800; }
+  .qa-status-no_error { background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:800; }
+  .qa-status-error    { background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:800; }
   .err-row-weight {
     display: inline-block; padding: 2px 8px; border-radius: 10px;
     font-size: 11px; font-weight: 800; background: #fee2e2; color: #991b1b;
   }
   .err-row-comment { color: var(--text-soft); font-size: 12.5px; font-style: italic; }
+  
   
   /* ══════════ ЗАКЛАДКИ ══════════ */
   .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
@@ -1213,6 +1217,41 @@
     </div>
   </div>
 
+<!-- QA: сэмплы для разметки -->
+      <div class="db-card" id="qaBlock">
+        <h3><i class="fas fa-list-check"></i> QA-выборка на разметку</h3>
+
+        <div class="db-filters" style="margin-bottom:12px;">
+          <button class="db-filter-btn active" data-qa-filter="pending" onclick="Qa.setFilter('pending')">
+            ⏳ Только pending
+          </button>
+          <button class="db-filter-btn" data-qa-filter="all" onclick="Qa.setFilter('all')">
+            📋 Все
+          </button>
+          <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;margin-left:auto;" onclick="Qa.reload()">
+            <i class="fas fa-sync"></i> Обновить
+          </button>
+        </div>
+
+        <div class="db-summary" id="qaStats" style="margin-bottom:12px;"></div>
+
+        <div class="db-table-wrap">
+          <table class="db-table" id="qaSamplesTable">
+            <thead>
+              <tr>
+                <th>Оператор</th>
+                <th>Линия</th>
+                <th>Источник</th>
+                <th>Сущность</th>
+                <th>Статус</th>
+                <th>Действие</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+  
 </div>
 
 <!-- МОДАЛКА ЗАКЛАДКИ -->
@@ -1957,6 +1996,7 @@ const Bookmarks = (() => {
       if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
     } else if (isErrors) {
       if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
+      if (typeof Qa !== 'undefined' && Qa.init) Qa.init();
     } else {
       render();
     }
@@ -4588,6 +4628,131 @@ const Errors = (() => {
 
   return { init, reload, setPeriod, add, remove, renderDashboardTab };
 })();
+
+/* ══════════════════════════════════════════════
+   QA — КЛИЕНТ (только супервайзер)
+   ══════════════════════════════════════════════ */
+const Qa = (() => {
+  let samples = [];
+  let stats = null;
+  let filter = 'pending';
+  let initialized = false;
+
+  function isSupervisor() { return Auth.isSupervisor(); }
+
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('.db-filter-btn[data-qa-filter]').forEach(b =>
+      b.classList.toggle('active', b.dataset.qaFilter === f));
+    reload();
+  }
+
+  async function reload() {
+    if (!isSupervisor()) return;
+    try {
+      const data = await API.get('qa_samples', {
+        token: Auth.getToken(),
+        filter: filter
+      });
+      if (!data || !data.ok) {
+        console.warn('Qa: qa_samples error', data && data.error);
+        return;
+      }
+      samples = data.samples || [];
+      stats = data.stats || null;
+      renderStats();
+      renderSamples();
+    } catch (e) {
+      console.warn('Qa: reload error', e);
+    }
+  }
+
+  function renderStats() {
+    const el = document.getElementById('qaStats');
+    if (!el || !stats) return;
+    el.innerHTML = `
+      <div class="db-kpi"><div class="label">Всего сэмплов</div>
+        <div class="value">${stats.total || 0}</div></div>
+      <div class="db-kpi"><div class="label">Размечено</div>
+        <div class="value">${stats.reviewed || 0}</div></div>
+      <div class="db-kpi"><div class="label">Без ошибок</div>
+        <div class="value" style="color:#16a34a;">${stats.noError || 0}</div></div>
+      <div class="db-kpi"><div class="label">С ошибками</div>
+        <div class="value" style="color:#e11d48;">${stats.withError || 0}</div></div>
+      <div class="db-kpi"><div class="label">Доля ошибок</div>
+        <div class="value">${stats.errorRate || 0}<span class="unit">%</span></div></div>
+      <div class="db-kpi"><div class="label">Суммарный вес</div>
+        <div class="value">${stats.totalWeight || 0}</div></div>
+      <div class="db-kpi"><div class="label">Суммарные потери</div>
+        <div class="value">${formatQaMoney_(stats.totalLoss || 0)}<span class="unit">₽</span></div></div>
+    `;
+  }
+
+  function formatQaMoney_(n) {
+    const v = Number(n) || 0;
+    if (v === 0) return '0';
+    return v.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+  }
+
+  function sourceLabel(src) {
+    const s = String(src || '').toLowerCase();
+    if (s === 'chat' || s === 'чат') return 'Чат';
+    if (s === 'problem' || s === 'проблема') return 'Проблема';
+    if (s === 'mail' || s === 'почта') return 'Почта';
+    if (s === 'call' || s === 'звонок') return 'Звонок';
+    return src || '—';
+  }
+
+  function lineLabel(line) {
+    if (line === 'line1') return 'Линия 1';
+    if (line === 'line2') return 'Линия 2';
+    return line || '—';
+  }
+
+  function renderSamples() {
+    const tbody = document.querySelector('#qaSamplesTable tbody');
+    if (!tbody) return;
+    if (!samples || samples.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="db-empty">Нет сэмплов. Сгенерируйте выборку (QA → Сгенерировать выборку).</td></tr>';
+      return;
+    }
+    const statusLabel = { pending: '⏳ ждёт', no_error: '✅ без ошибки', error: '❌ ошибка' };
+    tbody.innerHTML = samples.map(function(s) {
+      const status = String(s.status || 'pending');
+      const isPending = status === 'pending';
+      const actionHtml = isPending
+        ? `<button class="btn-sm btn-take" onclick="Qa.openReview('${escapeHtml(s.id)}')">Разметить</button>`
+        : `<span style="color:var(--text-soft);font-size:11px;">${escapeHtml(s.reviewedBy || '')}<br>${escapeHtml(s.className || '—')}</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(s.operatorName || '')}</td>
+          <td><span class="err-row-badge">${escapeHtml(lineLabel(s.line))}</span></td>
+          <td>${escapeHtml(sourceLabel(s.source))}</td>
+          <td>${escapeHtml(s.entityId || '')}</td>
+          <td><span class="qa-status-${status}">${statusLabel[status] || status}</span></td>
+          <td>${actionHtml}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  // Заглушка — реализуем на подэтапе B
+  function openReview(sampleId) {
+    showToast('Разметка сэмпла будет на следующем этапе');
+  }
+
+  function init() {
+    if (!isSupervisor()) {
+      const block = document.getElementById('qaBlock');
+      if (block) block.style.display = 'none';
+      return;
+    }
+    if (initialized) { reload(); return; }
+    initialized = true;
+    reload();
+  }
+
+  return { init, reload, setFilter, openReview };
+})();
   
 /* ══════════════════════════════════════════════
    ПРОБРОС В WINDOW
@@ -4625,6 +4790,7 @@ window.Stickers = Stickers;
 window.Dashboard = Dashboard;
 window.Bookmarks = Bookmarks;
 window.Errors = Errors;
+window.Qa = Qa;
   
 /* ══════════════════════════════════════════════
    ИНИЦИАЛИЗАЦИЯ
