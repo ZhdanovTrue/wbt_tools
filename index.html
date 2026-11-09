@@ -115,7 +115,18 @@
     font-size: 11px; font-weight: 800; background: #fee2e2; color: #991b1b;
   }
   .err-row-comment { color: var(--text-soft); font-size: 12.5px; font-style: italic; }
-  
+
+  /* Активные состояния кнопок «Ошибки нет / Есть ошибка» в модалке QA */
+  .btn-qa-result.active.no-error {
+    background: #16a34a !important;
+    color: #fff !important;
+    border-color: #16a34a !important;
+  }
+  .btn-qa-result.active.error {
+    background: #e11d48 !important;
+    color: #fff !important;
+    border-color: #e11d48 !important;
+  }
   
   /* ══════════ ЗАКЛАДКИ ══════════ */
   .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px;}
@@ -1408,6 +1419,51 @@
 <script>
 'use strict';
 
+<!-- МОДАЛКА QA-РАЗМЕТКИ -->
+<div class="modal-overlay" id="qaReviewModalOverlay">
+  <div class="modal" style="max-width:520px;">
+    <h2 id="qaReviewModalTitle">Разметка кейса</h2>
+    <div id="qaReviewContext" style="margin-bottom:14px;padding:10px 14px;background:var(--lav-50);border-radius:10px;font-size:13px;color:var(--text-soft);"></div>
+
+    <input type="hidden" id="qaReviewSampleId">
+
+    <div class="form-group">
+      <label>Результат проверки</label>
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn btn-outline btn-qa-result" id="qaResultNoError"
+          style="flex:1;justify-content:center;" onclick="Qa.setReviewResult('no_error')">
+          ✅ Ошибки нет
+        </button>
+        <button type="button" class="btn btn-outline btn-qa-result" id="qaResultError"
+          style="flex:1;justify-content:center;" onclick="Qa.setReviewResult('error')">
+          ❌ Есть ошибка
+        </button>
+      </div>
+    </div>
+
+    <div id="qaErrorFields" style="display:none;">
+      <div class="form-group">
+        <label>Класс ошибки</label>
+        <select id="qaReviewClass"></select>
+      </div>
+      <div class="form-group">
+        <label>Комментарий</label>
+        <input type="text" id="qaReviewComment" maxlength="200" placeholder="До 200 символов">
+        <div class="char-counter" id="qaReviewCommentCounter">0 / 200</div>
+      </div>
+      <div class="form-group">
+        <label>Потери, ₽ (если есть)</label>
+        <input type="number" id="qaReviewLoss" min="0" step="0.01" placeholder="0">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-cancel" onclick="Qa.closeReviewModal()">Отмена</button>
+      <button type="button" class="btn" onclick="Qa.submitReview()">Сохранить</button>
+    </div>
+  </div>
+</div>
+  
 /* ══════════════════════════════════════════════
    КОНФИГ
    ══════════════════════════════════════════════ */
@@ -4855,9 +4911,154 @@ const Qa = (() => {
     }).join('');
   }
 
-  // Заглушка — реализуем на подэтапе B
-  function openReview(sampleId) {
-    showToast('Разметка сэмпла будет на следующем этапе');
+  // ── Модалка разметки ──
+  let reviewClasses = [];
+  let reviewSample = null;
+  let reviewResult = null;   // 'no_error' | 'error' | null
+
+  async function loadReviewClasses(line) {
+    try {
+      const data = await API.get('errors_classes', {
+        token: Auth.getToken(),
+        line: line
+      });
+      reviewClasses = (data && data.ok && data.classes) || [];
+      return reviewClasses;
+    } catch (e) {
+      console.warn('Qa: loadReviewClasses error', e);
+      reviewClasses = [];
+      return [];
+    }
+  }
+
+  function fillReviewClassSelect() {
+    const sel = document.getElementById('qaReviewClass');
+    if (!sel) return;
+    const lineLabel = { line1: 'Л1', line2: 'Л2', all: 'Все' };
+    sel.innerHTML = reviewClasses.map(function(c) {
+      const tag = c.line && c.line !== 'all' ? ' · ' + (lineLabel[c.line] || c.line) : '';
+      return `<option value="${escapeHtml(c.code)}">${escapeHtml(c.name)}${tag} · вес ${c.weight}</option>`;
+    }).join('');
+    if (reviewClasses.length === 0) {
+      sel.innerHTML = '<option value="">— нет классов для линии —</option>';
+    }
+  }
+
+  async function openReview(sampleId) {
+    const sample = samples.find(s => String(s.id) === String(sampleId));
+    if (!sample) { showToast('Сэмпл не найден'); return; }
+
+    reviewSample = sample;
+    reviewResult = null;
+
+    document.getElementById('qaReviewSampleId').value = sample.id;
+    document.getElementById('qaReviewContext').innerHTML =
+      `<b>${escapeHtml(sample.operatorName || '')}</b> · ` +
+      `${escapeHtml(lineLabel(sample.line))} · ` +
+      `Источник: <b>${escapeHtml(sourceLabel(sample.source))}</b> · ` +
+      `Сущность: <b>${escapeHtml(sample.entityId || '')}</b>`;
+
+    document.getElementById('qaReviewComment').value = '';
+    document.getElementById('qaReviewLoss').value = '';
+    document.getElementById('qaReviewCommentCounter').textContent = '0 / 200';
+    document.getElementById('qaErrorFields').style.display = 'none';
+
+    // Сброс активных состояний кнопок
+    document.getElementById('qaResultNoError').classList.remove('active', 'no-error', 'error');
+    document.getElementById('qaResultError').classList.remove('active', 'no-error', 'error');
+
+    // Загружаем классы под линию оператора
+    await loadReviewClasses(sample.line);
+    fillReviewClassSelect();
+
+    document.getElementById('qaReviewModalOverlay').classList.add('show');
+  }
+
+  function closeReviewModal() {
+    document.getElementById('qaReviewModalOverlay').classList.remove('show');
+    reviewSample = null;
+    reviewResult = null;
+  }
+
+  function setReviewResult(result) {
+    reviewResult = result;
+    const btnNo = document.getElementById('qaResultNoError');
+    const btnErr = document.getElementById('qaResultError');
+    const errFields = document.getElementById('qaErrorFields');
+
+    btnNo.classList.remove('active', 'no-error', 'error');
+    btnErr.classList.remove('active', 'no-error', 'error');
+
+    if (result === 'no_error') {
+      btnNo.classList.add('active', 'no-error');
+      errFields.style.display = 'none';
+    } else if (result === 'error') {
+      btnErr.classList.add('active', 'error');
+      errFields.style.display = '';
+    }
+  }
+
+  async function submitReview() {
+    if (!reviewSample) return;
+    if (!reviewResult) { showToast('Выберите: «Ошибки нет» или «Есть ошибка»'); return; }
+
+    const sampleId = reviewSample.id;
+    const payload = {
+      token: Auth.getToken(),
+      sampleId: sampleId,
+      status: reviewResult
+    };
+
+    if (reviewResult === 'error') {
+      const classSel = document.getElementById('qaReviewClass');
+      const classCode = classSel.value;
+      if (!classCode) { showToast('Выберите класс ошибки'); return; }
+      payload.classCode = classCode;
+
+      const commentEl = document.getElementById('qaReviewComment');
+      payload.comment = (commentEl.value || '').trim().slice(0, 200);
+
+      const lossEl = document.getElementById('qaReviewLoss');
+      const lossRaw = (lossEl.value || '').trim();
+      let lossAmount = 0;
+      if (lossRaw !== '') {
+        const n = Number(lossRaw.replace(',', '.'));
+        if (!isFinite(n) || n < 0) { showToast('Сумма потерь должна быть числом ≥ 0'); return; }
+        lossAmount = n;
+      }
+      payload.lossAmount = lossAmount;
+    }
+
+    try {
+      const data = await API.post('qa_review', payload);
+      if (data && data.ok) {
+        showToast(reviewResult === 'no_error' ? 'Отмечено: без ошибки' : 'Ошибка зафиксирована');
+        closeReviewModal();
+        await reload();
+        if (typeof Errors !== 'undefined' && Errors.reloadCombined) {
+          Errors.reloadCombined();
+        }
+      } else {
+        const map = {
+          'forbidden_not_supervisor': 'Только супервайзер',
+          'no_sample_id': 'Нет ID сэмпла',
+          'invalid_status': 'Неверный статус',
+          'no_class_code': 'Выберите класс',
+          'class_not_found': 'Класс не найден',
+          'class_inactive': 'Класс отключён',
+          'class_line_mismatch': 'Класс не соответствует линии оператора',
+          'no_classes_sheet': 'Нет листа Error_Classes',
+          'no_samples_sheet': 'Нет листа QA_Samples',
+          'sample_not_found': 'Сэмпл не найден',
+          'not_your_sample': 'Этот сэмпл принадлежит другому супервайзеру',
+          'loss_too_large': 'Слишком большая сумма потерь'
+        };
+        showToast('Не удалось: ' + (map[data && data.error] || (data && data.error) || 'ошибка'));
+      }
+    } catch (e) {
+      console.warn('Qa: submitReview error', e);
+      showToast('Ошибка сети');
+    }
   }
 
   function init() {
@@ -4871,7 +5072,7 @@ const Qa = (() => {
     reload();
   }
 
-  return { init, reload, setFilter, openReview };
+  return { init, reload, setFilter, openReview, closeReviewModal, setReviewResult, submitReview };
 })();
   
 /* ══════════════════════════════════════════════
