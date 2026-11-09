@@ -1119,6 +1119,49 @@
             <tbody></tbody>
           </table>
         </div>
+
+        <!-- ══════════ КОНТРОЛЬ КАЧЕСТВА ══════════ -->
+      <div class="db-card" id="qaDashboardBlock">
+        <h3><i class="fas fa-shield-halved"></i> Контроль качества (QA-выборка)</h3>
+
+        <div class="db-summary" id="qaDashSummary" style="margin-bottom:14px;"></div>
+
+        <div class="db-grid-2">
+          <div class="db-card" style="box-shadow:none;border:1px dashed var(--lav-300);">
+            <h3><i class="fas fa-users"></i> По операторам (QA)</h3>
+            <div class="db-table-wrap">
+              <table class="db-table" id="qaDashByOperatorTable">
+                <thead>
+                  <tr>
+                    <th>Оператор</th>
+                    <th>Линия</th>
+                    <th style="text-align:right;">Проверено</th>
+                    <th style="text-align:right;">С ошибками</th>
+                    <th style="text-align:right;">Доля, %</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="db-card" style="box-shadow:none;border:1px dashed var(--lav-300);">
+            <h3><i class="fas fa-tags"></i> По классам (QA)</h3>
+            <div class="db-table-wrap">
+              <table class="db-table" id="qaDashByClassTable">
+                <thead>
+                  <tr>
+                    <th>Класс</th>
+                    <th style="text-align:right;">Ошибок</th>
+                    <th style="text-align:right;">Вес</th>
+                    <th style="text-align:right;">Потери, ₽</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -4062,6 +4105,7 @@ const Dashboard = (() => {
       lastData = data;
       await ensureChartJs();
       renderSummary(); renderHourly(); renderPie('line1'); renderPie('line2'); renderTable();
+      await reloadQaBlock();   // ← НОВОЕ
     } catch (e) { console.warn('Dashboard fetch error:', e); }
   }
 
@@ -4284,6 +4328,100 @@ const Dashboard = (() => {
         </div>
       </div>
     </td></tr>`;
+  }
+
+  // ── QA-блок на дашборде ──
+  let qaCombined = null;
+
+  async function reloadQaBlock() {
+    if (!Auth.isSupervisor()) return;
+    try {
+      const data = await API.get('errors_combined_stats', {
+        token: Auth.getToken(),
+        period: period
+      });
+      if (!data || !data.ok) {
+        console.warn('Dashboard QA: combined_stats error', data && data.error);
+        return;
+      }
+      qaCombined = data;
+      renderQaDashSummary();
+      renderQaDashByOperator();
+      renderQaDashByClass();
+    } catch (e) {
+      console.warn('Dashboard QA: reload error', e);
+    }
+  }
+
+  function formatMoneyDash_(n) {
+    const v = Number(n) || 0;
+    if (v === 0) return '0';
+    return v.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+  }
+
+  function renderQaDashSummary() {
+    const el = document.getElementById('qaDashSummary');
+    if (!el || !qaCombined) return;
+    const s = qaCombined.summary || {};
+    el.innerHTML = `
+      <div class="db-kpi"><div class="label">Всего на проверку</div>
+        <div class="value">${s.totalToReview || 0}</div></div>
+      <div class="db-kpi"><div class="label">Проверено</div>
+        <div class="value">${s.reviewed || 0}</div></div>
+      <div class="db-kpi"><div class="label">С ошибками</div>
+        <div class="value" style="color:#e11d48;">${s.withErrors || 0}</div></div>
+      <div class="db-kpi"><div class="label">Доля ошибок</div>
+        <div class="value">${s.errorRate || 0}<span class="unit">%</span></div></div>
+      <div class="db-kpi"><div class="label">Потери</div>
+        <div class="value">${formatMoneyDash_(s.totalLoss || 0)}<span class="unit">₽</span></div></div>
+    `;
+  }
+
+  function renderQaDashByOperator() {
+    const tbody = document.querySelector('#qaDashByOperatorTable tbody');
+    if (!tbody || !qaCombined) return;
+    const rows = qaCombined.byOperator || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="db-empty">Нет данных за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      const lineLabel = r.line === 'line1' ? 'Линия 1' : (r.line === 'line2' ? 'Линия 2' : r.line);
+      const reviewed = r.reviewed || 0;
+      const errors = r.withErrors || 0;
+      const rate = reviewed > 0 ? Math.round((errors / reviewed) * 1000) / 10 : 0;
+      return `
+        <tr>
+          <td>${escapeHtml(r.operatorName || '')}</td>
+          <td><span class="err-row-badge">${escapeHtml(lineLabel)}</span></td>
+          <td class="num">${reviewed}</td>
+          <td class="num" style="color:#e11d48;font-weight:800;">${errors}</td>
+          <td class="num">${rate} %</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderQaDashByClass() {
+    const tbody = document.querySelector('#qaDashByClassTable tbody');
+    if (!tbody || !qaCombined) return;
+    const rows = qaCombined.byClass || [];
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="db-empty">Нет данных за период</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(r) {
+      const loss = Number(r.loss) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoneyDash_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
+      return `
+        <tr>
+          <td>${escapeHtml(r.className || '')}</td>
+          <td class="num">${r.count || 0}</td>
+          <td class="num">${r.weight || 0}</td>
+          <td class="num">${lossCell}</td>
+        </tr>`;
+    }).join('');
   }
 
   function init() {
