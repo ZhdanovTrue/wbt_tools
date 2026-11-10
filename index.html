@@ -8,18 +8,76 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <style>
+  /* ══════════ СВЕТЛАЯ ТЕМА (по умолчанию) ══════════ */
   :root{
+    /* Лаванда — акценты (не меняются в тёмной теме, только подбираются цвета) */
     --lav-50:#f1ebfb; --lav-100:#e4d9f5; --lav-200:#d3c2ee; --lav-300:#bda5e5;
     --lav-400:#a488e3; --lav-500:#8b64d6; --lav-600:#7c4ecf; --lav-700:#6d3fd6;
     --lav-800:#5a2fb8;
+
+    /* Семантика */
     --text:#2f2350; --text-soft:#5b4b85; --line:#d3c2ee;
     --green:#16a34a; --red:#e11d48; --amber:#d97706;
+
+    /* Фоны и поверхности */
+    --bg-page:#ede7f6;           /* фон страницы */
+    --bg-card:#ffffff;           /* фон карточек, модалок, форм */
+    --bg-input:#f1ebfb;          /* фон полей ввода */
+    --bg-hover:#e4d9f5;          /* фон при наведении */
+    --bg-soft:#f1ebfb;           /* мягкий фон (KPI, подложки) */
+
+    /* Тени / подсветка */
     --shadow:0 8px 28px rgba(109,63,214,.18);
+    --shadow-card:0 4px 12px rgba(109,63,214,.1);
+    --glow:none;                 /* в светлой теме подсветки нет */
+
+    /* Радиусы (пока оставляем как есть, поменяем на этапе «лаконичный стиль») */
+    --radius-sm:8px;
+    --radius-md:14px;
+    --radius-lg:20px;
+  }
+
+  /* ══════════ ТЁМНАЯ ТЕМА ══════════ */
+  html[data-theme="dark"]{
+    /* Акценты — светлее, чтобы читались на тёмном */
+    --lav-400:#c9b6f0;
+    --lav-500:#b39be8;
+    --lav-600:#a488e3;
+    --lav-700:#8b64d6;
+    --lav-800:#7c4ecf;
+    --lav-50:#2e2348;
+    --lav-100:#3a2b5c;
+    --lav-200:#4a3870;
+    --lav-300:#5a4585;
+
+    /* Текст */
+    --text:#ece5fb;
+    --text-soft:#b8a8d9;
+    --line:rgba(228,217,245,.14);
+
+    /* Семантика — приглушаем */
+    --green:#22c55e;
+    --red:#f43f5e;
+    --amber:#f59e0b;
+
+    /* Фоны */
+    --bg-page:#14101e;
+    --bg-card:#1e1730;
+    --bg-input:#2a2044;
+    --bg-hover:#2f2548;
+    --bg-soft:#241c3a;
+
+    /* Тени / подсветка */
+    --shadow:0 8px 28px rgba(0,0,0,.5);
+    --shadow-card:0 0 20px rgba(139,100,214,.18);   /* подсветка вместо тени */
+    --glow:0 0 20px rgba(139,100,214,.25);
   }
   *{box-sizing:border-box;margin:0;padding:0;font-family:'Nunito',sans-serif;}
-  body{background:#ede7f6;min-height:100vh;padding:24px;color:var(--text);}
-  .app-container{max-width:1500px;margin:0 auto;background:rgba(255,255,255,.92);
-    border-radius:24px;padding:26px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  body{background:var(--bg-page);min-height:100vh;padding:24px;color:var(--text);
+    transition:background .25s, color .25s;}
+  .app-container{max-width:1500px;margin:0 auto;background:var(--bg-card);
+    border-radius:var(--radius-lg);padding:26px;box-shadow:var(--shadow);border:1px solid var(--line);
+    transition:background .25s, box-shadow .25s;}
 
   /* ══════════ ШАПКА ══════════ */
   .header{display:flex;flex-direction:column;gap:14px;
@@ -596,16 +654,6 @@
   .force-close-row .fc-btn:hover{background:#be123c;}
   .force-close-row .fc-btn:disabled{opacity:.4;cursor:not-allowed;}
 
-  .tracker-log-title{font-weight:700;color:var(--text);margin:0 18px 10px;}
-  .log-list{max-height:220px;overflow-y:auto;background:var(--lav-50);border:1px solid var(--line);
-    border-radius:12px;padding:8px 4px;margin:0 18px 20px;font-size:.85rem;}
-  .log-item{display:flex;justify-content:space-between;padding:6px 12px;
-    border-bottom:1px solid var(--lav-100);color:var(--text-soft);}
-  .log-item .time{font-weight:700;color:var(--text);min-width:62px;}
-  .log-item .label{flex:1;margin-left:10px;}
-  .log-item .badge{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:20px;color:#fff;background:var(--lav-600);}
-  .tracker-log-empty{text-align:center;color:var(--lav-300);padding:18px;font-style:italic;}
-
   /* ══════════ ДАШБОРД ══════════ */
   .dashboard-wrap{display:flex;flex-direction:column;gap:18px;}
   .db-toolbar{display:flex;justify-content:space-between;align-items:center;
@@ -1055,11 +1103,7 @@
         </div>
        </div>
 
-      <div class="tracker-log-title">🧾 Журнал событий</div>
-      <div class="log-list" id="logList">
-        <div class="tracker-log-empty">Войдите и начните смену.</div>
       </div>
-    </div>
   </div>
 
   <!-- ДАШБОРД -->
@@ -2290,7 +2334,7 @@ const Tracker = (() => {
       accumulatedMs: 0, lastTickAt: null,
       activities: {}, lastActivityAt: {},
       breakTotalMs: 0, lunchCount: 0, lunchTotalMs: 0,
-      comments: [], log: [],
+      comments: [],
       lastConfettiTotal: 0, lastSyncAt: null, _lastSave: 0,
       pauseType: null, pauseUntil: null, pauseStartedAt: null, pauseDurationMin: 0
     };
@@ -2314,12 +2358,6 @@ const Tracker = (() => {
   function isOnPause() { return state.pauseType && state.pauseUntil && Date.now() < state.pauseUntil; }
   function pauseRemainingMs() { return isOnPause() ? (state.pauseUntil - Date.now()) : 0; }
   function totalActivities() { return Object.values(state.activities).reduce((s, v) => s + v, 0); }
-
-  function log(type, text) {
-    state.log.unshift({ ts: Date.now(), type, text });
-    if (state.log.length > 300) state.log.length = 300;
-    saveStateNow(); renderLog();
-  }
 
   function renderOperatorInfo() {
     const op = Auth.getOperator();
@@ -2374,22 +2412,6 @@ const Tracker = (() => {
     const g = parseInt(h.substring(2, 4), 16);
     const b = parseInt(h.substring(4, 6), 16);
     return `rgba(${r},${g},${b},${alpha})`;
-  }
-
-  function renderLog() {
-    const list = document.getElementById('logList');
-    if (!list) return;
-    if (!state.log.length) {
-      list.innerHTML = '<div class="tracker-log-empty">Журнал пуст. Начните смену.</div>';
-      return;
-    }
-    const typeLabel = { shift:'СМЕНА', activity:'АКТ', break:'ПЕРЕРЫВ', lunch:'ОБЕД', end:'СТОП', sync:'SYNC' };
-    list.innerHTML = state.log.map(e => `
-      <div class="log-item">
-        <span class="time">${formatClock(e.ts)}</span>
-        <span class="label">${escapeHtml(e.text)}</span>
-        <span class="badge">${typeLabel[e.type] || e.type}</span>
-      </div>`).join('');
   }
 
   function renderStats() {
@@ -2464,8 +2486,7 @@ const Tracker = (() => {
       line: op.line, startedAt: now, lastTickAt: now
     });
     saveStateNow();
-    log('shift', 'Смена начата · ' + op.name);
-
+    
     if (typeof ShiftStatus !== 'undefined') {
       ShiftStatus.sendEvent('shift_start').then(function() {
         ShiftStatus.refresh();
@@ -2511,8 +2532,7 @@ const Tracker = (() => {
     state.endedAt = now;
     saveStateNow();
     const total = totalActivities();
-    log('end', `Смена завершена · активностей ${total}`);
-
+    
     if (typeof ShiftStatus !== 'undefined') {
       ShiftStatus.sendEvent('shift_end').then(function() {
         ShiftStatus.refresh();
@@ -2603,7 +2623,6 @@ const Tracker = (() => {
     pendingRows.push(buildActivityRow(activity, now, delta > 0 ? 1 : -1));
     saveQueue();
     scheduleSyncSoon();
-    log('activity', `${activity.title}: ${next} (${delta > 0 ? '+1' : '−1'})`);
     const cnt = document.getElementById('cnt_' + id);
     if (cnt) cnt.textContent = next;
     const last = document.getElementById('last_' + id);
@@ -2646,11 +2665,9 @@ const Tracker = (() => {
     state.pauseDurationMin = durationMin;
     if (type === 'break') {
       state.breakTotalMs += durationMin * 60000;
-      log('break', `Перерыв ${durationMin} мин — до ${formatClock(until)}`);
     } else {
       state.lunchCount++;
       state.lunchTotalMs += durationMin * 60000;
-      log('lunch', `Обед ${durationMin} мин — до ${formatClock(until)}`);
     }
     saveState();
 
@@ -2689,12 +2706,7 @@ const Tracker = (() => {
       if (diffMin > 0) {
         if (type === 'break') state.breakTotalMs = Math.max(0, state.breakTotalMs - diffMin * 60000);
         else state.lunchTotalMs = Math.max(0, state.lunchTotalMs - diffMin * 60000);
-        log(type, (type === 'break' ? 'Перерыв' : 'Обед') + ` завершён досрочно (${actualMin} из ${plannedMin} мин)`);
-      } else {
-        log(type, (type === 'break' ? 'Перерыв' : 'Обед') + ' завершён');
-      }
-    } else {
-      log(type, (type === 'break' ? 'Перерыв' : 'Обед') + ' завершён');
+      } 
     }
     state.pauseType = null; state.pauseUntil = null;
     state.pauseStartedAt = null; state.pauseDurationMin = 0;
@@ -2882,7 +2894,7 @@ const Tracker = (() => {
     state.line = op.line;
     state.supervisor = op.supervisor || '';
     saveStateNow();
-    renderOperatorInfo(); renderActivities(); renderStats(); renderLog();
+    renderOperatorInfo(); renderActivities(); renderStats();
     setControlsEnabled(!!state.startedAt && !state.endedAt);
     updatePauseUI();
   }
@@ -2894,7 +2906,7 @@ const Tracker = (() => {
       state.pauseStartedAt = null; state.pauseDurationMin = 0;
       saveStateNow();
     }
-    renderOperatorInfo(); renderActivities(); renderStats(); renderLog();
+    renderOperatorInfo(); renderActivities(); renderStats();
     const isActive = !!state.startedAt && !state.endedAt;
     setControlsEnabled(isActive); updatePauseUI();
     if (isActive) {
@@ -2920,7 +2932,7 @@ const Tracker = (() => {
   }
   function refresh() {
     const isActive = !!state.startedAt && !state.endedAt;
-    renderOperatorInfo(); renderActivities(); renderStats(); renderLog();
+    renderOperatorInfo(); renderActivities(); renderStats();
     setControlsEnabled(isActive); updatePauseUI();
     if (isActive) scheduleTick();
     if (pendingRows.length > 0) forceSync();
