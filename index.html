@@ -127,9 +127,14 @@
     gap:8px;transition:.2s;box-shadow:0 4px 12px rgba(139,100,214,.35);font-size:14px;}
   .btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(109,63,214,.4);
     background:var(--lav-600);}
-  .btn-outline{background:#fff;border:2px solid var(--lav-400);
+  .btn-outline{background:transparent;border:2px solid var(--lav-400);
     color:var(--lav-700);box-shadow:none;}
   .btn-outline:hover{background:var(--lav-100);color:var(--lav-800);}
+  .theme-toggle{width:40px;height:40px;border-radius:50%;
+    background:var(--bg-input);border:1px solid var(--line);
+    color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:16px;transition:.2s;}
+  .theme-toggle:hover{background:var(--bg-hover);color:var(--lav-700);}
 
   /* ══════════ ВКЛАДКИ ══════════ */
   .main-tabs{display:flex;gap:6px;background:#fff;padding:6px;border-radius:14px;
@@ -758,6 +763,26 @@
     .actions{width:100%;}
     .btn{flex:1;justify-content:center;}
   }
+
+  /* ══════════ ПЕЧАТЬ ══════════ */
+  @media print {
+    html[data-theme="dark"] {
+      --bg-page: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #f1ebfb;
+      --bg-hover: #e4d9f5;
+      --bg-soft: #f1ebfb;
+      --text: #2f2350;
+      --text-soft: #5b4b85;
+      --line: #d3c2ee;
+      --shadow: none;
+      --shadow-card: none;
+      --glow: none;
+    }
+    body { background: #ffffff !important; }
+    .app-container { box-shadow: none !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -796,6 +821,9 @@
         </button>
       </div>
       <div class="actions">
+        <button class="theme-toggle" id="themeToggle" onclick="Theme.toggle()" title="Переключить тему">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
         <button class="btn" onclick="openBookmarkModal('add')">
           <i class="fas fa-plus"></i> Закладка
         </button>
@@ -4077,6 +4105,16 @@ const Dashboard = (() => {
     '#3b82f6', '#10b981', '#ef4444', '#8b5cf6',
     '#06b6d4', '#f97316', '#84cc16', '#a855f7'
   ];
+  
+  // Цвета для Chart.js в текущей теме
+  function chartColors_() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+      tick:   isDark ? '#b8a8d9' : '#5b4b85',
+      grid:   isDark ? 'rgba(228,217,245,0.08)' : 'rgba(211,194,238,0.5)',
+      legend: isDark ? '#ece5fb' : '#2f2350'
+    };
+  }
 
   function ensureChartJs() {
     return new Promise((resolve, reject) => {
@@ -4188,35 +4226,40 @@ const Dashboard = (() => {
           }
         ]
       },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'top' },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                const v = ctx.parsed.y;
-                const unit = ctx.dataset.yAxisID === 'y1' ? '' : ' мин';
-                return ctx.dataset.label + ': ' + v + unit;
+      options: (function () {
+        const c = chartColors_();
+        return {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: c.legend } },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  const v = ctx.parsed.y;
+                  const unit = ctx.dataset.yAxisID === 'y1' ? '' : ' мин';
+                  return ctx.dataset.label + ': ' + v + unit;
+                }
               }
             }
-          }
-        },
-        scales: {
-          x: { stacked: false },
-          y: {
-            beginAtZero: true,
-            title: { display: true, text: 'Минут' },
-            position: 'left'
           },
-          y1: {
-            beginAtZero: true,
-            title: { display: true, text: 'Активностей' },
-            position: 'right',
-            grid: { drawOnChartArea: false }
+          scales: {
+            x: { stacked: false, ticks: { color: c.tick }, grid: { color: c.grid } },
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Минут', color: c.legend },
+              position: 'left',
+              ticks: { color: c.tick }, grid: { color: c.grid }
+            },
+            y1: {
+              beginAtZero: true,
+              title: { display: true, text: 'Активностей', color: c.legend },
+              position: 'right',
+              ticks: { color: c.tick },
+              grid: { drawOnChartArea: false }
+            }
           }
-        }
-      }
+        };
+      })()
     });
   }
 
@@ -4229,7 +4272,13 @@ const Dashboard = (() => {
       charts[lineCode] = new Chart(canvas, {
         type: 'doughnut',
         data: { labels: ['Нет данных'], datasets: [{ data: [1], backgroundColor: ['#e4d9f5'] }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        options: (function () {
+          const c = chartColors_();
+          return {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: c.legend } } }
+          };
+        })()
       });
       return;
     }
@@ -4239,11 +4288,16 @@ const Dashboard = (() => {
         labels: data.map(d => d.name),
         datasets: [{ data: data.map(d => d.minutes), backgroundColor: PALETTE.slice(0, data.length) }]
       },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed} мин` } } }
-      }
+      options: (function () {
+        const c = chartColors_();
+        return {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: c.legend } },
+            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed} мин` } }
+          }
+        };
+      })()
     });
   }
 
@@ -5225,6 +5279,49 @@ const Qa = (() => {
 
   return { init, reload, setFilter, openReview, closeReviewModal, setReviewResult, submitReview };
 })();
+
+/* ══════════════════════════════════════════════
+   ТЕМА (светлая / тёмная)
+   ══════════════════════════════════════════════ */
+const Theme = (() => {
+  const STORAGE_KEY = 'wb_theme';
+
+  function apply(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const icon = document.getElementById('themeIcon');
+    if (icon) {
+      icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+    // Перерисовать графики, чтобы оси/легенды подхватили новые цвета
+    if (typeof Dashboard !== 'undefined' && Dashboard.reload) {
+      // Дашборд может быть не инициализирован, проверяем
+      try { Dashboard.reload(); } catch (e) {}
+    }
+  }
+
+  function get() {
+    return document.documentElement.getAttribute('data-theme') || 'light';
+  }
+
+  function set(theme) {
+    Storage.set(STORAGE_KEY, theme);
+    apply(theme);
+  }
+
+  function toggle() {
+    const next = get() === 'dark' ? 'light' : 'dark';
+    set(next);
+  }
+
+  function init() {
+    const saved = Storage.get(STORAGE_KEY, null);
+    const theme = (saved === 'dark' || saved === 'light') ? saved : 'light';
+    apply(theme);
+  }
+
+  return { init, toggle, set, get };
+})();
+window.Theme = Theme;
   
 /* ══════════════════════════════════════════════
    ПРОБРОС В WINDOW
@@ -5268,6 +5365,7 @@ window.Qa = Qa;
    ИНИЦИАЛИЗАЦИЯ
    ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
+  Theme.init();
   Motivation.render();
   Confirm.init();
   Auth.init();
