@@ -1963,6 +1963,21 @@ const Confirm = (() => {
     document.getElementById('confirmModalOverlay').classList.remove('show');
     callback = null;
   }
+
+  let currentErrTab = 'summary';
+
+  function switchErrTab(tab) {
+    currentErrTab = tab;
+    document.getElementById('errTabSummary').classList.toggle('active', tab === 'summary');
+    document.getElementById('errTabSamples').classList.toggle('active', tab === 'samples');
+    document.getElementById('errContentSummary').style.display = tab === 'summary' ? '' : 'none';
+    document.getElementById('errContentSamples').style.display = tab === 'samples' ? '' : 'none';
+    
+    // Если переключились на выборку, обновим её
+    if (tab === 'samples' && typeof Qa !== 'undefined' && Qa.reload) {
+      Qa.reload();
+    }
+  }
   function init() {
     if (bound) return;
     bound = true;
@@ -5071,7 +5086,7 @@ const Errors = (() => {
     if (el) el.addEventListener('input', updateCommentCounter);
   });
 
-  return { init, reload, setPeriod, add, remove, renderDashboardTab, reloadCombined, exportCombinedCSV };
+  return { init, reload, setPeriod, add, remove, renderDashboardTab, reloadCombined, exportCombinedCSV, switchErrTab };
 })();
 window.Errors = Errors;
 
