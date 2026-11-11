@@ -5058,6 +5058,21 @@ const Errors = (() => {
     else btn.classList.add('hidden');
   }
 
+  et currentErrTab = 'summary';
+
+  function switchErrTab(tab) {
+    currentErrTab = tab;
+    document.getElementById('errTabSummary').classList.toggle('active', tab === 'summary');
+    document.getElementById('errTabSamples').classList.toggle('active', tab === 'samples');
+    document.getElementById('errContentSummary').style.display = tab === 'summary' ? '' : 'none';
+    document.getElementById('errContentSamples').style.display = tab === 'samples' ? '' : 'none';
+    
+    // Если переключились на выборку, обновим её
+    if (tab === 'samples' && typeof Qa !== 'undefined' && Qa.reload) {
+      Qa.reload();
+    }
+  }
+
   async function init() {
     renderDashboardTab();
     if (!isSupervisor()) return;
@@ -5328,20 +5343,6 @@ const Qa = (() => {
     } catch (e) {
       console.warn('Qa: submitReview error', e);
       showToast('Ошибка сети');
-    }
-  }
-
-  let currentErrTab = 'summary';
-
-  function switchErrTab(tab) {
-    currentErrTab = tab;
-    document.getElementById('errTabSummary').classList.toggle('active', tab === 'summary');
-    document.getElementById('errTabSamples').classList.toggle('active', tab === 'samples');
-    document.getElementById('errContentSummary').style.display = tab === 'summary' ? '' : 'none';
-    document.getElementById('errContentSamples').style.display = tab === 'samples' ? '' : 'none';
-    
-    if (tab === 'samples' && typeof Qa !== 'undefined' && Qa.reload) {
-      Qa.reload();
     }
   }
 
