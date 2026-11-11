@@ -265,17 +265,21 @@
   .login-overlay{position:fixed;inset:0;background:rgba(60,40,100,.55);
     backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:3000;}
   .login-overlay.show{display:flex;}
-  .login-card{background:#fff;border-radius:20px;padding:32px;width:90%;max-width:400px;
-    box-shadow:0 20px 50px rgba(109,63,214,.4);}
+  .login-card{background:var(--bg-card);border-radius:20px;padding:32px;width:90%;max-width:400px;
+    box-shadow:var(--shadow);}
   .login-card h2{margin-bottom:18px;color:var(--lav-700);text-align:center;font-size:22px;}
   .login-card .logo{justify-content:center;margin-bottom:16px;}
   .login-card .form-group{margin-bottom:14px;}
   .login-card label{display:block;font-weight:700;margin-bottom:5px;color:var(--text-soft);font-size:13px;}
   .login-card input{width:100%;padding:12px 16px;border:1px solid var(--line);
     border-radius:10px;font-size:15px;outline:none;font-family:inherit;
-    background:var(--lav-50);color:var(--text);}
-  .login-card input:focus{border-color:var(--lav-500);background:#fff;
+    background:var(--bg-input);color:var(--text);}
+  .login-card input:focus{border-color:var(--lav-500);background:var(--bg-card);
     box-shadow:0 0 0 3px rgba(139,100,214,.15);}
+  .login-card input::placeholder {
+    color: var(--text-soft);
+    opacity: 0.6;
+  }
   .login-card button{width:100%;justify-content:center;margin-top:8px;}
   .login-error{color:var(--red);font-size:13px;margin-top:12px;text-align:center;
     min-height:18px;font-weight:700;}
@@ -1261,6 +1265,8 @@
   <!-- ОШИБКИ (только супервайзер) -->
   <div id="tabContentErrors" style="display:none;">
     <div class="dashboard-wrap">
+      
+      <!-- ТУЛБАР С ФИЛЬТРАМИ ПЕРИОДА -->
       <div class="db-toolbar">
         <div class="db-filters">
           <button class="db-filter-btn active" data-err-period="today" onclick="Errors.setPeriod('today')">Сегодня</button>
@@ -1274,124 +1280,163 @@
         </div>
       </div>
 
-      <div class="db-card">
-        <h3><i class="fas fa-plus-circle"></i> Зафиксировать ошибку</h3>
-        <div class="grid-form" style="grid-template-columns:1.2fr 1.4fr 1.6fr 1fr auto;">
-          <div>
-            <label>Оператор</label>
-            <select id="errOperator"></select>
+      <!-- ТАБЫ (Сводка / Выборка) -->
+      <div class="tabs" style="margin-bottom:18px; max-width: 420px;">
+        <button class="tab active" id="errTabSummary" onclick="Errors.switchErrTab('summary')">
+          📊 Сводка
+        </button>
+        <button class="tab" id="errTabSamples" onclick="Errors.switchErrTab('samples')">
+          ✅ Выборка на разметку
+        </button>
+      </div>
+
+      <!-- ═══════════ ТАБ 1: СВОДКА ═══════════ -->
+      <div id="errContentSummary">
+        
+        <!-- Форма добавления ошибки -->
+        <div class="db-card">
+          <h3><i class="fas fa-plus-circle"></i> Зафиксировать ошибку</h3>
+          <div class="grid-form" style="grid-template-columns:1.2fr 1.4fr 1.6fr 1fr auto;">
+            <div>
+              <label>Оператор</label>
+              <select id="errOperator"></select>
+            </div>
+            <div>
+              <label>Класс ошибки</label>
+              <select id="errClass"></select>
+            </div>
+            <div>
+              <label>Комментарий</label>
+              <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов">
+              <div class="char-counter" id="errCommentCounter">0 / 200</div>
+            </div>
+            <div>
+              <label>Потери, ₽ (если есть)</label>
+              <input type="number" id="errLossAmount" min="0" step="0.01" placeholder="0">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button class="primary-compact" onclick="Errors.add()">
+                <i class="fas fa-check"></i> Зафиксировать
+              </button>
+            </div>
           </div>
-          <div>
-            <label>Класс ошибки</label>
-            <select id="errClass"></select>
+        </div>
+
+        <!-- KPI (Выводится через JS) -->
+        <div class="db-summary" id="combinedSummary"></div>
+
+        <!-- Кнопки CSV (без белой рамки, используем outline) -->
+        <div class="db-card" style="padding:12px 18px; margin-top: 12px; border: none; box-shadow: none; background: transparent;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="Errors.reloadCombined()">
+              <i class="fas fa-sync"></i> Обновить сводку
+            </button>
+            <button class="btn" style="padding:8px 16px;font-size:13px;" onclick="Errors.exportCombinedCSV()">
+              <i class="fas fa-file-csv"></i> Выгрузить CSV (ручные + QA)
+            </button>
+            <span style="color:var(--text-soft);font-size:12px;font-style:italic;">
+              Период: тот же, что и в блоке «По операторам» (today/week/month)
+            </span>
           </div>
-          <div>
-            <label>Комментарий</label>
-            <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов">
-            <div class="char-counter" id="errCommentCounter">0 / 200</div>
+        </div>
+
+        <!-- НОВЫЕ ГРАФИКИ-БУБЛИКИ -->
+        <div class="db-grid-2" style="margin-top: 18px; margin-bottom: 18px;">
+          <div class="db-card">
+            <h3><i class="fas fa-chart-pie"></i> Ошибки по линиям</h3>
+            <div class="db-chart-wrap" style="height:220px;">
+              <canvas id="chartErrLines"></canvas>
+            </div>
           </div>
-          <div>
-            <label>Потери, ₽ (если есть)</label>
-            <input type="number" id="errLossAmount" min="0" step="0.01" placeholder="0">
+          <div class="db-card">
+            <h3><i class="fas fa-chart-pie"></i> Ошибки по классам (по весу)</h3>
+            <div class="db-chart-wrap" style="height:220px;">
+              <canvas id="chartErrClasses"></canvas>
+            </div>
           </div>
-          <div style="display:flex;align-items:flex-end;">
-            <button class="primary-compact" onclick="Errors.add()">
-              <i class="fas fa-check"></i> Зафиксировать
+        </div>
+
+        <!-- Таблицы «По операторам» и «По классам» -->
+        <div class="db-grid-2">
+          <div class="db-card">
+            <h3><i class="fas fa-users"></i> По операторам</h3>
+            <div class="db-table-wrap">
+              <table class="db-table" id="errByOperatorTable">
+                <thead>
+                  <tr>
+                    <th>Оператор</th>
+                    <th>Линия</th>
+                    <th style="text-align:right;">Ошибок</th>
+                    <th style="text-align:right;">Вес</th>
+                    <th style="text-align:right;">Потери, ₽</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="db-card">
+            <h3><i class="fas fa-tags"></i> По классам</h3>
+            <div class="db-table-wrap">
+              <table class="db-table" id="errByClassTable">
+                <thead>
+                  <tr>
+                    <th>Класс</th>
+                    <th style="text-align:right;">Ошибок</th>
+                    <th style="text-align:right;">Вес</th>
+                    <th style="text-align:right;">Потери, ₽</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div> <!-- КОНЕЦ ТАБ 1: СВОДКА -->
+
+
+      <!-- ═══════════ ТАБ 2: ВЫБОРКА (QA) ═══════════ -->
+      <div id="errContentSamples" style="display:none;">
+        
+        <!-- Блок QA перенесён сюда -->
+        <div class="db-card" id="qaBlock">
+          <h3><i class="fas fa-list-check"></i> QA-выборка на разметку</h3>
+
+          <div class="db-filters" style="margin-bottom:12px;">
+            <button class="db-filter-btn active" data-qa-filter="pending" onclick="Qa.setFilter('pending')">
+              ⏳ Только pending
+            </button>
+            <button class="db-filter-btn" data-qa-filter="all" onclick="Qa.setFilter('all')">
+              📋 Все
+            </button>
+            <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;margin-left:auto;" onclick="Qa.reload()">
+              <i class="fas fa-sync"></i> Обновить
             </button>
           </div>
-        </div>
-      </div>
 
-      <!-- СВОДКА: ручные + QA-выборка -->
-      <div class="db-summary" id="combinedSummary"></div>
-
-      <!-- Кнопка CSV -->
-      <div class="db-card" style="padding:12px 18px;">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-outline" style="padding:8px 16px;font-size:13px;" onclick="Errors.reloadCombined()">
-            <i class="fas fa-sync"></i> Обновить сводку
-          </button>
-          <button class="btn" style="padding:8px 16px;font-size:13px;" onclick="Errors.exportCombinedCSV()">
-            <i class="fas fa-file-csv"></i> Выгрузить CSV (ручные + QA)
-          </button>
-          <span style="color:var(--text-soft);font-size:12px;font-style:italic;">
-            Период: тот же, что и в блоке «По операторам» (today/week/month)
-          </span>
-        </div>
-      </div>
-
-      <div class="db-grid-2">
-        <div class="db-card">
-          <h3><i class="fas fa-users"></i> По операторам</h3>
           <div class="db-table-wrap">
-            <table class="db-table" id="errByOperatorTable">
+            <table class="db-table" id="qaSamplesTable">
               <thead>
                 <tr>
                   <th>Оператор</th>
                   <th>Линия</th>
-                  <th style="text-align:right;">Ошибок</th>
-                  <th style="text-align:right;">Вес</th>
-                  <th style="text-align:right;">Потери, ₽</th>
+                  <th>Источник</th>
+                  <th>Сущность</th>
+                  <th>Статус</th>
+                  <th>Действие</th>
                 </tr>
               </thead>
               <tbody></tbody>
             </table>
           </div>
         </div>
-        <div class="db-card">
-          <h3><i class="fas fa-tags"></i> По классам</h3>
-          <div class="db-table-wrap">
-            <table class="db-table" id="errByClassTable">
-              <thead>
-                <tr>
-                  <th>Класс</th>
-                  <th style="text-align:right;">Ошибок</th>
-                  <th style="text-align:right;">Вес</th>
-                  <th style="text-align:right;">Потери, ₽</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
 
-      <!-- QA: сэмплы для разметки -->
-      <div class="db-card" id="qaBlock">
-        <h3><i class="fas fa-list-check"></i> QA-выборка на разметку</h3>
+      </div> <!-- КОНЕЦ ТАБ 2: ВЫБОРКА -->
 
-        <div class="db-filters" style="margin-bottom:12px;">
-          <button class="db-filter-btn active" data-qa-filter="pending" onclick="Qa.setFilter('pending')">
-            ⏳ Только pending
-          </button>
-          <button class="db-filter-btn" data-qa-filter="all" onclick="Qa.setFilter('all')">
-            📋 Все
-          </button>
-          <button class="btn btn-outline" style="padding:8px 14px;font-size:13px;margin-left:auto;" onclick="Qa.reload()">
-            <i class="fas fa-sync"></i> Обновить
-          </button>
-        </div>
-
-        <div class="db-table-wrap">
-          <table class="db-table" id="qaSamplesTable">
-            <thead>
-              <tr>
-                <th>Оператор</th>
-                <th>Линия</th>
-                <th>Источник</th>
-                <th>Сущность</th>
-                <th>Статус</th>
-                <th>Действие</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
+    </div>
   </div>
-</div>
-
+ 
 <!-- МОДАЛКА ЗАКЛАДКИ -->
 <div class="modal-overlay" id="bookmarkModalOverlay">
   <div class="modal">
