@@ -900,118 +900,77 @@
   </div>
 
   <!-- ЗАМЕТКИ -->
+
+    <!-- ЗАМЕТКИ -->
   <div id="tabContentNotes" style="display:none;">
     <div class="notes-layout">
-      <div class="notes-left">
-        <div class="reminder-section">
-          <div class="reminder-title">
-            <i class="fas fa-bell"></i>
-            <span>Напоминания</span>
-            <span class="section-counter" id="remindersActiveCount">0</span>
-          </div>
-          <div id="alarmBanner">🔔 ВНИМАНИЕ! Нужен ответ клиенту!</div>
-
-          <div class="reminder-card" id="formCard">
-            <div class="reminder-author-note" id="reminderAuthorNote"></div>
-            <div class="grid-form">
-              <div><label>WB ID</label><input type="text" id="orderNum" placeholder="12345678"></div>
-              <div>
-                <label>Категория</label>
-                <select id="category">
-                  <option value="tours">🏝 Туры</option>
-                  <option value="hotels">🏨 Отели</option>
-                  <option value="flights">✈️ Авиабилеты</option>
-                  <option value="experiences">🎡 Впечатления</option>
-                  <option value="other">📦 Другое</option>
-                </select>
-              </div>
-              <div class="col-wait">
-                <label>Что ждём?</label>
-                <select id="waiting">
-                  <option value="">— не указано —</option>
-                  <option value="line2">Решение от второй линии</option>
-                  <option value="tech">Решение от тех.специалистов</option>
-                  <option value="sv">Решение от СВ</option>
-                  <option value="claim">Решение от отдела претензий</option>
-                  <option value="tours">Решение от туров</option>
-                </select>
-              </div>
-              <div class="col-sound">
-                <label>Напоминание</label>
-                <div class="sound-row">
-                  <select id="sound">
-                    <option value="birds">Птицы</option>
-                    <option value="alert">Звонок</option>
-                  </select>
-                  <button class="btn-sound-test" onclick="testCurrentSound()" title="Прослушать">
-                    <i class="fas fa-play"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="col-repeat">
-                <label>Повтор каждые</label>
-                <select id="repeat">
-                  <option value="10000">10 секунд</option>
-                  <option value="30000" selected>30 секунд</option>
-                  <option value="60000">1 минута</option>
-                  <option value="120000">2 минуты</option>
-                  <option value="300000">5 минут</option>
-                  <option value="600000">10 минут</option>
-                </select>
-              </div>
-              <div class="col-time">
-                <label>Через сколько вернуться?</label>
-                <div class="time-row-2">
-                  <div class="time-field">
-                    <input type="number" id="hours" min="0" max="23" value="0">
-                    <span class="time-label">чч</span>
-                  </div>
-                  <div class="time-field">
-                    <input type="number" id="minutes" min="0" max="59" value="30">
-                    <span class="time-label">мм</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="note-row">
-              <div class="note-field">
-                <label>Комментарий (необязательно)</label>
-                <input type="text" id="note" maxlength="100" placeholder="До 100 символов">
-                <div class="char-counter" id="noteCounter">0 / 100</div>
-              </div>
-              <button class="primary-compact" onclick="addOrder()">
-                <i class="fas fa-plus"></i> Поставить
-              </button>
-            </div>
-          </div>
-
-          <div class="reminder-card">
-            <div class="tabs">
-              <button class="tab active" id="tabActive" onclick="switchReminderView('active')">
-                📋 Активные <span class="tab-count" id="cntActiveRem">0</span>
-              </button>
-              <button class="tab" id="tabArchive" onclick="switchReminderView('archive')">
-                📁 Обработанные <span class="tab-count" id="cntArchiveRem">0</span>
-              </button>
-            </div>
-            <div class="filters" id="filters" style="margin-top:12px;"></div>
-            <div class="search-row">
-              <input type="text" id="search" placeholder="🔍 Поиск по WB ID..." oninput="scheduleRenderReminders()">
-            </div>
-            <div class="archive-toolbar" id="archiveToolbar" style="display:none;">
-              <h3>📁 Папка «Обработанные»</h3>
-              <div style="display:flex;gap:8px;">
-                <button class="btn-export" onclick="exportArchive()">⬇ Выгрузить</button>
-                <button class="btn-clear" onclick="clearArchive()">🗑 Очистить</button>
-              </div>
-            </div>
-            <div class="stats" id="stats"></div>
-            <div id="ordersList"></div>
+      
+      <!-- ЛЕВАЯ КОЛОНКА: Чек-листы и Дневник -->
+      <div class="notes-left" style="display:flex; flex-direction:column; gap:20px;">
+        
+        <!-- БЛОК 1: ЧЕК-ЛИСТЫ (Заглушка) -->
+        <div class="db-card">
+          <h3><i class="fas fa-tasks"></i> Чек-листы смены</h3>
+          <p style="color:var(--text-soft); font-size:13px; margin-bottom:15px;">
+            Здесь будут списки задач для разных линий. Пока в разработке.
+          </p>
+          <div style="background:var(--bg-soft); padding:16px; border-radius:12px; border:1px dashed var(--line); text-align:center;">
+            <i class="fas fa-clipboard-list" style="font-size:24px; color:var(--lav-400); margin-bottom:8px;"></i>
+            <div style="font-weight:700; color:var(--text); margin-bottom:4px;">Чек-лист для Линии 2</div>
+            <div style="font-size:12px; color:var(--text-soft);">(Пример: Проверить очередь, закрыть старые тикеты)</div>
+            <button class="btn btn-outline" style="margin:12px auto 0; font-size:12px; padding:6px 12px;" onclick="showToast('Чек-листы будут добавлены позже')">
+              Начать проверку
+            </button>
           </div>
         </div>
+
+        <!-- БЛОК 2: ДНЕВНИК РЕФЛЕКСИИ -->
+        <div class="db-card">
+          <div class="tabs" style="margin-bottom: 16px;">
+            <button class="tab active" id="diaryTab1" onclick="Diary.switchPage(1)">
+              <i class="fas fa-check-circle"></i> Что получилось
+            </button>
+            <button class="tab" id="diaryTab2" onclick="Diary.switchPage(2)">
+              <i class="fas fa-lightbulb"></i> Что улучшить
+            </button>
+          </div>
+
+          <!-- Страница 1 -->
+          <div id="diaryPage1">
+            <div class="form-group">
+              <label>Запишите, что сегодня получилось лучше всего (текст или голос)</label>
+              <div style="position:relative;">
+                <textarea id="diaryText1" rows="4" placeholder="Например: Быстро закрыла все чаты по турам..." style="width:100%; padding:10px 40px 10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--bg-input); color:var(--text); font-family:inherit; font-size:14px; outline:none; resize:vertical;"></textarea>
+                <button class="btn-sticker-voice" id="diaryVoiceBtn1" onclick="Diary.voice(1)" style="position:absolute; right:8px; bottom:8px; padding:8px; border-radius:50%;" title="Голосовой ввод">
+                  <i class="fas fa-microphone"></i>
+                </button>
+              </div>
+            </div>
+            <button class="btn" onclick="Diary.save(1)" style="margin-left:auto; font-size:13px; padding:8px 16px;">
+              <i class="fas fa-save"></i> Сохранить
+            </button>
+          </div>
+
+          <!-- Страница 2 -->
+          <div id="diaryPage2" style="display:none;">
+            <div class="form-group">
+              <label>Что можно было сделать иначе? Какие выводы на завтра?</label>
+              <div style="position:relative;">
+                <textarea id="diaryText2" rows="4" placeholder="Например: В следующий раз уточню статус брони в самом начале..." style="width:100%; padding:10px 40px 10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--bg-input); color:var(--text); font-family:inherit; font-size:14px; outline:none; resize:vertical;"></textarea>
+                <button class="btn-sticker-voice" id="diaryVoiceBtn2" onclick="Diary.voice(2)" style="position:absolute; right:8px; bottom:8px; padding:8px; border-radius:50%;" title="Голосовой ввод">
+                  <i class="fas fa-microphone"></i>
+                </button>
+              </div>
+            </div>
+            <button class="btn" onclick="Diary.save(2)" style="margin-left:auto; font-size:13px; padding:8px 16px;">
+              <i class="fas fa-save"></i> Сохранить
+            </button>
+          </div>
+        </div>
+
       </div>
 
+      <!-- ПРАВАЯ КОЛОНКА: Стикеры (остаются как были) -->
       <div class="notes-right">
         <div class="stickers-wrap">
           <div class="stickers-toolbar">
@@ -1031,20 +990,18 @@
           <div class="stickers-grid" id="stickersGrid"></div>
           <div class="sticker-legend">
             <div class="legend-row">
-              <span class="legend-dot yellow"></span>
-              Жёлтый — напоминание каждые 2 часа
+              <span class="legend-dot yellow"></span> Жёлтый — каждые 2 часа
             </div>
             <div class="legend-row">
-              <span class="legend-dot pink"></span>
-              Розовый — каждые 10 минут
+              <span class="legend-dot pink"></span> Розовый — каждые 10 минут
             </div>
             <div class="legend-row">
-              <span class="legend-dot green"></span>
-              Зелёный — к завершению смены
+              <span class="legend-dot green"></span> Зелёный — к завершению смены
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -4164,6 +4121,102 @@ const Stickers = (() => {
 })();
 
 /* ══════════════════════════════════════════════
+   ДНЕВНИК РЕФЛЕКСИИ
+   ══════════════════════════════════════════════ */
+const Diary = (() => {
+  const STORAGE_KEY = 'wb_diary_v1';
+  let isListening = false;
+  let recognition = null;
+  let activePage = 1;
+
+  function load() {
+    const op = Auth.getOperator();
+    if (!op) return;
+    const allData = Storage.get(STORAGE_KEY, {});
+    const myData = allData[op.id] || {};
+    document.getElementById('diaryText1').value = myData.page1 || '';
+    document.getElementById('diaryText2').value = myData.page2 || '';
+  }
+
+  function save(page) {
+    const op = Auth.getOperator();
+    if (!op) { showToast('Войдите в систему'); return; }
+    
+    const textEl = document.getElementById('diaryText' + page);
+    const text = textEl.value.trim();
+    
+    const allData = Storage.get(STORAGE_KEY, {});
+    if (!allData[op.id]) allData[op.id] = {};
+    allData[op.id]['page' + page] = text;
+    Storage.set(STORAGE_KEY, allData);
+    
+    showToast('Запись сохранена');
+  }
+
+  function switchPage(page) {
+    activePage = page;
+    document.getElementById('diaryTab1').classList.toggle('active', page === 1);
+    document.getElementById('diaryTab2').classList.toggle('active', page === 2);
+    document.getElementById('diaryPage1').style.display = page === 1 ? '' : 'none';
+    document.getElementById('diaryPage2').style.display = page === 2 ? '' : 'none';
+  }
+
+  function voice(page) {
+    const btn = document.getElementById('diaryVoiceBtn' + page);
+    const textarea = document.getElementById('diaryText' + page);
+
+    if (isListening) {
+      if (recognition) { try { recognition.stop(); } catch (e) {} }
+      isListening = false; btn.classList.remove('recording');
+      return;
+    }
+
+    if (!window.isSecureContext) { showToast('Микрофон недоступен без HTTPS'); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { showToast('Голосовой ввод не поддерживается'); return; }
+
+    if (!recognition) {
+      recognition = new SR();
+      recognition.lang = 'ru-RU';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+    }
+
+    recognition.onresult = (e) => {
+      let final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      }
+      if (final.trim()) {
+        textarea.value += (textarea.value ? ' ' : '') + final.trim();
+      }
+    };
+
+    recognition.onend = () => { isListening = false; btn.classList.remove('recording'); };
+    recognition.onerror = (e) => {
+      if (e.error !== 'aborted') showToast('Ошибка распознавания: ' + e.error);
+      isListening = false; btn.classList.remove('recording');
+    };
+
+    try {
+      recognition.start();
+      isListening = true; btn.classList.add('recording');
+      showToast('Говорите...');
+    } catch (e) {
+      showToast('Не удалось запустить микрофон');
+      isListening = false; btn.classList.remove('recording');
+    }
+  }
+
+  function init() {
+    load();
+  }
+
+  return { init, load, save, switchPage, voice };
+})();
+window.Diary = Diary;
+
+/* ══════════════════════════════════════════════
    ДАШБОРД
    ══════════════════════════════════════════════ */
 const Dashboard = (() => {
@@ -5474,6 +5527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       Auth.renderReminderAuthorNote();
       Motivation.render();
       Tracker.applyOperator(op);
+      if (typeof Diary !== 'undefined' && Diary.init) Diary.init();
       if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
       await Reminders.load();
       Reminders.scheduleRender();
