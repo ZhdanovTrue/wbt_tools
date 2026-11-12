@@ -545,7 +545,7 @@
   .sticker-legend .legend-dot.green{background:#22c55e;}
 
   /* ══════════ ТРЕКЕР ══════════ */
-  .trackercard{background:#fff;border-radius:20px;border:1px solid var(--line);
+  .trackercard{background:var(--bg-card);border-radius:20px;border:1px solid var(--line);
     box-shadow:var(--shadow);overflow:hidden;}
   .tracker-header-merged{
     background:linear-gradient(135deg,var(--lav-500),var(--lav-700));
@@ -570,7 +570,7 @@
   .tracker-shiftinfo{display:flex;gap:18px;flex-wrap:wrap;font-size:.82rem;align-items:center;opacity:.95;}
   .tracker-shiftinfo b{font-size:1rem;}
   .tracker-shiftbtns{display:flex;gap:10px;flex-shrink:0;}
-  .tracker-shiftbtns .btn-shift{background:#fff;color:var(--lav-800);border:none;border-radius:50px;
+  .tracker-shiftbtns .btn-shift{background:var(--bg-card); border:1px solid var(--line);color:var(--lav-800);border:none;border-radius:50px;
     padding:11px 20px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.88rem;}
   .tracker-shiftbtns .btn-shift.end{background:var(--red);color:#fff;}
   .tracker-shiftbtns .btn-shift:disabled{opacity:.45;cursor:not-allowed;}
@@ -1078,7 +1078,7 @@
          <div class="tracker-break-group tracker-lunch-group">
           <span style="font-size:1.4rem;">🍽️</span>
           <span class="tracker-breaklabel">Обед</span>
-          <select id="lunchDuration" style="width:auto;padding:8px 14px;border-radius:40px;border:1px solid var(--line);font-weight:700;font-family:inherit;color:var(--text);background:#fff;">
+          <select id="lunchDuration" style="width:auto;padding:8px 14px;border-radius:40px;border:1px solid var(--line);font-weight:700;font-family:inherit;color:var(--text);background:var(--bg-input); color:var(--text);">
             <option value="30">30 мин</option>
             <option value="60">60 мин (2 обеда)</option>
           </select>
