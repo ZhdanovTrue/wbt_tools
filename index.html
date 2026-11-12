@@ -2536,10 +2536,37 @@ const Tracker = (() => {
     }
   }
 
-  function startShift() {
+  async function startShift() {
     const op = Auth.getOperator();
     if (!op) { showToast('Сначала войдите в систему'); return; }
-    if (state.startedAt && !state.endedAt) { showToast('Смена уже идёт'); return; }
+    
+    // ⚠️ Проверка: если локально смена "идёт", сверяемся с сервером
+    if (state.startedAt && !state.endedAt) {
+      try {
+        const serverStatus = await ShiftStatus.fetchStatus();
+        const myRow = (serverStatus && serverStatus.operators) ? serverStatus.operators.find(o => o.operatorId === op.id) : null;
+        
+        if (myRow && myRow.status === 'offline') {
+          // Сервер говорит, что смены нет — сбрасываем локальный "зависший" статус
+          state.endedAt = Date.now();
+          if (state.lastTickAt) {
+             state.accumulatedMs += state.endedAt - state.lastTickAt;
+          }
+          state.pauseType = null; state.pauseUntil = null;
+          saveStateNow();
+          showToast('Смена была закрыта супервайзером. Можно начать новую.');
+        } else {
+          // Смена реально активна на сервере
+          showToast('Смена уже идёт');
+          return;
+        }
+      } catch (e) {
+        console.warn('Не удалось сверить статус смены', e);
+        showToast('Нет связи для проверки смены. Попробуйте позже.');
+        return;
+      }
+    }
+    
     const now = Date.now();
     state = Object.assign(freshState(), {
       sessionId: 'sess_' + now + '_' + Math.random().toString(36).slice(2, 8),
@@ -2960,12 +2987,39 @@ const Tracker = (() => {
     updatePauseUI();
   }
 
-  function init() {
+   function init() {
     loadState(); loadQueue();
     if (state.pauseType && state.pauseUntil && Date.now() >= state.pauseUntil) {
       state.pauseType = null; state.pauseUntil = null;
       state.pauseStartedAt = null; state.pauseDurationMin = 0;
       saveStateNow();
+    }
+
+    // ⚠️ Сверка с сервером при загрузке
+    if (state.startedAt && !state.endedAt && Auth.getToken()) {
+      setTimeout(async () => {
+        try {
+          const serverStatus = await ShiftStatus.fetchStatus();
+          const myRow = (serverStatus && serverStatus.operators) ? serverStatus.operators.find(o => o.operatorId === state.operatorId) : null;
+          
+          if (myRow && myRow.status === 'offline') {
+            state.endedAt = Date.now();
+            if (state.lastTickAt) {
+               state.accumulatedMs += state.endedAt - state.lastTickAt;
+            }
+            state.pauseType = null; state.pauseUntil = null;
+            saveStateNow();
+            if (tickTimer) clearInterval(tickTimer);
+            if (syncTimer) clearInterval(syncTimer);
+            renderStats();
+            setControlsEnabled(false);
+            setMotivation('Смена завершена. Отдыхай! 🎉');
+            showToast('Смена была закрыта супервайзером');
+          }
+        } catch (e) {
+          console.warn('Ошибка фоновой сверки смены', e);
+        }
+      }, 1000); // Небольшая задержка, чтобы токен успел прогрузиться
     }
     renderOperatorInfo(); renderActivities(); renderStats();
     const isActive = !!state.startedAt && !state.endedAt;
