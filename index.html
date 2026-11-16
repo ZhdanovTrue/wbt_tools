@@ -778,10 +778,15 @@
     opacity:0;transition:all .4s cubic-bezier(.2,1.4,.4,1);pointer-events:none;line-height:1.5;}
   .motiv-popup.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
 
-  #muteBtn{position:fixed;bottom:14px;left:14px;background:var(--lav-700);color:#fff;
-    border:none;padding:10px 14px;border-radius:20px;font-size:12px;
-    cursor:pointer;opacity:.65;z-index:99;box-shadow:0 4px 12px rgba(109,63,214,.4);}
-  #muteBtn:hover{opacity:1;}
+  #muteBtn{
+    position:fixed; bottom:20px; left:20px;
+    background:var(--bg-card); color:var(--text);
+    border:1px solid var(--line); padding:8px 16px; border-radius:30px;
+    font-size:12px; font-weight:700; cursor:pointer;
+    opacity:0.9; z-index:99; box-shadow:var(--shadow-card);
+    transition:0.2s; display:flex; align-items:center; gap:6px;
+  }
+  #muteBtn:hover{ opacity:1; transform:translateY(-2px); background:var(--bg-hover); }
 
   .toast{position:fixed;top:20px;right:20px;background:var(--bg-card);padding:15px 25px;
     border-radius:var(--radius-md);box-shadow:var(--shadow);
@@ -1244,7 +1249,7 @@
         </div>
 
         <!-- Кнопки CSV -->
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; margin-top: 10px;">
           <button class="btn btn-outline" style="padding: 8px 16px; font-size: 13px;" onclick="Errors.reloadCombined()">
             <i class="fas fa-sync"></i> Обновить сводку
           </button>
@@ -1310,7 +1315,7 @@
 
       <!-- ═══════════ ТАБ 2: ВЫБОРКА ═══════════ -->
       <div id="errContentSamples" style="display:none;">
-	<div style="background: var(--bg-soft); padding: 20px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--line);">
+	<div style="background: var(--bg-card); padding: 20px; border-radius: var(--radius-md); margin-bottom: 20px; border: 1px solid var(--line); box-shadow: var(--shadow-card);">
           
           <h3 style="font-size: 16px; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-plus-circle" style="color: var(--lav-500);"></i> Зафиксировать ошибку
@@ -2234,16 +2239,20 @@ const ACTIVITY_SETS = {
   line1: [
     { id: 'call',   title: 'Звонки',           sub: 'все входящие и исходящие',    hint: '', color: '#8b64d6', weightMin: 3 },
     { id: 'chat',   title: 'Чаты с клиентами', sub: 'исходящие в чате',            hint: '', color: '#7c4ecf', weightMin: 4 },
+	{ id: 'chat',   title: 'Чаты с поставщиками', sub: 'исходящие в чате',            hint: '', color: '#7c4ecf', weightMin: 4 }, 
     { id: 'webkc',  title: 'Чаты Л1 Веб КЦ',   sub: 'запросы с кнопки КЦ',         hint: '', color: '#a488e3', weightMin: 1 },
-    { id: 'mailkc', title: 'Почта Веб КЦ',     sub: 'входящие и исходящие письма', hint: '', color: '#6d3fd6', weightMin: 3 }
+    { id: 'mailkc', title: 'Почта Веб КЦ',     sub: 'входящие и исходящие письма', hint: '', color: '#6d3fd6', weightMin: 3 },
+	{ id: 'problem_new', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 3 }, 
+	{ id: 'SD_new', title: 'Обработка SD',      sub: 'действия с SD заявкой',          hint: '', color: '#8b64d6', weightMin: 3 },  
   ],
   line2: [
     { id: 'call',    title: 'Звонки',                 sub: 'все входящие и исходящие',      hint: '', color: '#7c4ecf', weightMin: 2 },
     { id: 'chat',    title: 'Чаты с клиентами',       sub: 'исходящие в чате',              hint: '', color: '#8b64d6', weightMin: 2 },
-    { id: 'webkc',   title: 'Чаты Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 1 },
+    { id: 'webkc',   title: 'Чаты от Л1 Веб КЦ',         sub: 'ответы операторам с кнопки КЦ', hint: '', color: '#a488e3', weightMin: 1 },
     { id: 'mailkc',  title: 'Почта Веб КЦ',           sub: 'входящие и исходящие',          hint: '', color: '#6d3fd6', weightMin: 1 },
-    { id: 'sched',   title: 'Изменение в расписании', sub: 'информирование клиента',        hint: '', color: '#bda5e5', weightMin: 3 },
-    { id: 'problem', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 3 },
+    { id: 'sched',   title: 'Изменение в расписании', sub: 'информирование клиента',        hint: '', color: '#bda5e5', weightMin: 5 },
+    { id: 'problem', title: 'Обработка проблем',      sub: 'действия с проблемой',          hint: '', color: '#8b64d6', weightMin: 2 },
+	{ id: 'SD', title: 'Обработка SD',      sub: 'действия с SD заявкой',          hint: '', color: '#8b64d6', weightMin: 3 },  
     { id: 'partner_fs', title: 'Обработка FS',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
     { id: 'partner_rzd', title: 'Обработка РЖД',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
     { id: 'partner_pb', title: 'Обработка ПБ',    sub: 'партнёрские админки',           hint: '', color: '#7c4ecf', weightMin: 2 },
