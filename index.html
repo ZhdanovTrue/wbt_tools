@@ -4216,7 +4216,9 @@ function renderErrCharts() {
   async function loadClasses(line) {
     try {
       const params = { token: Auth.getToken() };
-      if (line) params.line = line;
+      // Если передана линия, запрашиваем классы для неё
+      if (line && line !== 'all') params.line = line; 
+      
       const data = await API.get('errors_classes', params);
       classes = (data && data.ok && data.classes) || [];
       return classes;
