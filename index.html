@@ -4863,6 +4863,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Таймер проверки стикеров
   setInterval(() => Stickers.tick ? Stickers.tick() : null, 5000);
 });
+
+function forceShowTabsForLine3() {
+  // Проверяем, есть ли функция Auth и текущий пользователь
+  if (typeof Auth === 'undefined' || !Auth.getOperator) return false;
+  
+  const user = Auth.getOperator();
+  if (!user) return false; // Еще не залогинен
+  
+  if (user.line === 'line3') {
+    console.log("Line3: Включаем все вкладки");
+    
+    // Показываем все скрытые вкладки
+    document.querySelectorAll('.main-tab.hidden').forEach(tab => {
+      tab.classList.remove('hidden');
+      tab.style.setProperty('display', 'flex', 'important');
+    });
+    
+    // Явно показываем Ошибки и Дашборд на всякий случай
+    ['tabDashboardBtn', 'tabErrorsBtn'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.classList.remove('hidden');
+        btn.style.setProperty('display', 'flex', 'important');
+      }
+    });
+    
+    return true; // Успешно применили
+  }
+  return false;
+}
+
+// Проверяем раз в 500мс (полсекунды), но как только пользователь зашел и мы всё включили — останавливаем таймер
+const tabWatcher = setInterval(() => {
+  if (forceShowTabsForLine3()) {
+    clearInterval(tabWatcher); // Останавливаем проверку, как только всё сделали
+  }
+}, 500);
+	
 </script>
 </body>
 </html>
