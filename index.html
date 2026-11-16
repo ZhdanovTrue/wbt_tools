@@ -247,8 +247,8 @@
   /* ══════════ МОДАЛКИ ══════════ */
   .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;
     background:rgba(60,40,100,.4);backdrop-filter:blur(6px);justify-content:center;
-    align-items:center;z-index:1000;pointer-events: none;}
-  .modal-overlay.show{display:flex;pointer-events: auto;}
+    align-items:center;z-index:1000;}
+  .modal-overlay.show{display:flex;}
   .modal{background:var(--bg-card);padding:28px;border-radius:var(--radius-lg);width:90%;max-width:520px;
     box-shadow:var(--shadow);max-height:90vh;overflow-y:auto;
     border:1px solid var(--line);}
@@ -2052,15 +2052,25 @@ const Bookmarks = (() => {
   function save() { Storage.set(STORAGE_KEY, bookmarks); }
 
   function switchTab(tab) {
+    // 1. Если line3 пытается зайти на дашборд — перекидываем на ошибки
+    const op = Auth.getOperator();
+    if (tab === 'dashboard' && op && op.line === 'line3') {
+       tab = 'errors'; 
+    }
+    
+    // 2. Старая проверка для остальных (если не СВ, то на главную)
     if (tab === 'dashboard' && !Auth.isSupervisor()) tab = 'all';
+    
     currentTab = tab;
     document.querySelectorAll('.main-tab').forEach(b => {
       b.classList.toggle('active', b.dataset.tab === tab);
     });
+    
     const isNotes = tab === 'notes';
     const isTracker = tab === 'tracker';
     const isDashboard = tab === 'dashboard';
     const isErrors = tab === 'errors';
+    
     const cardsEl = document.getElementById('tabContentCards');
     const notesEl = document.getElementById('tabContentNotes');
     const trackerEl = document.getElementById('tabContentTracker');
@@ -2083,7 +2093,28 @@ const Bookmarks = (() => {
     } else if (isErrors) {
       if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
       if (typeof Qa !== 'undefined' && Qa.init) Qa.init();
+      
+      // --- ЛОГИКА ДЛЯ LINE3 ВНУТРИ ОШИБОК ---
+      if (op && op.line === 'line3') {
+          const elFilters = document.getElementById('errFiltersBar');
+          if (elFilters) elFilters.style.display = 'none';
+          
+          const elSummaryTab = document.getElementById('errTabSummary');
+          if (elSummaryTab) elSummaryTab.style.display = 'none';
+          
+          const elSummaryCont = document.getElementById('errContentSummary');
+          if (elSummaryCont) elSummaryCont.style.display = 'none';
+          
+          if (typeof Errors !== 'undefined' && Errors.switchErrTab) Errors.switchErrTab('samples');
+      } else {
+          const elFilters = document.getElementById('errFiltersBar');
+          if (elFilters) elFilters.style.display = 'flex'; 
+          
+          const elSummaryTab = document.getElementById('errTabSummary');
+          if (elSummaryTab) elSummaryTab.style.display = 'block';
+      }
     } else {
+      // Это для вкладки "Закладки" (главная)
       render();
     }
     updateCounters();
@@ -4186,13 +4217,26 @@ function renderErrCharts() {
     if (operatorsCache) return operatorsCache;
     try {
       const data = await API.get('list');
+      console.log("Данные от API (list):", data); // Посмотрим, что приходит
+      
       const all = (data && data.operators) || [];
-      operatorsCache = all.filter(function(o) {
-        return o.line === 'line1' || o.line === 'line2';
-      });
+      const op = Auth.getOperator();
+      
+      if (op && op.line === 'line3') {
+         // Для line3 берем всех, кроме супервайзеров
+         operatorsCache = all.filter(o => o.line !== 'sv'); 
+         console.log("Для line3 отфильтровано:", operatorsCache);
+      } else {
+         operatorsCache = all.filter(o => o.line === 'line1' || o.line === 'line2');
+         console.log("Для СВ отфильтровано:", operatorsCache);
+      }
       return operatorsCache;
     } catch (e) {
-      console.warn('Errors: loadOperators error', e);
+      console.error('Errors: loadOperators error', e);
+      // Если API упал, попробуем взять операторов из ShiftStatus (если там есть)
+      if (typeof ShiftStatus !== 'undefined') {
+          // ... (опционально)
+      }
       return [];
     }
   }
@@ -4349,7 +4393,11 @@ function renderErrCharts() {
   }
 
   async function add() {
-    if (!isSupervisor()) { showToast('Только супервайзер может вносить ошибки'); return; }
+    const op = Auth.getOperator();
+    if (!isSupervisor() && (!op || op.line !== 'line3')) { 
+        showToast('У вас нет прав на добавление ошибок'); 
+        return; 
+    }
     const operatorId = document.getElementById('errOperator').value;
     const classCode  = document.getElementById('errClass').value;
     const commentEl  = document.getElementById('errComment');
@@ -4435,7 +4483,12 @@ function renderErrCharts() {
   function renderDashboardTab() {
     const btn = document.getElementById('tabErrorsBtn');
     if (!btn) return;
-    if (isSupervisor()) btn.classList.remove('hidden');
+    
+    // Разрешаем видеть вкладку для line3
+    const op = Auth.getOperator();
+    const canSeeErrors = isSupervisor() || (op && op.line === 'line3');
+    
+    if (canSeeErrors) btn.classList.remove('hidden');
     else btn.classList.add('hidden');
   }
 
@@ -4456,7 +4509,10 @@ function renderErrCharts() {
 
   async function init() {
     renderDashboardTab();
-    if (!isSupervisor()) return;
+    
+    const op = Auth.getOperator();
+    if (!isSupervisor() && (!op || op.line !== 'line3')) return; // Пускаем только СВ и line3
+    
     if (initialized) { reload(); return; }
     initialized = true;
     await reload();
@@ -4900,7 +4956,7 @@ const tabWatcher = setInterval(() => {
     clearInterval(tabWatcher); // Останавливаем проверку, как только всё сделали
   }
 }, 500);
-	
+
 </script>
 </body>
 </html>
