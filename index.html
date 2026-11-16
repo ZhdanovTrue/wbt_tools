@@ -909,7 +909,7 @@
     <button class="main-tab hidden" data-tab="dashboard" id="tabDashboardBtn" onclick="switchMainTab('dashboard')">
       <i class="fas fa-chart-pie"></i> Дашборд
     </button>
-    <button class="main-tab hidden" data-tab="errors" id="tabErrorsBtn" onclick="switchMainTab('errors')">
+    <button class="main-tab hidden" data-tab="errors" id="tabErrorsBtn" onclick="switchMainTab('errors'); setupErrorsTabForRole();">
       <i class="fas fa-exclamation-triangle"></i> Ошибки
     </button>
   </div>
@@ -1213,7 +1213,7 @@
     <div class="dashboard-wrap" style="background: var(--bg-card); padding: 26px; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--line);">
       
       <!-- 1. ВЕРХНЯЯ ПАНЕЛЬ (Фильтры) -->
-      <div class="db-toolbar" style="background: var(--bg-soft); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; box-shadow: none;">
+      <div class="db-toolbar" id="errFiltersBar" style="background: var(--bg-soft); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; box-shadow: none;">
         <div class="db-filters">
           <button class="db-filter-btn active" data-err-period="today" onclick="Errors.setPeriod('today')">Сегодня</button>
           <button class="db-filter-btn" data-err-period="week" onclick="Errors.setPeriod('week')">Неделя</button>
@@ -4863,6 +4863,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Таймер проверки стикеров
   setInterval(() => Stickers.tick ? Stickers.tick() : null, 5000);
 });
+
+function setupErrorsTabForRole() {
+  const user = Auth.getOperator(); // Получаем текущего юзера
+  
+  if (user && user.line === 'line3') {
+    // СКРЫВАЕМ ДЛЯ LINE3
+    const filters = document.getElementById('errFiltersBar');
+    if (filters) filters.style.display = 'none';
+    
+    const tabSummary = document.getElementById('errTabSummary');
+    if (tabSummary) tabSummary.style.display = 'none';
+    
+    const contentSummary = document.getElementById('errContentSummary');
+    if (contentSummary) contentSummary.style.display = 'none';
+    
+    // ВКЛЮЧАЕМ ВЫБОРКУ
+    if (typeof Errors !== 'undefined' && Errors.switchErrTab) {
+      Errors.switchErrTab('samples');
+    }
+  } else {
+    // ВОЗВРАЩАЕМ ДЛЯ ОСТАЛЬНЫХ
+    const filters = document.getElementById('errFiltersBar');
+    if (filters) filters.style.display = 'flex'; // или block
+    
+    const tabSummary = document.getElementById('errTabSummary');
+    if (tabSummary) tabSummary.style.display = 'block';
+  }
+}
+	
 </script>
 </body>
 </html>
