@@ -1822,6 +1822,7 @@ const Confirm = (() => {
   let callback = null;
   let bound = false;
   function open(title, subtitle = '', onConfirm, okText = 'Удалить') {
+	init();
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmSubtitle').textContent = subtitle || '';
     callback = onConfirm;
