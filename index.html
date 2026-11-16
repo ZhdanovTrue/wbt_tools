@@ -880,16 +880,16 @@
         <span class="user-sep">·</span>
         <span class="user-line-chip" id="userLineChip">—</span>
         <button class="btn btn-outline btn-logout" onclick="Auth.logout()">
-          <i class="fas fa-sign-out-alt"></i> Выйти
-        </button>
+		  <i class="fas fa-sign-out-alt"></i> Выйти
+		</button>
       </div>
       <div class="actions">
         <button class="theme-toggle" id="themeToggle" onclick="Theme.toggle()" title="Переключить тему">
           <i class="fas fa-moon" id="themeIcon"></i>
         </button>
-        <button class="btn" onclick="openBookmarkModal('add')">
-          <i class="fas fa-plus"></i> Закладка
-        </button>
+        <button class="btn" onclick="document.getElementById('bookmarkModalOverlay').classList.add('show')">
+ 			 <i class="fas fa-plus"></i> Закладка
+		</button>
       </div>
     </div>
     <div class="header-bottom">
@@ -1906,18 +1906,28 @@ const Auth = (() => {
     Storage.remove(TOKEN_KEY); Storage.remove(OP_KEY);
     return null;
   }
+	
   function logout() {
-    // Просто спрашиваем подтверждение, без лишних проверок
-    Confirm.open('Выйти из системы?', 'Вы действительно хотите выйти?', () => {
-      // Если трекер есть, останавливаем смену
+    // Проверяем, активна ли смена
+    let shiftActive = false;
+    if (typeof Tracker !== 'undefined' && Tracker.getState) {
+      const s = Tracker.getState();
+      shiftActive = s && s.startedAt && !s.endedAt;
+    }
+
+    const msg = shiftActive
+      ? '⚠️ Если вы выйдете сейчас, смена завершится, а данные отправятся в лог.\n\nПродолжить выход?'
+      : 'Вы действительно хотите выйти?';
+
+    // Встроенный confirm — он никогда не ломается
+    if (window.confirm(msg)) {
       if (typeof Tracker !== 'undefined' && Tracker.stopOnLogout) {
-        Tracker.stopOnLogout();
+        Tracker.stopOnLogout(); // Закрываем смену
       }
-      // Очищаем данные и перезагружаем страницу
       Storage.remove(TOKEN_KEY); 
       Storage.remove(OP_KEY);
       setTimeout(() => location.reload(), 400);
-    }, 'Выйти');
+    }
   }
   function showLogin() {
     document.getElementById('loginOverlay').classList.add('show');
