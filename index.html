@@ -3942,10 +3942,6 @@ const Errors = (() => {
   }
 
   async function reloadCombined() {
-    const op = Auth.getOperator();
-    // Пускаем и супервайзера, и line3
-    if (!isSupervisor() && (!op || op.line !== 'line3')) return; 
-    
     try {
       const data = await API.get('errors_combined_stats', {
         token: Auth.getToken(),
@@ -3986,49 +3982,43 @@ const Errors = (() => {
   }
 
   function renderCombinedByOperator() {
-  // Используем ту же таблицу errByOperatorTable, но данные из combinedStats
-  const tbody = document.querySelector('#errByOperatorTable tbody');
-  if (!tbody || !combinedStats) return;
-  
-  const rows = combinedStats.byOperator || [];
-  
-  if (rows.length === 0) {
-    // Обратите внимание: colspan теперь "6", так как мы добавили новую колонку
-    tbody.innerHTML = '<tr><td colspan="6" class="db-empty">Нет данных за период</td></tr>';
-    return;
-  }
+    const tbody = document.querySelector('#errByOperatorTable tbody');
+    if (!tbody || !combinedStats) return;
+    
+    const rows = combinedStats.byOperator || [];
+    
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="db-empty">Нет данных за период</td></tr>';
+      return;
+    }
 
-  tbody.innerHTML = rows.map(function(r) {
-    const lineLabel = r.line === 'line1' ? 'Линия 1' : (r.line === 'line2' ? 'Линия 2' : r.line);
-    const loss = Number(r.loss) || 0;
-    const lossCell = loss > 0
-      ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
-      : `<span style="color:var(--text-soft);">—</span>`;
-      
-    // Формируем URL для перехода. 
-    // Если в r нет operatorId, передаем имя как идентификатор (бэкенд должен это переварить, либо нужно добавить ID в API).
-    const opId = r.operatorId || r.id || r.operatorName; 
-    const opName = encodeURIComponent(r.operatorName || '');
-    const opLine = r.line || 'line1';
-    const trackingUrl = `tracking.html?opId=${opId}&name=${opName}&line=${opLine}`;
-
-    return `
-      <tr>
-        <td>${escapeHtml(r.operatorName || '')}</td>
-        <td><span class="err-row-badge">${escapeHtml(lineLabel)}</span></td>
-        <td class="num">${r.reviewed || 0}</td>
-        <td class="num">${r.withErrors || 0}</td>
-        <td class="num">${lossCell}</td>
+    tbody.innerHTML = rows.map(function(r) {
+      const lineLabel = r.line === 'line1' ? 'Линия 1' : (r.line === 'line2' ? 'Линия 2' : r.line);
+      const loss = Number(r.loss) || 0;
+      const lossCell = loss > 0
+        ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>`
+        : `<span style="color:var(--text-soft);">—</span>`;
         
-        <!-- 👇 ВОТ СЮДА ВСТАВЛЕНА КНОПКА (внутри обратных кавычек) -->
-        <td style="text-align:center;">
-          <a href="${trackingUrl}" class="btn btn-outline" style="padding:4px 8px; font-size:11px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-            <i class="fas fa-chart-line"></i> Динамика
-          </a>
-        </td>
-      </tr>`;
-  }).join('');
-}
+      const opId = r.operatorId || r.id || r.operatorName; 
+      const opName = encodeURIComponent(r.operatorName || '');
+      const opLine = r.line || 'line1';
+      const trackingUrl = `tracking.html?opId=${opId}&name=${opName}&line=${opLine}`;
+
+      return `
+        <tr>
+          <td>${escapeHtml(r.operatorName || '')}</td>
+          <td><span class="err-row-badge">${escapeHtml(lineLabel)}</span></td>
+          <td class="num">${r.reviewed || 0}</td>
+          <td class="num">${r.withErrors || 0}</td>
+          <td class="num">${lossCell}</td>
+          <td style="text-align:center;">
+            <a href="${trackingUrl}" class="btn btn-outline" style="padding:4px 8px; font-size:11px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+              <i class="fas fa-chart-line"></i> Динамика
+            </a>
+          </td>
+        </tr>`;
+    }).join('');
+  }
 
   function renderCombinedByClass() {
     const tbody = document.querySelector('#errByClassTable tbody');
