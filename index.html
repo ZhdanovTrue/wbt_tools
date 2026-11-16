@@ -1450,13 +1450,11 @@
   <div class="modal" style="max-width:440px;">
     <h2 id="confirmTitle">Подтвердите действие</h2>
     <div class="confirm-subtitle" id="confirmSubtitle"
-      style="font-size:14px;color:var(--text-soft);line-height:1.55;white-space:pre-line;"></div>
+      style="font-size:14px;color:var(--text-soft);line-height:1.55;white-space:pre-line; margin-bottom: 20px;"></div>
     <div class="modal-actions">
-      <button type="button" class="btn btn-cancel" onclick="closeConfirm()">Отмена</button>
-      <button type="button" class="btn-confirm" id="confirmOkBtn"
-        style="background:var(--lav-600);color:#fff;border:none;padding:10px 22px;
-        border-radius:50px;font-weight:700;cursor:pointer;font-size:14px;">
-        Удалить
+      <button type="button" class="btn btn-cancel" onclick="Confirm.close()">Отмена</button>
+      <button type="button" class="btn" id="confirmOkBtn" style="background:var(--lav-600); color:#fff; border-radius:50px; padding:10px 22px; font-weight:700; cursor:pointer;">
+        Да
       </button>
     </div>
   </div>
@@ -1820,31 +1818,34 @@ const AudioEngine = (() => {
 
 const Confirm = (() => {
   let callback = null;
-  let bound = false;
-  function open(title, subtitle = '', onConfirm, okText = 'Удалить') {
+
+  function open(title, subtitle = '', onConfirm, okText = 'Да') {
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmSubtitle').textContent = subtitle || '';
     callback = onConfirm;
     document.getElementById('confirmOkBtn').textContent = okText;
     document.getElementById('confirmModalOverlay').classList.add('show');
   }
+
   function close() {
     document.getElementById('confirmModalOverlay').classList.remove('show');
     callback = null;
   }
 
-    function init() {
-    if (bound) return;
-    bound = true;
-    document.getElementById('confirmOkBtn').addEventListener('click', () => {
-      const cb = callback; close(); if (cb) cb();
-    });
-    document.getElementById('confirmModalOverlay').addEventListener('click', function(e) {
-      if (e.target === this) close();
-    });
-  }
-  return { open, close, init };
+  // Привязка событий
+  document.getElementById('confirmOkBtn').addEventListener('click', () => {
+    const cb = callback; 
+    close(); 
+    if (cb) cb();
+  });
+  
+  document.getElementById('confirmModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) close();
+  });
+
+  return { open, close };
 })();
+window.Confirm = Confirm;
 
 const API = (() => {
   function clean(v) {
