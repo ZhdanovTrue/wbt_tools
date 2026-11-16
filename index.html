@@ -1822,7 +1822,6 @@ const Confirm = (() => {
   let callback = null;
   let bound = false;
   function open(title, subtitle = '', onConfirm, okText = 'Удалить') {
-	init();
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmSubtitle').textContent = subtitle || '';
     callback = onConfirm;
@@ -1907,14 +1906,15 @@ const Auth = (() => {
     return null;
   }
   function logout() {
-    const s = (typeof Tracker !== 'undefined' && Tracker.getState) ? Tracker.getState() : null;
-    const shiftActive = s && s.startedAt && !s.endedAt;
-    const subtitle = shiftActive
-      ? '⚠️ Если вы выйдете сейчас, смена завершится, а данные отправятся в лог.\n\nПродолжить выход?'
-      : 'Вы действительно хотите выйти?';
-    Confirm.open('Выйти из системы?', subtitle, () => {
-      if (typeof Tracker !== 'undefined' && Tracker.stopOnLogout) Tracker.stopOnLogout();
-      Storage.remove(TOKEN_KEY); Storage.remove(OP_KEY);
+    // Просто спрашиваем подтверждение, без лишних проверок
+    Confirm.open('Выйти из системы?', 'Вы действительно хотите выйти?', () => {
+      // Если трекер есть, останавливаем смену
+      if (typeof Tracker !== 'undefined' && Tracker.stopOnLogout) {
+        Tracker.stopOnLogout();
+      }
+      // Очищаем данные и перезагружаем страницу
+      Storage.remove(TOKEN_KEY); 
+      Storage.remove(OP_KEY);
       setTimeout(() => location.reload(), 400);
     }, 'Выйти');
   }
