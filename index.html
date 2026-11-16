@@ -1965,6 +1965,21 @@ const Auth = (() => {
     document.getElementById('userLineChip').textContent =
       line ? line.chipLabel : op.line;
     renderReminderAuthorNote();
+
+	// 👇 ДОБАВЛЯЕМ ВОТ ЭТОТ БЛОК:
+    if (op.line === 'line3') {
+        const errBtn = document.getElementById('tabErrorsBtn');
+        if (errBtn) {
+            errBtn.classList.remove('hidden');
+            errBtn.style.display = 'flex';
+        }
+        // На всякий случай прячем кнопку Дашборд, если она вдруг видна
+        const dashBtn = document.getElementById('tabDashboardBtn');
+        if (dashBtn) {
+            dashBtn.classList.add('hidden');
+            dashBtn.style.display = 'none';
+        }
+    }
   }
 
   function renderReminderAuthorNote() {
