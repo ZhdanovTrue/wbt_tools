@@ -110,8 +110,12 @@
     transition:background .25s, box-shadow .25s;}
 
   /* ══════════ ШАПКА ══════════ */
-  .header{display:flex;flex-direction:column;gap:14px;
-    margin-bottom:20px;border-bottom:2px solid var(--lav-300);padding-bottom:14px;}
+  .header{
+    display:flex; flex-direction:column; gap:14px;
+    margin-bottom:20px; border-bottom:2px solid var(--lav-300); padding-bottom:14px;
+    position: relative; /* 👈 ДОБАВИТЬ */
+    z-index: 100;       /* 👈 ДОБАВИТЬ (чтобы шапка была выше фона) */
+  }
   .header-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
   .header-top .logo{flex-shrink:0;}
   .header-top .user-bar{flex-shrink:0;}
