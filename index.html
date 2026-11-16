@@ -3942,7 +3942,10 @@ const Errors = (() => {
   }
 
   async function reloadCombined() {
-    if (!isSupervisor()) return;
+    const op = Auth.getOperator();
+    // Пускаем и супервайзера, и line3
+    if (!isSupervisor() && (!op || op.line !== 'line3')) return; 
+    
     try {
       const data = await API.get('errors_combined_stats', {
         token: Auth.getToken(),
