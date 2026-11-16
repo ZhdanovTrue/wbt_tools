@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WB Travel · Динамика ошибок</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Huninn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* Базовые стили, скопированные из вашего основного файла для единообразия */
+  :root {
+    --lav-50:#f1ebfb; --lav-100:#e4d9f5; --lav-200:#d3c2ee; --lav-300:#bda5e5;
+    --lav-400:#a488e3; --lav-500:#8b64d6; --lav-600:#7c4ecf; --lav-700:#6d3fd6;
+    --lav-800:#5a2fb8; --text:#2f2350; --text-soft:#5b4b85; --line:#d3c2ee;
+    --green:#16a34a; --red:#e11d48; --amber:#d97706;
+    --bg-page:#ede7f6; --bg-card:#ffffff; --bg-input:#f1ebfb; --bg-hover:#e4d9f5; --bg-soft:#f1ebfb;
+    --shadow:0 8px 28px rgba(109,63,214,.18); --shadow-card:0 4px 12px rgba(109,63,214,.1);
+    --radius-sm:8px; --radius-md:14px; --radius-lg:20px;
+  }
+  html[data-theme="dark"] {
+    --lav-400:#c9b6f0; --lav-500:#b39be8; --lav-600:#a488e3; --lav-700:#8b64d6; --lav-800:#7c4ecf;
+    --lav-50:#2e2348; --lav-100:#3a2b5c; --lav-200:#4a3870; --lav-300:#5a4585;
+    --text:#ece5fb; --text-soft:#b8a8d9; --line:rgba(228,217,245,.14);
+    --green:#22c55e; --red:#f43f5e; --amber:#f59e0b;
+    --bg-page:#14101e; --bg-card:#1e1730; --bg-input:#2a2044; --bg-hover:#2f2548; --bg-soft:#241c3a;
+    --shadow:0 8px 28px rgba(0,0,0,.5); --shadow-card:0 0 20px rgba(139,100,214,.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Huninn', sans-serif; }
+  body { background: var(--bg-page); color: var(--text); padding: 24px; min-height: 100vh; transition: background .25s, color .25s; }
+  
+  .app-container { max-width: 1500px; margin: 0 auto; background: var(--bg-card); border-radius: var(--radius-lg); padding: 26px; box-shadow: var(--shadow); border: 1px solid var(--line); }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid var(--lav-300); padding-bottom: 14px; }
+  .logo { font-size: 24px; font-weight: 800; color: var(--lav-700); display: flex; align-items: center; gap: 10px; }
+  .btn { background: var(--lav-500); color: #fff; border: none; padding: 10px 20px; border-radius: 50px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: .2s; text-decoration: none; font-size: 14px; }
+  .btn:hover { background: var(--lav-600); transform: translateY(-2px); }
+  .btn-outline { background: transparent; border: 2px solid var(--lav-400); color: var(--lav-700); }
+  .btn-outline:hover { background: var(--lav-100); color: var(--lav-800); }
+  
+  /* Стили для карточек и графиков */
+  .db-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow-card); margin-bottom: 20px; }
+  .db-chart-wrap { position: relative; height: 250px; width: 100%; }
+  .tracking-card { flex: 0 0 320px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; box-shadow: var(--shadow-card); }
+  
+  /* Модалки */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(60,40,100,.4); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg-card); padding: 28px; border-radius: var(--radius-lg); width: 90%; max-width: 520px; box-shadow: var(--shadow); border: 1px solid var(--line); max-height: 90vh; overflow-y: auto; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-weight: 700; margin-bottom: 5px; color: var(--text-soft); font-size: 13px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 14px; outline: none; background: var(--bg-input); color: var(--text); font-family: inherit; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--lav-500); background: var(--bg-card); box-shadow: 0 0 0 3px rgba(139,100,214,.15); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .btn-cancel { background: #e4d9f5; color: var(--lav-700); }
+  .btn-cancel:hover { background: #d3c2ee; }
+  
+  /* Стили для табов */
+  .tabs { display: flex; gap: 6px; background: var(--bg-card); padding: 6px; border-radius: 12px; border: 1px solid var(--line); max-width: 300px; margin-bottom: 20px; }
+  .tab { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: 800; color: var(--text-soft); transition: .15s; text-align: center; }
+  .tab.active { background: var(--lav-600); color: #fff; box-shadow: 0 4px 12px rgba(109,63,214,.4); }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">
+    <div class="logo"><i class="fas fa-chart-line"></i> Динамика ошибок</div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-outline" onclick="toggleTheme()" style="padding:8px 16px;"><i class="fas fa-moon"></i></button>
+      <a href="index.html" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Назад к ошибкам</a>
+    </div>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <h2 id="pageOperatorName" style="font-size: 20px; color: var(--text);">Загрузка...</h2>
+  </div>
+
+  <!-- График -->
+  <div class="db-card">
+    <h3 style="font-size: 14px; color: var(--text-soft); margin-bottom: 15px;">Ошибки за 14 дней (по весу)</h3>
+    <div class="db-chart-wrap"><canvas id="trackingChart"></canvas></div>
+  </div>
+
+  <!-- Табы и Карточки -->
+  <div class="db-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+      <h3 style="font-size: 16px;"><i class="fas fa-tasks"></i> Отработка ошибок</h3>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab active" id="tabActive" onclick="switchView('active')">В работе</button>
+      <button class="tab" id="tabArchive" onclick="switchView('archive')">Архив</button>
+    </div>
+
+    <div id="trackingCardsContainer" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;"></div>
+  </div>
+</div>
+
+<!-- Модалка создания/редактирования карточки -->
+<div class="modal-overlay" id="trackingModalOverlay">
+  <div class="modal">
+    <h2 id="trkModalTitle" style="margin-bottom: 18px; color: var(--lav-700);">Новая карточка</h2>
+    <input type="hidden" id="trkTrackingId">
+    <div class="form-group">
+      <label>Класс ошибки</label>
+      <select id="trkClassSelect"></select>
+    </div>
+    <div class="form-group">
+      <label>Описание ошибки (факт)</label>
+      <textarea id="trkErrorDesc" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Причина</label>
+      <textarea id="trkCause" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Принятые меры / Договоренности</label>
+      <textarea id="trkMeasures" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Дата следующей проверки</label>
+      <input type="date" id="trkNextDate">
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-cancel" onclick="document.getElementById('trackingModalOverlay').classList.remove('show')">Отмена</button>
+      <button type="button" class="btn" onclick="saveCard()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка итогового решения -->
+<div class="modal-overlay" id="decisionModalOverlay" style="z-index: 1100;">
+  <div class="modal" style="max-width: 400px;">
+    <h2 style="color: var(--lav-700); margin-bottom: 16px;">Итоговое решение</h2>
+    <p style="color: var(--text); margin-bottom: 20px; font-size: 14px;">Ошибка устранена?</p>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn" style="flex: 1; justify-content: center; background: var(--green);" onclick="finalDecision(true)">Да, закрыть кейс</button>
+      <button class="btn" style="flex: 1; justify-content: center; background: var(--red);" onclick="finalDecision(false)">Нет, новый цикл</button>
+    </div>
+    <div class="modal-actions" style="margin-top: 20px;">
+      <button type="button" class="btn btn-cancel" style="width: 100%; justify-content: center;" onclick="document.getElementById('decisionModalOverlay').classList.remove('show')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- КОНФИГ ---
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlvBCm_1V7uR0jEdAVdFFyY7LxAVXzWsz2sq9htQU5t7I7Ib-h/exec'; 
+  
+  let currentOperator = null;
+  let chartInstance = null;
+  let classes = [];
+  let allCards = []; // Все карточки (и активные, и архив)
+  let currentView = 'active';
+  let currentDecisionGroupId = null;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const opId = urlParams.get('opId');
+  const opName = urlParams.get('name') || 'Оператор';
+  const opLine = urlParams.get('line') || 'line1';
+
+  if (opId) {
+    currentOperator = { id: opId, name: opName, line: opLine };
+    document.getElementById('pageOperatorName').textContent = opName;
+    document.title = `WB Travel · Динамика: ${opName}`;
+    loadData();
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(`${SHEETS_URL}?action=getTrackingData&operatorId=${currentOperator.id}`);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Ошибка сервера');
+      
+      const data = json.data;
+      classes = data.classes || [];
+      allCards = data.cards || [];
+      
+      renderChart(data.chartData);
+      renderView();
+    } catch (e) {
+      console.error('Ошибка загрузки:', e);
+      alert('Не удалось загрузить данные динамики: ' + e.message);
+    }
+  }
+
+  function renderChart(chartData) {
+    const ctx = document.getElementById('trackingChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: chartData.map(d => d.date),
+        datasets: [
+          { label: 'Критичные (8-10)', data: chartData.map(d => d.critical), backgroundColor: '#ef4444', borderRadius: 4 },
+          { label: 'Средние (4-7)', data: chartData.map(d => d.normal), backgroundColor: '#f59e0b', borderRadius: 4 },
+          { label: 'Мелкие (1-3)', data: chartData.map(d => d.minor), backgroundColor: '#10b981', borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+      }
+    });
+  }
+
+  function switchView(view) {
+    currentView = view;
+    document.getElementById('tabActive').classList.toggle('active', view === 'active');
+    document.getElementById('tabArchive').classList.toggle('active', view === 'archive');
+    renderView();
+  }
+
+  function renderView() {
+    const container = document.getElementById('trackingCardsContainer');
+    container.innerHTML = '';
+
+    if (currentView === 'active') {
+      renderActive(container);
+    } else {
+      renderArchive(container);
+    }
+  }
+
+  // РЕНДЕР АКТИВНЫХ (В РАБОТЕ)
+  function renderActive(container) {
+    const activeCards = allCards.filter(c => c.status === 'active');
+    
+    // Группируем по groupId
+    const groups = {};
+    activeCards.forEach(c => {
+      if (!groups[c.groupId]) groups[c.groupId] = [];
+      groups[c.groupId].push(c);
+    });
+
+    const groupKeys = Object.keys(groups);
+
+    if (groupKeys.length === 0) {
+      container.innerHTML = `
+        <div onclick="openModal()" style="flex: 0 0 320px; min-height:200px; display:flex; align-items:center; justify-content:center; border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50); transition:0.2s;">
+          <div style="text-align:center;">
+            <i class="fas fa-plus-circle" style="font-size:28px; margin-bottom:8px;"></i><br>
+            <span style="font-size:13px; font-weight:700;">Зафиксировать ошибку</span>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Для каждой группы (строки) рендерим цепочку
+    groupKeys.forEach(gid => {
+      const chain = groups[gid];
+      const stageOrder = { initial: 1, intermediate: 2, final: 3 };
+      chain.sort((a, b) => stageOrder[a.stage] - stageOrder[b.stage]);
+
+      const rowWrapper = document.createElement('div');
+      // Оборачиваем в строку (flex), чтобы карточки шли друг за другом
+      rowWrapper.style.cssText = 'display:flex; gap:16px; width: 100%; margin-bottom: 16px; border-bottom: 1px dashed var(--line); padding-bottom: 16px; align-items: stretch;';
+
+      chain.forEach(card => {
+        const isFinal = card.stage === 'final';
+        const stageName = card.stage === 'initial' ? 'Первичная' : card.stage === 'intermediate' ? 'Проверка 1' : 'Итоговая';
+        const stageColor = card.stage === 'initial' ? 'var(--lav-100)' : card.stage === 'intermediate' ? '#fef3c7' : '#dcfce7';
+        const stageTextColor = card.stage === 'initial' ? 'var(--lav-700)' : card.stage === 'intermediate' ? '#92400e' : '#166534';
+        const cls = classes.find(c => c.code === card.errorClass);
+
+        rowWrapper.insertAdjacentHTML('beforeend', `
+          <div class="tracking-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+              <span style="background:${stageColor}; color:${stageTextColor}; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:800;">${stageName}</span>
+              ${!isFinal ? `<button onclick="openModal('${card.trackingId}')" style="background:none; border:none; color:var(--lav-500); cursor:pointer;"><i class="fas fa-pen"></i></button>` : ''}
+            </div>
+            <div style="font-size:12px; color:var(--text-soft); margin-bottom:12px; flex:1;">
+              <div style="margin-bottom:6px;"><b>Класс:</b> <span style="color:var(--red); font-weight:700;">${cls ? cls.name : card.errorClass}</span></div>
+              <div style="margin-bottom:6px;"><b>Ошибка:</b> ${card.errorDesc || '—'}</div>
+              <div style="margin-bottom:6px;"><b>Причина:</b> ${card.cause || '—'}</div>
+              <div style="margin-bottom:6px;"><b>Меры:</b> ${card.measures || '—'}</div>
+            </div>
+            <div style="border-top:1px dashed var(--line); padding-top:10px; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+              <span style="color:var(--text-soft);"><i class="fas fa-calendar-alt"></i> ${card.nextCheckDate || 'Дата не назначена'}</span>
+              ${isFinal 
+                ? `<button class="btn" style="padding:4px 10px; font-size:11px; background:var(--green);" onclick="openDecision('${card.groupId}')">Решение</button>` 
+                : `<button class="btn" style="padding:4px 10px; font-size:11px;" onclick="advanceStage('${card.groupId}', '${card.stage}')">Далее <i class="fas fa-arrow-right"></i></button>`}
+            </div>
+          </div>
+        `);
+      });
+
+      // Если в цепочке только 1 карточка (Первичная), добавляем кнопку "Создать Проверку 1"
+      if (chain.length === 1) {
+         rowWrapper.insertAdjacentHTML('beforeend', `
+          <div onclick="createNextStage('${chain[0].groupId}')" style="flex: 0 0 320px; min-height:200px; display:flex; align-items:center; justify-content:center; border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50);">
+            <div style="text-align:center;">
+              <i class="fas fa-plus-circle" style="font-size:28px; margin-bottom:8px;"></i><br>
+              <span style="font-size:13px; font-weight:700;">Добавить Проверку 1</span>
+            </div>
+          </div>
+        `);
+      }
+
+      container.appendChild(rowWrapper);
+    });
+
+    // Общая кнопка "Зафиксировать новую ошибку" (если активных меньше 3)
+    if (groupKeys.length < 3) {
+       const addBtn = document.createElement('div');
+       addBtn.style.cssText = 'flex: 0 0 100%; margin-top: 10px;';
+       addBtn.innerHTML = `
+        <div onclick="openModal()" style="border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50); padding: 16px; text-align:center; transition: 0.2s;" onmouseover="this.style.background='var(--lav-100)'" onmouseout="this.style.background='var(--lav-50)'">
+            <i class="fas fa-plus"></i> Зафиксировать новую ошибку
+        </div>
+       `;
+       container.appendChild(addBtn);
+    }
+  }
+
+  // РЕНДЕР АРХИВА
+  function renderArchive(container) {
+    const archivedCards = allCards.filter(c => c.status === 'archived');
+    
+    if (archivedCards.length === 0) {
+      container.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-soft); width: 100%;">Архив пуст</div>';
+      return;
+    }
+
+    // Группируем по groupId
+    const groups = {};
+    archivedCards.forEach(c => {
+      if (!groups[c.groupId]) groups[c.groupId] = [];
+      groups[c.groupId].push(c);
+    });
+
+    Object.keys(groups).forEach(gid => {
+      const chain = groups[gid];
+      const stageOrder = { initial: 1, intermediate: 2, final: 3 };
+      chain.sort((a, b) => stageOrder[a.stage] - stageOrder[b.stage]);
+      
+      const initial = chain.find(c => c.stage === 'initial') || chain[0];
+      const final = chain.find(c => c.stage === 'final') || chain[chain.length - 1];
+      const cls = classes.find(c => c.code === initial.errorClass);
+
+      const row = document.createElement('div');
+      row.style.cssText = 'width: 100%; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;';
+      
+      row.innerHTML = `
+        <div>
+          <div style="font-weight: 800; color: var(--text); margin-bottom: 4px;">
+            ${cls ? cls.name : initial.errorClass}
+          </div>
+          <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px;">
+            <b>Ошибка:</b> ${initial.errorDesc || '—'}
+          </div>
+          <div style="font-size: 12px; color: var(--text-soft);">
+            <b>Итоговые меры:</b> ${final.measures || '—'}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 11px; color: var(--text-soft); margin-bottom: 4px;">Закрыто: ${final.updatedAt ? new Date(final.updatedAt).toLocaleDateString() : '—'}</div>
+          <span style="background: var(--green); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800;">Устранено</span>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function openModal(trackingId = null) {
+    const classSelect = document.getElementById('trkClassSelect');
+    classSelect.innerHTML = classes.map(c => `<option value="${c.code}">${c.name} (вес: ${c.weight})</option>`).join('');
+
+    if (trackingId) {
+      const card = allCards.find(c => c.trackingId === trackingId);
+      if (card) {
+        document.getElementById('trkModalTitle').textContent = 'Редактировать';
+        document.getElementById('trkTrackingId').value = card.trackingId;
+        document.getElementById('trkClassSelect').value = card.errorClass;
+        document.getElementById('trkErrorDesc').value = card.errorDesc || '';
+        document.getElementById('trkCause').value = card.cause || '';
+        document.getElementById('trkMeasures').value = card.measures || '';
+        document.getElementById('trkNextDate').value = card.nextCheckDate || '';
+      }
+    } else {
+      document.getElementById('trkModalTitle').textContent = 'Новая ошибка';
+      document.getElementById('trkTrackingId').value = '';
+      document.getElementById('trkClassSelect').value = '';
+      document.getElementById('trkErrorDesc').value = '';
+      document.getElementById('trkCause').value = '';
+      document.getElementById('trkMeasures').value = '';
+      document.getElementById('trkNextDate').value = '';
+    }
+    document.getElementById('trackingModalOverlay').classList.add('show');
+  }
+
+  async function saveCard() {
+    const trkId = document.getElementById('trkTrackingId').value;
+    let groupId = null;
+    let stage = 'initial';
+    
+    if (trkId) {
+      const existing = allCards.find(c => c.trackingId === trkId);
+      if (existing) {
+        groupId = existing.groupId;
+        stage = existing.stage;
+      }
+    } else {
+      // Новый groupId для новой цепочки
+      groupId = 'grp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+    }
+
+    const payload = {
+      trackingId: trkId,
+      groupId: groupId,
+      operatorId: currentOperator.id,
+      operatorName: currentOperator.name,
+      line: currentOperator.line,
+      errorClass: document.getElementById('trkClassSelect').value,
+      stage: stage,
+      errorDesc: document.getElementById('trkErrorDesc').value,
+      cause: document.getElementById('trkCause').value,
+      measures: document.getElementById('trkMeasures').value,
+      nextCheckDate: document.getElementById('trkNextDate').value,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload }) });
+      const json = await res.json();
+      if (json.ok) {
+        document.getElementById('trackingModalOverlay').classList.remove('show');
+        loadData();
+      } else { alert('Ошибка: ' + json.error); }
+    } catch(e) { alert('Ошибка сети'); }
+  }
+
+  async function advanceStage(groupId, currentStage) {
+    let nextStage = 'intermediate';
+    if (currentStage === 'initial') nextStage = 'intermediate';
+    else if (currentStage === 'intermediate') nextStage = 'final';
+
+    const card = allCards.find(c => c.groupId === groupId && c.stage === currentStage);
+    if (!card) return;
+
+    card.stage = nextStage;
+    const payload = { ...card };
+    
+    try {
+      const res = await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload }) });
+      const json = await res.json();
+      if (json.ok) loadData();
+    } catch(e) { alert('Ошибка'); }
+  }
+
+  async function createNextStage(groupId) {
+    const initial = allCards.find(c => c.groupId === groupId && c.stage === 'initial');
+    if(!initial) return;
+
+    const payload = {
+      trackingId: '', 
+      groupId: groupId,
+      operatorId: currentOperator.id,
+      operatorName: currentOperator.name,
+      line: currentOperator.line,
+      errorClass: initial.errorClass,
+      stage: 'intermediate',
+      errorDesc: '',
+      cause: '',
+      measures: '',
+      nextCheckDate: '',
+      status: 'active',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload }) });
+      const json = await res.json();
+      if (json.ok) loadData();
+    } catch(e) { alert('Ошибка'); }
+  }
+
+  function openDecision(groupId) {
+    currentDecisionGroupId = groupId;
+    document.getElementById('decisionModalOverlay').classList.add('show');
+  }
+
+  async function finalDecision(isResolved) {
+    document.getElementById('decisionModalOverlay').classList.remove('show');
+    const groupId = currentDecisionGroupId;
+    const chain = allCards.filter(c => c.groupId === groupId);
+    
+    if (isResolved) {
+      for (const card of chain) {
+        await updateCardStatus(card, 'archived');
+      }
+    } else {
+      const finalCard = chain.find(c => c.stage === 'final');
+      for (const card of chain) {
+        if (card.trackingId !== finalCard.trackingId) {
+          await updateCardStatus(card, 'archived');
+        }
+      }
+      if (finalCard) {
+        finalCard.stage = 'initial';
+        finalCard.status = 'active';
+        await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload: finalCard }) });
+      }
+    }
+    loadData();
+  }
+
+  async function updateCardStatus(card, status) {
+    card.status = status;
+    await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload: card }) });
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  }
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+</script>
+
+</body>
+</html>
