@@ -1820,27 +1820,46 @@ const Confirm = (() => {
   let callback = null;
 
   function open(title, subtitle = '', onConfirm, okText = 'Да') {
+    const overlay = document.getElementById('confirmModalOverlay');
+    if (!overlay) {
+      // Если модалки нет в HTML, используем системный confirm
+      if (window.confirm(title + '\n' + subtitle)) {
+        if (onConfirm) onConfirm();
+      }
+      return;
+    }
+    
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmSubtitle').textContent = subtitle || '';
     callback = onConfirm;
     document.getElementById('confirmOkBtn').textContent = okText;
-    document.getElementById('confirmModalOverlay').classList.add('show');
+    overlay.classList.add('show');
   }
 
   function close() {
-    document.getElementById('confirmModalOverlay').classList.remove('show');
+    const overlay = document.getElementById('confirmModalOverlay');
+    if (overlay) overlay.classList.remove('show');
     callback = null;
   }
 
   // Привязка событий
-  document.getElementById('confirmOkBtn').addEventListener('click', () => {
-    const cb = callback; 
-    close(); 
-    if (cb) cb();
-  });
-  
-  document.getElementById('confirmModalOverlay').addEventListener('click', function(e) {
-    if (e.target === this) close();
+  document.addEventListener('DOMContentLoaded', () => {
+    const okBtn = document.getElementById('confirmOkBtn');
+    const overlay = document.getElementById('confirmModalOverlay');
+    
+    if (okBtn) {
+      okBtn.addEventListener('click', () => {
+        const cb = callback; 
+        close(); 
+        if (cb) cb();
+      });
+    }
+    
+    if (overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) close();
+      });
+    }
   });
 
   return { open, close };
