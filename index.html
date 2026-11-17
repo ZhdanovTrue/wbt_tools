@@ -2546,10 +2546,12 @@ const Tracker = (() => {
   function endShift() {
     if (!state.startedAt || state.endedAt) return;
     const total = totalActivities();
-    Confirm.open('Завершить смену?',
-      `Выполнено активностей: ${total}. Таймер остановится, смена будет зафиксирована.`,
-      () => { finishShift(); showEndShiftPopup(total); },
-      'Завершить');
+    
+    // Простое подтверждение
+    if (!window.confirm(`Завершить смену?\nВыполнено активностей: ${total}.`)) return;
+    
+    finishShift();
+    showEndShiftPopup(total);
   }
 
   function finishShift() {
@@ -2563,6 +2565,7 @@ const Tracker = (() => {
     state.lastTickAt = now;
     state.endedAt = now;
     saveStateNow();
+    
     const total = totalActivities();
     
     if (typeof ShiftStatus !== 'undefined') {
@@ -2582,13 +2585,15 @@ const Tracker = (() => {
     });
     saveQueue();
     forceSync();
+    
     setControlsEnabled(false);
     updatePauseUI(); renderStats(); renderActivities();
+    
     if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
     if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
   }
 
-  function showEndShiftPopup(total) {
+    function showEndShiftPopup(total) {
     setTimeout(() => {
       Confirm.open('✅ Смена завершена',
         `Выполнено активностей: ${total}.\n\n⚠️ Не забудь проверить заметки — неразрешённых запросов не должно оставаться.\n\n💛 Спасибо за работу и вовлечённость! Отдыхай.`,
@@ -3165,13 +3170,16 @@ const ShiftStatus = (() => {
     if (!myRow) return;
 
     if (myRow.status === 'offline') {
-      if (typeof Tracker.finishShift === 'function') {
-        Tracker.finishShift();
-      } else if (Tracker.stopOnLogout) {
-        Tracker.stopOnLogout();
-      }
-      showToast('Смена закрыта супервайзером');
+      // Сервер нас закрыл - просто сбрасываем локальный статус
+      s.endedAt = Date.now();
+      if (s.lastTickAt) s.accumulatedMs += s.endedAt - s.lastTickAt;
+      s.lastTickAt = s.endedAt;
+      s.pauseType = null; s.pauseUntil = null;
+      
+      if (typeof Tracker.saveStateNow === 'function') Tracker.saveStateNow();
       if (typeof Tracker.refresh === 'function') Tracker.refresh();
+      
+      showToast('Смена закрыта супервайзером. Можно начать новую.');
     }
   }
 
