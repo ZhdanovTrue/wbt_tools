@@ -1325,7 +1325,7 @@
             <i class="fas fa-plus-circle" style="color: var(--lav-500);"></i> Зафиксировать ошибку
           </h3>
           
-          <div class="grid-form" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 12px; margin-bottom: 20px;">
+          <div class="grid-form" style="grid-template-columns: 1.2fr 1.2fr 1.2fr 1fr 1fr auto; gap: 12px; margin-bottom: 20px;">
   <div>
     <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Оператор</label>
     <select id="errOperator"></select>
@@ -1353,11 +1353,11 @@
   </div>
 </div>
 <!-- Комментарий оставляем на всю ширину под формой -->
-<div style="margin-bottom: 20px;">
-  <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Комментарий</label>
-  <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов" style="width: 100%;">
-  <div class="char-counter" id="errCommentCounter" style="text-align: left; margin-top: 4px;">0 / 200</div>
-</div>
+<div>
+            <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Комментарий</label>
+            <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов" style="width: 100%;">
+            <div class="char-counter" id="errCommentCounter" style="text-align: left; margin-top: 4px;">0 / 200</div>
+          </div>
 
         <div class="db-card" style="background: var(--bg-soft); border: 1px solid var(--line);" id="qaBlock">
           <h3><i class="fas fa-list-check"></i> QA-выборка на разметку</h3>
@@ -4007,57 +4007,67 @@ const Errors = (() => {
     if (allOperatorsCache.length > 0) return allOperatorsCache;
     try {
       const data = await API.get('list');
+      // Берем ВСЕХ, кто есть в системе, включая супервайзеров (чтобы найти их имена)
       allOperatorsCache = (data && data.operators) || [];
-      
-      const op = Auth.getOperator();
-      // Если СВ или line3 — возвращаем всех
-      if (op && (op.line === 'sv' || op.line === 'line3')) {
-         return allOperatorsCache; 
-      }
-      return allOperatorsCache.filter(o => o.line === op.line);
+      return allOperatorsCache;
     } catch (e) {
       console.warn('Errors: loadOperators error', e);
       return [];
     }
   }
 
-  // Заполняем список операторов
   function fillOperatorSelect(ops) {
     const sel = document.getElementById('errOperator');
     if (!sel) return;
-    sel.innerHTML = ops.map(function(o) {
-      const lineLabel = o.line === 'line1' ? 'Линия 1' : (o.line === 'line2' ? 'Линия 2' : o.line);
+
+    // 1. Отбираем только операторов линий 1 и 2 для выпадающего списка
+    const lineOps = ops.filter(o => o.line === 'line1' || o.line === 'line2');
+    
+    sel.innerHTML = lineOps.map(function(o) {
+      const lineLabel = o.line === 'line1' ? 'Линия 1' : 'Линия 2';
+      // data-sup хранит имя супервайзера этого оператора
       return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}" data-sup="${escapeHtml(o.supervisor || '')}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
     }).join('');
 
+    // 2. Собираем уникальные имена супервайзеров из всей базы
+    const allSups = [...new Set(ops.map(o => String(o.supervisor || '').trim()).filter(Boolean))];
+    const supSel = document.getElementById('errSupervisor');
+    
+    if (supSel) {
+      supSel.innerHTML = allSups.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    }
+
+    // 3. Обработчик смены оператора (автоматически ставит его СВ и грузит классы)
     sel.onchange = function() {
       const opt = sel.options[sel.selectedIndex];
-      const line = opt ? opt.dataset.line : '';
-      const supName = opt ? opt.dataset.sup : '';
+      if (!opt) return;
       
-      // Автоматически выбираем супервайзера
-      const supSel = document.getElementById('errSupervisor');
-      if (supSel) {
+      const line = opt.dataset.line;
+      const supName = opt.dataset.sup;
+      
+      if (supSel && supName) {
         for (let i = 0; i < supSel.options.length; i++) {
-          if (supSel.options[i].text === supName) {
+          if (supSel.options[i].value === supName) {
             supSel.selectedIndex = i;
             break;
           }
         }
       }
-      
       reloadClassesForLine(line);
     };
 
-    // Заполняем список супервайзеров (только тех, кто есть в системе)
-    const supSel = document.getElementById('errSupervisor');
-    if (supSel) {
-      const sups = [...new Set(ops.map(o => o.supervisor).filter(Boolean))];
-      supSel.innerHTML = sups.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-    }
-
+    // 4. Инициализация первого оператора при загрузке
     if (sel.options.length > 0) {
-      reloadClassesForLine(sel.options[0].dataset.line);
+      const firstOpt = sel.options[0];
+      if (supSel && firstOpt.dataset.sup) {
+        for (let i = 0; i < supSel.options.length; i++) {
+          if (supSel.options[i].value === firstOpt.dataset.sup) {
+            supSel.selectedIndex = i;
+            break;
+          }
+        }
+      }
+      reloadClassesForLine(firstOpt.dataset.line);
     }
   }
 
