@@ -4001,73 +4001,29 @@ const Errors = (() => {
 
   // ─── ЗАГРУЗКА ДАННЫХ ───
 
-  let allOperatorsCache = [];
-
   async function loadOperators() {
-    if (allOperatorsCache.length > 0) return allOperatorsCache;
+    if (operatorsCache) return operatorsCache;
     try {
       const data = await API.get('list');
-      // Берем ВСЕХ, кто есть в системе, включая супервайзеров (чтобы найти их имена)
-      allOperatorsCache = (data && data.operators) || [];
-      return allOperatorsCache;
+      operatorsCache = (data && data.operators) || [];
+      return operatorsCache;
     } catch (e) {
       console.warn('Errors: loadOperators error', e);
       return [];
     }
   }
 
-  function fillOperatorSelect(ops) {
-    const sel = document.getElementById('errOperator');
-    if (!sel) return;
-
-    // 1. Отбираем только операторов линий 1 и 2 для выпадающего списка
-    const lineOps = ops.filter(o => o.line === 'line1' || o.line === 'line2');
-    
-    sel.innerHTML = lineOps.map(function(o) {
-      const lineLabel = o.line === 'line1' ? 'Линия 1' : 'Линия 2';
-      // data-sup хранит имя супервайзера этого оператора
-      return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}" data-sup="${escapeHtml(o.supervisor || '')}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
-    }).join('');
-
-    // 2. Собираем уникальные имена супервайзеров из всей базы
-    const allSups = [...new Set(ops.map(o => String(o.supervisor || '').trim()).filter(Boolean))];
-    const supSel = document.getElementById('errSupervisor');
-    
-    if (supSel) {
-      supSel.innerHTML = allSups.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-    }
-
-    // 3. Обработчик смены оператора (автоматически ставит его СВ и грузит классы)
-    sel.onchange = function() {
-      const opt = sel.options[sel.selectedIndex];
-      if (!opt) return;
-      
-      const line = opt.dataset.line;
-      const supName = opt.dataset.sup;
-      
-      if (supSel && supName) {
-        for (let i = 0; i < supSel.options.length; i++) {
-          if (supSel.options[i].value === supName) {
-            supSel.selectedIndex = i;
-            break;
-          }
-        }
-      }
-      reloadClassesForLine(line);
-    };
-
-    // 4. Инициализация первого оператора при загрузке
-    if (sel.options.length > 0) {
-      const firstOpt = sel.options[0];
-      if (supSel && firstOpt.dataset.sup) {
-        for (let i = 0; i < supSel.options.length; i++) {
-          if (supSel.options[i].value === firstOpt.dataset.sup) {
-            supSel.selectedIndex = i;
-            break;
-          }
-        }
-      }
-      reloadClassesForLine(firstOpt.dataset.line);
+  async function loadClasses(line) {
+    try {
+      const params = { token: Auth.getToken() };
+      if (line && line !== 'all') params.line = line; 
+      const data = await API.get('errors_classes', params);
+      classes = (data && data.ok && data.classes) || [];
+      return classes;
+    } catch (e) {
+      console.warn('Errors: loadClasses error', e);
+      classes = [];
+      return [];
     }
   }
 
@@ -4080,7 +4036,6 @@ const Errors = (() => {
     const isSup = Auth.isSupervisor();
     const isLine3 = op && op.line === 'line3';
     
-    // Пускаем только СВ и line3
     if (!isSup && !isLine3) return;
     
     if (initialized) { 
@@ -4089,18 +4044,16 @@ const Errors = (() => {
     }
     initialized = true;
     
-    // Принудительно загружаем операторов
     const ops = await loadOperators();
     fillOperatorSelect(ops);
     
-    // Загружаем остальное
     await reload();
   }
 
   async function reload() {
-    if (!Auth.isSupervisor() && Auth.getOperator()?.line !== 'line3') return;
+    const op = Auth.getOperator();
+    if (!Auth.isSupervisor() && (!op || op.line !== 'line3')) return;
     
-    await reloadList();
     await reloadCombined();
   }
 
@@ -4119,19 +4072,41 @@ const Errors = (() => {
   function fillOperatorSelect(ops) {
     const sel = document.getElementById('errOperator');
     if (!sel) return;
-    sel.innerHTML = ops.map(function(o) {
-      const lineLabel = o.line === 'line1' ? 'Линия 1' : (o.line === 'line2' ? 'Линия 2' : o.line);
-      return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
+
+    // Фильтруем только операторов линий 1 и 2
+    const lineOps = ops.filter(o => o.line === 'line1' || o.line === 'line2');
+    
+    sel.innerHTML = lineOps.map(function(o) {
+      const lineLabel = o.line === 'line1' ? 'Линия 1' : 'Линия 2';
+      return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}" data-sup="${escapeHtml(o.supervisor || '')}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
     }).join('');
 
+    // Заполняем список супервайзеров
+    const allSups = [...new Set(ops.map(o => String(o.supervisor || '').trim()).filter(Boolean))];
+    const supSel = document.getElementById('errSupervisor');
+    
+    if (supSel) {
+      supSel.innerHTML = allSups.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    }
+
+    // Обработчик
     sel.onchange = function() {
       const opt = sel.options[sel.selectedIndex];
-      const line = opt ? opt.dataset.line : '';
+      if (!opt) return;
+      const line = opt.dataset.line;
+      const supName = opt.dataset.sup;
+      
+      if (supSel && supName) {
+        supSel.value = supName;
+      }
       reloadClassesForLine(line);
     };
 
+    // Инициализация первого оператора
     if (sel.options.length > 0) {
-      reloadClassesForLine(sel.options[0].dataset.line);
+      const firstOpt = sel.options[0];
+      if (supSel && firstOpt.dataset.sup) supSel.value = firstOpt.dataset.sup;
+      reloadClassesForLine(firstOpt.dataset.line);
     }
   }
 
@@ -4159,17 +4134,12 @@ const Errors = (() => {
         token: Auth.getToken(),
         period: period
       });
-      if (!data || !data.ok) {
-        console.warn('Errors: combined_stats error', data && data.error);
-        return;
-      }
+      if (!data || !data.ok) return;
       combinedStats = data;
       renderCombinedSummary();
       renderCombinedByOperator();
       renderCombinedByClass();
-      try {
-        renderErrCharts();
-      } catch(e) { console.warn('Chart error', e); }
+      try { renderErrCharts(); } catch(e) {}
     } catch (e) {
       console.warn('Errors: reloadCombined error', e);
     }
@@ -4193,7 +4163,6 @@ const Errors = (() => {
     const tbody = document.querySelector('#errByOperatorTable tbody');
     if (!tbody || !combinedStats) return;
     const rows = combinedStats.byOperator || [];
-    
     if (rows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" class="db-empty">Нет данных за период</td></tr>';
       return;
@@ -4204,8 +4173,7 @@ const Errors = (() => {
       const lossCell = loss > 0 ? `<span class="err-row-weight">${formatMoney_(loss)} ₽</span>` : `—`;
       const opId = r.operatorId || r.id || r.operatorName; 
       const opName = encodeURIComponent(r.operatorName || '');
-      const opLine = r.line || 'line1';
-      const trackingUrl = `tracking.html?opId=${opId}&name=${opName}&line=${opLine}`;
+      const trackingUrl = `tracking.html?opId=${opId}&name=${opName}&line=${r.line || 'line1'}`;
 
       return `
         <tr>
@@ -4215,7 +4183,7 @@ const Errors = (() => {
           <td class="num">${r.withErrors || 0}</td>
           <td class="num">${lossCell}</td>
           <td style="text-align:center;">
-            <a href="${trackingUrl}" class="btn btn-outline" style="padding:4px 8px; font-size:11px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+            <a href="${trackingUrl}" class="btn btn-outline" style="padding:4px 8px; font-size:11px; text-decoration:none;">
               <i class="fas fa-chart-line"></i> Динамика
             </a>
           </td>
@@ -4246,12 +4214,9 @@ const Errors = (() => {
 
   function renderErrCharts() {
     if (!combinedStats || !window.Chart) return;
-    
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const tickColor = isDark ? '#b8a8d9' : '#5b4b85';
     const legendColor = isDark ? '#ece5fb' : '#2f2350';
 
-    // График по линиям
     let line1Count = 0, line2Count = 0;
     (combinedStats.byOperator || []).forEach(op => {
       if (op.line === 'line1') line1Count += op.withErrors || 0;
@@ -4263,18 +4228,11 @@ const Errors = (() => {
       if (errCharts.lines) errCharts.lines.destroy();
       errCharts.lines = new Chart(canvasLines, {
         type: 'doughnut',
-        data: {
-          labels: ['Линия 1', 'Линия 2'],
-          datasets: [{ data: [line1Count, line2Count], backgroundColor: ['#7c4ecf', '#ec4899'], borderWidth: 0 }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, cutout: '70%',
-          plugins: { legend: { position: 'bottom', labels: { color: legendColor } } }
-        }
+        data: { labels: ['Линия 1', 'Линия 2'], datasets: [{ data: [line1Count, line2Count], backgroundColor: ['#7c4ecf', '#ec4899'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } }
       });
     }
 
-    // График по классам
     const classData = combinedStats.byClass || [];
     const labels = classData.map(c => c.className);
     const weights = classData.map(c => c.weight);
@@ -4294,10 +4252,7 @@ const Errors = (() => {
         errCharts.classes = new Chart(canvasClasses, {
           type: 'doughnut',
           data: { labels: labels, datasets: [{ data: weights, backgroundColor: bgColors, borderWidth: 0 }] },
-          options: {
-            responsive: true, maintainAspectRatio: false, cutout: '60%',
-            plugins: { legend: { position: 'right', labels: { color: legendColor, boxWidth: 12 } } }
-          }
+          options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: legendColor, boxWidth: 12 } } } }
         });
       }
     }
@@ -4308,8 +4263,7 @@ const Errors = (() => {
   async function add() {
     const op = Auth.getOperator();
     if (!Auth.isSupervisor() && (!op || op.line !== 'line3')) { 
-        showToast('У вас нет прав на добавление ошибок'); 
-        return; 
+        showToast('У вас нет прав'); return; 
     }
     
     const operatorId = document.getElementById('errOperator').value;
@@ -4324,15 +4278,14 @@ const Errors = (() => {
     
     if (lossRaw !== '') {
       const n = Number(lossRaw.replace(',', '.'));
-      if (!isFinite(n) || n < 0) { showToast('Сумма потерь должна быть числом ≥ 0'); return; }
+      if (!isFinite(n) || n < 0) { showToast('Неверная сумма'); return; }
       lossAmount = n;
     }
     if (!operatorId) { showToast('Выберите оператора'); return; }
     if (!supName) { showToast('Выберите супервайзера'); return; }
     if (!classCode)  { showToast('Выберите класс ошибки'); return; }
 
-    // Находим ID супервайзера по его имени
-    const sup = allOperatorsCache.find(o => o.name === supName && o.line === 'sv'); // Ищем среди СВ
+    const sup = operatorsCache.find(o => String(o.supervisor).trim() === supName && o.line === 'sv') || operatorsCache.find(o => o.name === supName);
     const supId = sup ? sup.id : 'sv_unknown';
 
     try {
@@ -4352,17 +4305,13 @@ const Errors = (() => {
         if (lossEl) lossEl.value = '';
         document.getElementById('errEntityId').value = '';
         updateCommentCounter();
-        await reloadList();
         await reloadCombined();
       } else {
-        showToast('Не удалось: ' + (data && data.error || 'ошибка'));
+        showToast('Ошибка: ' + (data && data.error || ''));
       }
-    } catch (e) {
-      console.warn('Errors: add error', e);
-      showToast('Ошибка сети');
-    }
+    } catch (e) { showToast('Ошибка сети'); }
   }
-	
+
   function setPeriod(p) {
     period = p;
     document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
@@ -4380,28 +4329,15 @@ const Errors = (() => {
     cnt.classList.toggle('over', len > 200);
   }
 
-  // Для совместимости с HTML (переключение вкладок)
   function switchErrTab(tab) {
     document.getElementById('errTabSummary').classList.toggle('active', tab === 'summary');
     document.getElementById('errTabSamples').classList.toggle('active', tab === 'samples');
     document.getElementById('errContentSummary').style.display = tab === 'summary' ? '' : 'none';
     document.getElementById('errContentSamples').style.display = tab === 'samples' ? '' : 'none';
-    
-    if (tab === 'samples' && typeof Qa !== 'undefined' && Qa.reload) {
-      Qa.reload();
-    }
+    if (tab === 'samples' && typeof Qa !== 'undefined' && Qa.reload) Qa.reload();
   }
 
-  // Заглушка для старой функции (чтобы не падало)
-  async function reloadList() {
-      // Если у вас есть загрузка списка ручных ошибок - оставьте её тут
-      // В текущей логике она не используется, так как мы грузим combined
-  }
-
-  return { 
-    init, reload, reloadCombined, setPeriod, add, switchErrTab, 
-    renderDashboardTab, exportCombinedCSV: () => showToast('Экспорт пока не настроен') 
-  };
+  return { init, reload, reloadCombined, setPeriod, add, switchErrTab, renderDashboardTab, exportCombinedCSV: () => showToast('Экспорт пока не настроен') };
 })();
 window.Errors = Errors;
 
