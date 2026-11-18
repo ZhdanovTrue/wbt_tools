@@ -1325,30 +1325,39 @@
             <i class="fas fa-plus-circle" style="color: var(--lav-500);"></i> Зафиксировать ошибку
           </h3>
           
-          <div class="grid-form" style="grid-template-columns: 1.2fr 1.4fr 1.6fr 1fr auto; gap: 12px; margin-bottom: 20px;">
-            <div>
-              <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Оператор</label>
-              <select id="errOperator"></select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Класс ошибки</label>
-              <select id="errClass"></select>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Комментарий</label>
-              <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов">
-              <div class="char-counter" id="errCommentCounter" style="text-align: left; margin-top: 4px;">0 / 200</div>
-            </div>
-            <div>
-              <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Потери, ₽</label>
-              <input type="number" id="errLossAmount" min="0" step="0.01" placeholder="0">
-            </div>
-            <div style="display: flex; align-items: flex-start; padding-top: 20px;">
-              <button class="primary-compact" onclick="Errors.add()" style="width: 100%; justify-content: center;">
-                <i class="fas fa-check"></i> Зафиксировать
-              </button>
-            </div>
-          </div>
+          <div class="grid-form" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 12px; margin-bottom: 20px;">
+  <div>
+    <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Оператор</label>
+    <select id="errOperator"></select>
+  </div>
+  <div>
+    <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Супервайзер</label>
+    <select id="errSupervisor"></select>
+  </div>
+  <div>
+    <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Класс ошибки</label>
+    <select id="errClass"></select>
+  </div>
+  <div>
+    <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Сущность (ID)</label>
+    <input type="text" id="errEntityId" placeholder="Например: 123456">
+  </div>
+  <div>
+    <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Потери, ₽</label>
+    <input type="number" id="errLossAmount" min="0" step="0.01" placeholder="0">
+  </div>
+  <div style="display: flex; align-items: flex-start; padding-top: 20px;">
+    <button class="primary-compact" onclick="Errors.add()" style="width: 100%; justify-content: center;">
+      <i class="fas fa-check"></i> Зафиксировать
+    </button>
+  </div>
+</div>
+<!-- Комментарий оставляем на всю ширину под формой -->
+<div style="margin-bottom: 20px;">
+  <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Комментарий</label>
+  <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов" style="width: 100%;">
+  <div class="char-counter" id="errCommentCounter" style="text-align: left; margin-top: 4px;">0 / 200</div>
+</div>
 
         <div class="db-card" style="background: var(--bg-soft); border: 1px solid var(--line);" id="qaBlock">
           <h3><i class="fas fa-list-check"></i> QA-выборка на разметку</h3>
@@ -3992,38 +4001,63 @@ const Errors = (() => {
 
   // ─── ЗАГРУЗКА ДАННЫХ ───
 
+  let allOperatorsCache = [];
+
   async function loadOperators() {
-    if (operatorsCache) return operatorsCache;
+    if (allOperatorsCache.length > 0) return allOperatorsCache;
     try {
       const data = await API.get('list');
-      const all = (data && data.operators) || [];
-      const op = Auth.getOperator();
+      allOperatorsCache = (data && data.operators) || [];
       
-      // Если это супервайзер или line3 — показываем ВСЕХ операторов
+      const op = Auth.getOperator();
+      // Если СВ или line3 — возвращаем всех
       if (op && (op.line === 'sv' || op.line === 'line3')) {
-         operatorsCache = all; 
-      } else {
-         // Для остальных (на всякий случай) — фильтруем
-         operatorsCache = all.filter(o => o.line === op.line);
+         return allOperatorsCache; 
       }
-      return operatorsCache;
+      return allOperatorsCache.filter(o => o.line === op.line);
     } catch (e) {
       console.warn('Errors: loadOperators error', e);
       return [];
     }
   }
 
-  async function loadClasses(line) {
-    try {
-      const params = { token: Auth.getToken() };
-      if (line && line !== 'all') params.line = line; 
-      const data = await API.get('errors_classes', params);
-      classes = (data && data.ok && data.classes) || [];
-      return classes;
-    } catch (e) {
-      console.warn('Errors: loadClasses error', e);
-      classes = [];
-      return [];
+  // Заполняем список операторов
+  function fillOperatorSelect(ops) {
+    const sel = document.getElementById('errOperator');
+    if (!sel) return;
+    sel.innerHTML = ops.map(function(o) {
+      const lineLabel = o.line === 'line1' ? 'Линия 1' : (o.line === 'line2' ? 'Линия 2' : o.line);
+      return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}" data-sup="${escapeHtml(o.supervisor || '')}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
+    }).join('');
+
+    sel.onchange = function() {
+      const opt = sel.options[sel.selectedIndex];
+      const line = opt ? opt.dataset.line : '';
+      const supName = opt ? opt.dataset.sup : '';
+      
+      // Автоматически выбираем супервайзера
+      const supSel = document.getElementById('errSupervisor');
+      if (supSel) {
+        for (let i = 0; i < supSel.options.length; i++) {
+          if (supSel.options[i].text === supName) {
+            supSel.selectedIndex = i;
+            break;
+          }
+        }
+      }
+      
+      reloadClassesForLine(line);
+    };
+
+    // Заполняем список супервайзеров (только тех, кто есть в системе)
+    const supSel = document.getElementById('errSupervisor');
+    if (supSel) {
+      const sups = [...new Set(ops.map(o => o.supervisor).filter(Boolean))];
+      supSel.innerHTML = sups.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    }
+
+    if (sel.options.length > 0) {
+      reloadClassesForLine(sel.options[0].dataset.line);
     }
   }
 
@@ -4269,7 +4303,9 @@ const Errors = (() => {
     }
     
     const operatorId = document.getElementById('errOperator').value;
+    const supName = document.getElementById('errSupervisor').value;
     const classCode  = document.getElementById('errClass').value;
+    const entityId   = document.getElementById('errEntityId').value.trim();
     const commentEl  = document.getElementById('errComment');
     const lossEl     = document.getElementById('errLossAmount');
     const comment    = (commentEl.value || '').trim().slice(0, 200);
@@ -4282,20 +4318,29 @@ const Errors = (() => {
       lossAmount = n;
     }
     if (!operatorId) { showToast('Выберите оператора'); return; }
+    if (!supName) { showToast('Выберите супервайзера'); return; }
     if (!classCode)  { showToast('Выберите класс ошибки'); return; }
+
+    // Находим ID супервайзера по его имени
+    const sup = allOperatorsCache.find(o => o.name === supName && o.line === 'sv'); // Ищем среди СВ
+    const supId = sup ? sup.id : 'sv_unknown';
 
     try {
       const data = await API.post('errors_add', {
         token: Auth.getToken(),
         operatorId: operatorId,
+        supervisorId: supId,
         classCode: classCode,
+        entityId: entityId,
         comment: comment,
         lossAmount: lossAmount
       });
+      
       if (data && data.ok) {
         showToast('Ошибка зафиксирована');
         commentEl.value = '';
         if (lossEl) lossEl.value = '';
+        document.getElementById('errEntityId').value = '';
         updateCommentCounter();
         await reloadList();
         await reloadCombined();
@@ -4307,7 +4352,7 @@ const Errors = (() => {
       showToast('Ошибка сети');
     }
   }
-
+	
   function setPeriod(p) {
     period = p;
     document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
