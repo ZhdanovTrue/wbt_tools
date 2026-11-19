@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  /* Базовые стили, скопированные из вашего основного файла для единообразия */
+  /* Базовые стили, скопированные из основного файла для единообразия */
   :root {
     --lav-50:#f1ebfb; --lav-100:#e4d9f5; --lav-200:#d3c2ee; --lav-300:#bda5e5;
     --lav-400:#a488e3; --lav-500:#8b64d6; --lav-600:#7c4ecf; --lav-700:#6d3fd6;
@@ -38,12 +38,10 @@
   .btn-outline { background: transparent; border: 2px solid var(--lav-400); color: var(--lav-700); }
   .btn-outline:hover { background: var(--lav-100); color: var(--lav-800); }
   
-  /* Стили для карточек и графиков */
   .db-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow-card); margin-bottom: 20px; }
   .db-chart-wrap { position: relative; height: 250px; width: 100%; }
   .tracking-card { flex: 0 0 320px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; box-shadow: var(--shadow-card); }
   
-  /* Модалки */
   .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(60,40,100,.4); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--bg-card); padding: 28px; border-radius: var(--radius-lg); width: 90%; max-width: 520px; box-shadow: var(--shadow); border: 1px solid var(--line); max-height: 90vh; overflow-y: auto; }
@@ -54,11 +52,6 @@
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
   .btn-cancel { background: #e4d9f5; color: var(--lav-700); }
   .btn-cancel:hover { background: #d3c2ee; }
-  
-  /* Стили для табов */
-  .tabs { display: flex; gap: 6px; background: var(--bg-card); padding: 6px; border-radius: 12px; border: 1px solid var(--line); max-width: 300px; margin-bottom: 20px; }
-  .tab { flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: 800; color: var(--text-soft); transition: .15s; text-align: center; }
-  .tab.active { background: var(--lav-600); color: #fff; box-shadow: 0 4px 12px rgba(109,63,214,.4); }
 </style>
 </head>
 <body>
@@ -76,28 +69,26 @@
     <h2 id="pageOperatorName" style="font-size: 20px; color: var(--text);">Загрузка...</h2>
   </div>
 
-  <!-- График -->
   <div class="db-card">
     <h3 style="font-size: 14px; color: var(--text-soft); margin-bottom: 15px;">Ошибки за 14 дней (по весу)</h3>
     <div class="db-chart-wrap"><canvas id="trackingChart"></canvas></div>
   </div>
 
-  <!-- Табы и Карточки -->
+  <!-- НОВЫЙ БЛОК: Неразобранные ошибки из QA -->
+  <div id="qaIssuesBlock" class="db-card" style="margin-bottom: 20px; display: none; background: var(--bg-soft); border-left: 4px solid var(--red);">
+    <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text);"><i class="fas fa-clipboard-list" style="color: var(--red);"></i> Требуют разбора (QA)</h3>
+    <div id="qaIssuesList"></div>
+  </div>
+
   <div class="db-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
       <h3 style="font-size: 16px;"><i class="fas fa-tasks"></i> Отработка ошибок</h3>
     </div>
-    
-    <div class="tabs">
-      <button class="tab active" id="tabActive" onclick="switchView('active')">В работе</button>
-      <button class="tab" id="tabArchive" onclick="switchView('archive')">Архив</button>
-    </div>
-
     <div id="trackingCardsContainer" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch;"></div>
   </div>
 </div>
 
-<!-- Модалка создания/редактирования карточки -->
+<!-- Модалка создания/редактирования -->
 <div class="modal-overlay" id="trackingModalOverlay">
   <div class="modal">
     <h2 id="trkModalTitle" style="margin-bottom: 18px; color: var(--lav-700);">Новая карточка</h2>
@@ -129,31 +120,14 @@
   </div>
 </div>
 
-<!-- Модалка итогового решения -->
-<div class="modal-overlay" id="decisionModalOverlay" style="z-index: 1100;">
-  <div class="modal" style="max-width: 400px;">
-    <h2 style="color: var(--lav-700); margin-bottom: 16px;">Итоговое решение</h2>
-    <p style="color: var(--text); margin-bottom: 20px; font-size: 14px;">Ошибка устранена?</p>
-    <div style="display: flex; gap: 10px;">
-      <button class="btn" style="flex: 1; justify-content: center; background: var(--green);" onclick="finalDecision(true)">Да, закрыть кейс</button>
-      <button class="btn" style="flex: 1; justify-content: center; background: var(--red);" onclick="finalDecision(false)">Нет, новый цикл</button>
-    </div>
-    <div class="modal-actions" style="margin-top: 20px;">
-      <button type="button" class="btn btn-cancel" style="width: 100%; justify-content: center;" onclick="document.getElementById('decisionModalOverlay').classList.remove('show')">Отмена</button>
-    </div>
-  </div>
-</div>
-
 <script>
-  // --- КОНФИГ ---
   const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlvBCm_1V7uR0jEdAVdFFyY7LxAVXzWsz2sq9htQU5t7I7Ib-h/exec'; 
   
   let currentOperator = null;
   let chartInstance = null;
   let classes = [];
-  let allCards = []; // Все карточки (и активные, и архив)
-  let currentView = 'active';
-  let currentDecisionGroupId = null;
+  let allCards = []; // Все карточки (и отработки, и ошибки QA)
+  let currentQaTrackingId = null; // Для связи с QA
 
   const urlParams = new URLSearchParams(window.location.search);
   const opId = urlParams.get('opId');
@@ -171,6 +145,7 @@
     try {
       const res = await fetch(`${SHEETS_URL}?action=getTrackingData&operatorId=${currentOperator.id}`);
       const json = await res.json();
+      
       if (!json.ok) throw new Error(json.error || 'Ошибка сервера');
       
       const data = json.data;
@@ -178,193 +153,175 @@
       allCards = data.cards || [];
       
       renderChart(data.chartData);
-      renderView();
+      renderQaIssues();
+      renderCards();
     } catch (e) {
       console.error('Ошибка загрузки:', e);
       alert('Не удалось загрузить данные динамики: ' + e.message);
     }
   }
 
+  // --- ГРАФИК С КЛАССАМИ ---
   function renderChart(chartData) {
     const ctx = document.getElementById('trackingChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
+
+    // Собираем классы для тултипа
+    const classList = classes.map(c => c.name).join(', ');
+
     chartInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: chartData.map(d => d.date),
         datasets: [
-          { label: 'Критичные (8-10)', data: chartData.map(d => d.critical), backgroundColor: '#ef4444', borderRadius: 4 },
-          { label: 'Средние (4-7)', data: chartData.map(d => d.normal), backgroundColor: '#f59e0b', borderRadius: 4 },
-          { label: 'Мелкие (1-3)', data: chartData.map(d => d.minor), backgroundColor: '#10b981', borderRadius: 4 }
+          { 
+            label: 'Критичные (8-10)', 
+            data: chartData.map(d => d.critical), 
+            backgroundColor: '#ef4444', 
+            borderRadius: 4,
+            tooltip: { callbacks: { afterLabel: () => `Классы: ${classList}` } }
+          },
+          { 
+            label: 'Средние (4-7)', 
+            data: chartData.map(d => d.normal), 
+            backgroundColor: '#f59e0b', 
+            borderRadius: 4,
+            tooltip: { callbacks: { afterLabel: () => `Классы: ${classList}` } }
+          },
+          { 
+            label: 'Мелкие (1-3)', 
+            data: chartData.map(d => d.minor), 
+            backgroundColor: '#10b981', 
+            borderRadius: 4,
+            tooltip: { callbacks: { afterLabel: () => `Классы: ${classList}` } }
+          }
         ]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } } },
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
+        plugins: { 
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: { mode: 'index', intersect: false }
+        }
       }
     });
   }
 
-  function switchView(view) {
-    currentView = view;
-    document.getElementById('tabActive').classList.toggle('active', view === 'active');
-    document.getElementById('tabArchive').classList.toggle('active', view === 'archive');
-    renderView();
+  // --- БЛОК QA ОШИБОК ---
+  function renderQaIssues() {
+    const block = document.getElementById('qaIssuesBlock');
+    const list = document.getElementById('qaIssuesList');
+    if (!block || !list) return;
+
+    // Ищем ошибки из QA, которые еще не взяты в работу
+    const unprocessed = allCards.filter(c => c.source === 'qa' && c.status === 'pending_review');
+    
+    if (unprocessed.length === 0) {
+      block.style.display = 'none';
+      return;
+    }
+
+    block.style.display = 'block';
+    list.innerHTML = unprocessed.map(card => {
+      const cls = classes.find(c => c.code === card.errorClass);
+      const clsName = cls ? cls.name : card.errorClass;
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-card); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--line);">
+          <div style="font-size: 13px;">
+            <b style="color: var(--red);">${escapeHtml(clsName)}</b> <br>
+            <b>Сущность:</b> ${escapeHtml(card.entityId || '—')} <br>
+            <span style="color: var(--text-soft); font-style: italic;">"${escapeHtml(card.errorDesc || 'Без комментария')}"</span>
+          </div>
+          <div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
+            <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="dismissQaIssue('${card.trackingId}')">Разобрали</button>
+            <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="createFromQa('${card.trackingId}')">Взять на разбор</button>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
-  function renderView() {
+  function createFromQa(trackingId) {
+    const qaCard = allCards.find(c => c.trackingId === trackingId);
+    if (!qaCard) return;
+
+    openModal();
+    
+    document.getElementById('trkClassSelect').value = qaCard.errorClass;
+    document.getElementById('trkErrorDesc').value = qaCard.errorDesc || '';
+    document.getElementById('trkCause').value = ''; 
+    document.getElementById('trkMeasures').value = '';
+    
+    document.getElementById('trkTrackingId').value = ''; 
+    currentQaTrackingId = trackingId; 
+  }
+
+  function dismissQaIssue(trackingId) {
+    if (!confirm('Отметить как разобранное?')) return;
+    const qaCard = allCards.find(c => c.trackingId === trackingId);
+    if (!qaCard) return;
+
+    qaCard.status = 'archived';
+    qaCard.stage = 'final';
+    
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveTrackingCard', payload: qaCard })
+    }).then(() => loadData());
+  }
+
+  // --- ОТРАБОТКА ОШИБОК ---
+  function renderCards() {
     const container = document.getElementById('trackingCardsContainer');
     container.innerHTML = '';
 
-    if (currentView === 'active') {
-      renderActive(container);
-    } else {
-      renderArchive(container);
-    }
-  }
+    const activeCards = allCards.filter(c => c.status !== 'pending_review');
+    const stageOrder = { initial: 1, intermediate: 2, final: 3 };
+    const sorted = [...activeCards].sort((a, b) => stageOrder[a.stage] - stageOrder[b.stage]);
 
-  // РЕНДЕР АКТИВНЫХ (В РАБОТЕ)
-  function renderActive(container) {
-    const activeCards = allCards.filter(c => c.status === 'active');
-    
-    // Группируем по groupId
-    const groups = {};
-    activeCards.forEach(c => {
-      if (!groups[c.groupId]) groups[c.groupId] = [];
-      groups[c.groupId].push(c);
+    sorted.forEach(card => {
+      const isDone = card.status === 'done';
+      const stageName = card.stage === 'initial' ? 'Первичная' : card.stage === 'intermediate' ? 'Проверка 1' : 'Итоговая';
+      const stageColor = card.stage === 'initial' ? 'var(--lav-100)' : card.stage === 'intermediate' ? '#fef3c7' : '#dcfce7';
+      const stageTextColor = card.stage === 'initial' ? 'var(--lav-700)' : card.stage === 'intermediate' ? '#92400e' : '#166534';
+      const cls = classes.find(c => c.code === card.errorClass);
+      
+      const cardHtml = `
+        <div class="tracking-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+            <span style="background:${stageColor}; color:${stageTextColor}; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:800;">${stageName}</span>
+            <button onclick="openModal('${card.trackingId}')" style="background:none; border:none; color:var(--lav-500); cursor:pointer;"><i class="fas fa-pen"></i></button>
+          </div>
+          <div style="font-size:12px; color:var(--text-soft); margin-bottom:12px; flex:1;">
+            <div style="margin-bottom:6px;"><b>Класс:</b> <span style="color:var(--red); font-weight:700;">${cls ? cls.name : card.errorClass}</span></div>
+            <div style="margin-bottom:6px;"><b>Сущность:</b> ${card.entityId || '—'}</div>
+            <div style="margin-bottom:6px;"><b>Ошибка:</b> ${card.errorDesc || '—'}</div>
+            <div style="margin-bottom:6px;"><b>Причина:</b> ${card.cause || '—'}</div>
+            <div style="margin-bottom:6px;"><b>Меры:</b> ${card.measures || '—'}</div>
+          </div>
+          <div style="border-top:1px dashed var(--line); padding-top:10px; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+            <span style="color:var(--text-soft);"><i class="fas fa-calendar-alt"></i> ${card.nextCheckDate || 'Дата не назначена'}</span>
+            ${!isDone ? `<button class="btn" style="padding:4px 10px; font-size:11px;" onclick="advanceStage('${card.trackingId}', '${card.stage}')">Далее <i class="fas fa-arrow-right"></i></button>` : '<span style="color:var(--green); font-weight:800;"><i class="fas fa-check-circle"></i> Закрыто</span>'}
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', cardHtml);
     });
 
-    const groupKeys = Object.keys(groups);
-
-    if (groupKeys.length === 0) {
-      container.innerHTML = `
-        <div onclick="openModal()" style="flex: 0 0 320px; min-height:200px; display:flex; align-items:center; justify-content:center; border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50); transition:0.2s;">
+    if (sorted.length < 3) {
+      container.insertAdjacentHTML('beforeend', `
+        <div onclick="openModal()" style="flex: 0 0 320px; min-height:200px; display:flex; align-items:center; justify-content:center; border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50); transition:0.2s;" onmouseover="this.style.background='var(--lav-100)'" onmouseout="this.style.background='var(--lav-50)'">
           <div style="text-align:center;">
             <i class="fas fa-plus-circle" style="font-size:28px; margin-bottom:8px;"></i><br>
-            <span style="font-size:13px; font-weight:700;">Зафиксировать ошибку</span>
+            <span style="font-size:13px; font-weight:700;">Добавить этап</span>
           </div>
         </div>
-      `;
-      return;
-    }
-
-    // Для каждой группы (строки) рендерим цепочку
-    groupKeys.forEach(gid => {
-      const chain = groups[gid];
-      const stageOrder = { initial: 1, intermediate: 2, final: 3 };
-      chain.sort((a, b) => stageOrder[a.stage] - stageOrder[b.stage]);
-
-      const rowWrapper = document.createElement('div');
-      // Оборачиваем в строку (flex), чтобы карточки шли друг за другом
-      rowWrapper.style.cssText = 'display:flex; gap:16px; width: 100%; margin-bottom: 16px; border-bottom: 1px dashed var(--line); padding-bottom: 16px; align-items: stretch;';
-
-      chain.forEach(card => {
-        const isFinal = card.stage === 'final';
-        const stageName = card.stage === 'initial' ? 'Первичная' : card.stage === 'intermediate' ? 'Проверка 1' : 'Итоговая';
-        const stageColor = card.stage === 'initial' ? 'var(--lav-100)' : card.stage === 'intermediate' ? '#fef3c7' : '#dcfce7';
-        const stageTextColor = card.stage === 'initial' ? 'var(--lav-700)' : card.stage === 'intermediate' ? '#92400e' : '#166534';
-        const cls = classes.find(c => c.code === card.errorClass);
-
-        rowWrapper.insertAdjacentHTML('beforeend', `
-          <div class="tracking-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-              <span style="background:${stageColor}; color:${stageTextColor}; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:800;">${stageName}</span>
-              ${!isFinal ? `<button onclick="openModal('${card.trackingId}')" style="background:none; border:none; color:var(--lav-500); cursor:pointer;"><i class="fas fa-pen"></i></button>` : ''}
-            </div>
-            <div style="font-size:12px; color:var(--text-soft); margin-bottom:12px; flex:1;">
-              <div style="margin-bottom:6px;"><b>Класс:</b> <span style="color:var(--red); font-weight:700;">${cls ? cls.name : card.errorClass}</span></div>
-              <div style="margin-bottom:6px;"><b>Ошибка:</b> ${card.errorDesc || '—'}</div>
-              <div style="margin-bottom:6px;"><b>Причина:</b> ${card.cause || '—'}</div>
-              <div style="margin-bottom:6px;"><b>Меры:</b> ${card.measures || '—'}</div>
-            </div>
-            <div style="border-top:1px dashed var(--line); padding-top:10px; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
-              <span style="color:var(--text-soft);"><i class="fas fa-calendar-alt"></i> ${card.nextCheckDate || 'Дата не назначена'}</span>
-              ${isFinal 
-                ? `<button class="btn" style="padding:4px 10px; font-size:11px; background:var(--green);" onclick="openDecision('${card.groupId}')">Решение</button>` 
-                : `<button class="btn" style="padding:4px 10px; font-size:11px;" onclick="advanceStage('${card.groupId}', '${card.stage}')">Далее <i class="fas fa-arrow-right"></i></button>`}
-            </div>
-          </div>
-        `);
-      });
-
-      // Если в цепочке только 1 карточка (Первичная), добавляем кнопку "Создать Проверку 1"
-      if (chain.length === 1) {
-         rowWrapper.insertAdjacentHTML('beforeend', `
-          <div onclick="createNextStage('${chain[0].groupId}')" style="flex: 0 0 320px; min-height:200px; display:flex; align-items:center; justify-content:center; border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50);">
-            <div style="text-align:center;">
-              <i class="fas fa-plus-circle" style="font-size:28px; margin-bottom:8px;"></i><br>
-              <span style="font-size:13px; font-weight:700;">Добавить Проверку 1</span>
-            </div>
-          </div>
-        `);
-      }
-
-      container.appendChild(rowWrapper);
-    });
-
-    // Общая кнопка "Зафиксировать новую ошибку" (если активных меньше 3)
-    if (groupKeys.length < 3) {
-       const addBtn = document.createElement('div');
-       addBtn.style.cssText = 'flex: 0 0 100%; margin-top: 10px;';
-       addBtn.innerHTML = `
-        <div onclick="openModal()" style="border:2px dashed var(--lav-300); border-radius:12px; cursor:pointer; color:var(--lav-500); background:var(--lav-50); padding: 16px; text-align:center; transition: 0.2s;" onmouseover="this.style.background='var(--lav-100)'" onmouseout="this.style.background='var(--lav-50)'">
-            <i class="fas fa-plus"></i> Зафиксировать новую ошибку
-        </div>
-       `;
-       container.appendChild(addBtn);
+      `);
     }
   }
 
-  // РЕНДЕР АРХИВА
-  function renderArchive(container) {
-    const archivedCards = allCards.filter(c => c.status === 'archived');
-    
-    if (archivedCards.length === 0) {
-      container.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-soft); width: 100%;">Архив пуст</div>';
-      return;
-    }
-
-    // Группируем по groupId
-    const groups = {};
-    archivedCards.forEach(c => {
-      if (!groups[c.groupId]) groups[c.groupId] = [];
-      groups[c.groupId].push(c);
-    });
-
-    Object.keys(groups).forEach(gid => {
-      const chain = groups[gid];
-      const stageOrder = { initial: 1, intermediate: 2, final: 3 };
-      chain.sort((a, b) => stageOrder[a.stage] - stageOrder[b.stage]);
-      
-      const initial = chain.find(c => c.stage === 'initial') || chain[0];
-      const final = chain.find(c => c.stage === 'final') || chain[chain.length - 1];
-      const cls = classes.find(c => c.code === initial.errorClass);
-
-      const row = document.createElement('div');
-      row.style.cssText = 'width: 100%; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;';
-      
-      row.innerHTML = `
-        <div>
-          <div style="font-weight: 800; color: var(--text); margin-bottom: 4px;">
-            ${cls ? cls.name : initial.errorClass}
-          </div>
-          <div style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px;">
-            <b>Ошибка:</b> ${initial.errorDesc || '—'}
-          </div>
-          <div style="font-size: 12px; color: var(--text-soft);">
-            <b>Итоговые меры:</b> ${final.measures || '—'}
-          </div>
-        </div>
-        <div style="text-align: right;">
-          <div style="font-size: 11px; color: var(--text-soft); margin-bottom: 4px;">Закрыто: ${final.updatedAt ? new Date(final.updatedAt).toLocaleDateString() : '—'}</div>
-          <span style="background: var(--green); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 800;">Устранено</span>
-        </div>
-      `;
-      container.appendChild(row);
-    });
-  }
-
+  // --- МОДАЛКА И СОХРАНЕНИЕ ---
   function openModal(trackingId = null) {
     const classSelect = document.getElementById('trkClassSelect');
     classSelect.innerHTML = classes.map(c => `<option value="${c.code}">${c.name} (вес: ${c.weight})</option>`).join('');
@@ -372,7 +329,7 @@
     if (trackingId) {
       const card = allCards.find(c => c.trackingId === trackingId);
       if (card) {
-        document.getElementById('trkModalTitle').textContent = 'Редактировать';
+        document.getElementById('trkModalTitle').textContent = 'Редактировать карточку';
         document.getElementById('trkTrackingId').value = card.trackingId;
         document.getElementById('trkClassSelect').value = card.errorClass;
         document.getElementById('trkErrorDesc').value = card.errorDesc || '';
@@ -381,7 +338,7 @@
         document.getElementById('trkNextDate').value = card.nextCheckDate || '';
       }
     } else {
-      document.getElementById('trkModalTitle').textContent = 'Новая ошибка';
+      document.getElementById('trkModalTitle').textContent = 'Новая карточка';
       document.getElementById('trkTrackingId').value = '';
       document.getElementById('trkClassSelect').value = '';
       document.getElementById('trkErrorDesc').value = '';
@@ -389,129 +346,96 @@
       document.getElementById('trkMeasures').value = '';
       document.getElementById('trkNextDate').value = '';
     }
+    currentQaTrackingId = null; // Сбрасываем
     document.getElementById('trackingModalOverlay').classList.add('show');
   }
 
   async function saveCard() {
     const trkId = document.getElementById('trkTrackingId').value;
-    let groupId = null;
     let stage = 'initial';
-    
+    let status = 'active';
+    let createdAt = new Date().toISOString();
+
     if (trkId) {
       const existing = allCards.find(c => c.trackingId === trkId);
       if (existing) {
-        groupId = existing.groupId;
         stage = existing.stage;
+        status = existing.status;
+        createdAt = existing.createdAt;
       }
     } else {
-      // Новый groupId для новой цепочки
-      groupId = 'grp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+      if (allCards.filter(c => c.status === 'active').length === 1) stage = 'intermediate';
+      else if (allCards.filter(c => c.status === 'active').length >= 2) stage = 'final';
     }
 
     const payload = {
       trackingId: trkId,
-      groupId: groupId,
+      groupId: trkId ? allCards.find(c => c.trackingId === trkId).groupId : 'grp_' + Date.now(),
       operatorId: currentOperator.id,
       operatorName: currentOperator.name,
       line: currentOperator.line,
       errorClass: document.getElementById('trkClassSelect').value,
+      entityId: document.getElementById('trkErrorDesc').value, // Берем сущность из скрытого поля или описания
       stage: stage,
       errorDesc: document.getElementById('trkErrorDesc').value,
       cause: document.getElementById('trkCause').value,
       measures: document.getElementById('trkMeasures').value,
       nextCheckDate: document.getElementById('trkNextDate').value,
-      status: 'active',
-      createdAt: new Date().toISOString()
+      status: status,
+      createdAt: createdAt,
+      source: 'manual'
     };
 
     try {
-      const res = await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload }) });
+      const res = await fetch(SHEETS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveTrackingCard', payload })
+      });
       const json = await res.json();
+      
       if (json.ok) {
+        // Если создали из QA, архивируем QA
+        if (currentQaTrackingId) {
+          const qaCard = allCards.find(c => c.trackingId === currentQaTrackingId);
+          if (qaCard) {
+            qaCard.status = 'archived';
+            await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload: qaCard }) });
+          }
+          currentQaTrackingId = null;
+        }
+
         document.getElementById('trackingModalOverlay').classList.remove('show');
         loadData();
-      } else { alert('Ошибка: ' + json.error); }
+      } else {
+        alert('Ошибка: ' + json.error);
+      }
     } catch(e) { alert('Ошибка сети'); }
   }
 
-  async function advanceStage(groupId, currentStage) {
-    let nextStage = 'intermediate';
-    if (currentStage === 'initial') nextStage = 'intermediate';
-    else if (currentStage === 'intermediate') nextStage = 'final';
-
-    const card = allCards.find(c => c.groupId === groupId && c.stage === currentStage);
+  function advanceStage(trackingId, currentStage) {
+    const card = allCards.find(c => c.trackingId === trackingId);
     if (!card) return;
 
+    let nextStage = currentStage;
+    let nextStatus = 'active';
+
+    if (currentStage === 'initial') nextStage = 'intermediate';
+    else if (currentStage === 'intermediate') nextStage = 'final';
+    else if (currentStage === 'final') nextStatus = 'done';
+
     card.stage = nextStage;
-    const payload = { ...card };
-    
+    card.status = nextStatus;
+    saveCardData(card);
+  }
+
+  async function saveCardData(card) {
     try {
-      const res = await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload }) });
-      const json = await res.json();
-      if (json.ok) loadData();
-    } catch(e) { alert('Ошибка'); }
-  }
-
-  async function createNextStage(groupId) {
-    const initial = allCards.find(c => c.groupId === groupId && c.stage === 'initial');
-    if(!initial) return;
-
-    const payload = {
-      trackingId: '', 
-      groupId: groupId,
-      operatorId: currentOperator.id,
-      operatorName: currentOperator.name,
-      line: currentOperator.line,
-      errorClass: initial.errorClass,
-      stage: 'intermediate',
-      errorDesc: '',
-      cause: '',
-      measures: '',
-      nextCheckDate: '',
-      status: 'active',
-      createdAt: new Date().toISOString()
-    };
-
-    try {
-      const res = await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload }) });
-      const json = await res.json();
-      if (json.ok) loadData();
-    } catch(e) { alert('Ошибка'); }
-  }
-
-  function openDecision(groupId) {
-    currentDecisionGroupId = groupId;
-    document.getElementById('decisionModalOverlay').classList.add('show');
-  }
-
-  async function finalDecision(isResolved) {
-    document.getElementById('decisionModalOverlay').classList.remove('show');
-    const groupId = currentDecisionGroupId;
-    const chain = allCards.filter(c => c.groupId === groupId);
-    
-    if (isResolved) {
-      for (const card of chain) {
-        await updateCardStatus(card, 'archived');
-      }
-    } else {
-      const finalCard = chain.find(c => c.stage === 'final');
-      for (const card of chain) {
-        if (card.trackingId !== finalCard.trackingId) {
-          await updateCardStatus(card, 'archived');
-        }
-      }
-      if (finalCard) {
-        finalCard.stage = 'initial';
-        finalCard.status = 'active';
-        await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload: finalCard }) });
-      }
-    }
-    loadData();
-  }
-
-  async function updateCardStatus(card, status) {
-    card.status = status;
-    await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload: card }) });
+      await fetch(SHEETS_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'saveTrackingCard', payload: card })
+      });
+      loadData();
+    } catch(e) { alert('Ошибка обновления'); }
   }
 
   function toggleTheme() {
@@ -523,6 +447,12 @@
   }
   if (localStorage.getItem('theme') === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  // Утилита
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
   }
 </script>
 
