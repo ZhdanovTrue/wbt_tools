@@ -232,7 +232,7 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
             <b>Сущность:</b> ${escapeHtml(card.entityId || '—')} <br>
             <span style="color: var(--text-soft); font-style: italic;">"${escapeHtml(card.errorDesc || 'Без комментария')}"</span>
           </div>
-          <div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
+          div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
             <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="dismissQaIssue('${card.trackingId}')">Разобрали</button>
             <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="createFromQa('${card.trackingId}')">Взять на разбор</button>
           </div>
