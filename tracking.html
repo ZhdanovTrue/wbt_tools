@@ -214,9 +214,13 @@
     const list = document.getElementById('qaIssuesList');
     if (!block || !list) return;
 
-    // Ищем ошибки из QA, которые еще не взяты в работу
-    const unprocessed = allCards.filter(c => c.source === 'qa' && c.status === 'pending_review');
+    console.log("ВСЕ КАРТОЧКИ:", allCards); // <--- ДОБАВИТЬ ЭТО
+
+    // Ищем ошибки из QA и ручные
+    const unprocessed = allCards.filter(c => c.status === 'pending_review');
     
+    console.log("НЕРАЗОБРАННЫЕ:", unprocessed); // <--- И ЭТО
+
     if (unprocessed.length === 0) {
       block.style.display = 'none';
       return;
