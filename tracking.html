@@ -251,7 +251,6 @@
     const list = document.getElementById('qaIssuesList');
     if (!block || !list) return;
 
-    // Оставляем только те, у которых статус pending_review
     const unprocessed = allCards.filter(c => c.status === 'pending_review');
     
     if (unprocessed.length === 0) {
@@ -280,9 +279,7 @@
     }).join('');
   }
 
-  // ВЗЯТЬ НА РАЗБОР
   function createFromQa(trackingId) {
-    // Если карточка уже в работе - не даем создать
     const existing = allCards.find(c => c.trackingId === trackingId && c.status === 'active');
     if (existing) {
       alert('Эта ошибка уже находится в работе!');
@@ -300,12 +297,12 @@
     document.getElementById('trkMeasures').value = '';
     document.getElementById('trkEntityId').value = qaCard.entityId || '';
     
-    // ВАЖНО: передаем trackingId из QA, чтобы сохранить связь
-    document.getElementById('trkTrackingId').value = qaCard.trackingId; 
-    currentQaTrackingId = trackingId; 
+    // Очищаем ID, чтобы создалась новая карточка. 
+    // В groupId передаем исходный ID, чтобы сохранить связь.
+    document.getElementById('trkTrackingId').value = ''; 
+    window._pendingGroupId = qaCard.groupId; 
   }
 
-  // РАЗОБРАЛИ (МОДАЛКА)
   function openDismissModal(trackingId) {
     document.getElementById('dismissTrackingId').value = trackingId;
     document.getElementById('dismissMeasures').value = '';
@@ -321,7 +318,6 @@
       return;
     }
 
-    // Если она в работе - не даем просто так отправить в архив
     const existingActive = allCards.find(c => c.trackingId === trackingId && c.status === 'active');
     if (existingActive) {
       alert('Карточка находится в работе. Сначала завершите проверку!');
@@ -496,7 +492,7 @@
     let stage = 'initial';
     let status = 'active';
     let createdAt = new Date().toISOString();
-    let groupId = 'grp_' + Date.now();
+    let groupId = window._pendingGroupId || 'grp_' + Date.now();
 
     if (trkId) {
       const existing = allCards.find(c => c.trackingId === trkId);
@@ -515,7 +511,7 @@
     }
 
     const payload = {
-      trackingId: trkId, // Если взяли из QA, тут будет 'qa_...'
+      trackingId: trkId,
       groupId: groupId,
       operatorId: currentOperator.id,
       operatorName: currentOperator.name,
