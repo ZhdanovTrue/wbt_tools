@@ -199,34 +199,25 @@
     const ctx = document.getElementById('trackingChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // Собираем все классы для подсказки
-    const classMap = {};
-    classes.forEach(c => classMap[c.code] = c.name);
-
-    // Настраиваем тултип
-    const tooltipCallback = function(context) {
-      const date = context.label;
-      const index = context.dataIndex;
-      const critical = chartData[index].critical;
-      const normal = chartData[index].normal;
-      const minor = chartData[index].minor;
-      
-      // Находим ошибки в этот день
-      const dayErrors = allCards.filter(c => {
-        if (!c.createdAt) return false;
+    // Собираем ошибки по датам (для тултипа)
+    const errorsByDate = {};
+    allCards.forEach(c => {
+      if (c.createdAt && c.errorClass && c.status !== 'pending_review') {
         const d = new Date(c.createdAt);
+        // Форматируем как "25.11"
         const dd = String(d.getDate()).padStart(2, '0');
         const mm = String(d.getMonth() + 1).padStart(2, '0');
-        return `${dd}.${mm}` === date && c.errorClass;
-      });
-
-      if (dayErrors.length === 0) return `Ошибок нет`;
-      
-      return dayErrors.map(e => {
-        const cls = classes.find(c => c.code === e.errorClass);
-        return `${cls ? cls.name : e.errorClass} (вес: ${cls ? cls.weight : '?'})`;
-      });
-    };
+        const dateKey = `${dd}.${mm}`;
+        
+        if (!errorsByDate[dateKey]) errorsByDate[dateKey] = [];
+        
+        const cls = classes.find(cl => cl.code === c.errorClass);
+        errorsByDate[dateKey].push({
+          name: cls ? cls.name : c.errorClass,
+          weight: cls ? cls.weight : '?'
+        });
+      }
+    });
 
     chartInstance = new Chart(ctx, {
       type: 'bar',
@@ -245,7 +236,13 @@
           legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
           tooltip: {
             callbacks: {
-              afterBody: tooltipCallback
+              afterBody: function(context) {
+                const date = context[0].label;
+                const errs = errorsByDate[date];
+                if (!errs || errs.length === 0) return 'Ошибок нет';
+                
+                return errs.map(e => `• ${e.name} (вес: ${e.weight})`);
+              }
             }
           }
         }
