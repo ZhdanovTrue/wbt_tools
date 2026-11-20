@@ -213,6 +213,7 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     const list = document.getElementById('qaIssuesList');
     if (!block || !list) return;
 
+    // Ищем ошибки из QA и ручные, которые еще не разобраны
     const unprocessed = allCards.filter(c => c.status === 'pending_review');
     
     if (unprocessed.length === 0) {
@@ -221,21 +222,26 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     }
 
     block.style.display = 'block';
+    
+    // Формируем HTML для каждой карточки
     list.innerHTML = unprocessed.map(card => {
       const cls = classes.find(c => c.code === card.errorClass);
-      const clsName = cls ? cls.name : card.errorClass;
+      const clsName = cls ? cls.name : (card.errorClass || 'Неизвестно');
       
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-card); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--line);">
-          <div style="font-size: 13px;">
+          
+          <div style="font-size: 13px; max-width: 70%;">
             <b style="color: var(--red);">${escapeHtml(clsName)}</b> <br>
             <b>Сущность:</b> ${escapeHtml(card.entityId || '—')} <br>
             <span style="color: var(--text-soft); font-style: italic;">"${escapeHtml(card.errorDesc || 'Без комментария')}"</span>
           </div>
-          div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
+          
+          <div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
             <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="dismissQaIssue('${card.trackingId}')">Разобрали</button>
             <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="createFromQa('${card.trackingId}')">Взять на разбор</button>
           </div>
+          
         </div>
       `;
     }).join('');
