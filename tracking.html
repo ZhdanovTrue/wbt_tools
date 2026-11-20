@@ -39,7 +39,6 @@
   .db-card { background: var(--bg-card); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--line); box-shadow: var(--shadow-card); margin-bottom: 20px; }
   .db-chart-wrap { position: relative; height: 250px; width: 100%; }
   
-  /* Строгий ряд из 3 карточек */
   .tracking-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
   .tracking-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; box-shadow: var(--shadow-card); }
   .empty-slot { border: 2px dashed var(--lav-300); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--lav-500); background: var(--lav-50); cursor: pointer; min-height: 200px; }
@@ -194,17 +193,14 @@
     }
   }
 
-  // ГРАФИК С ТУЛТИПАМИ ПО КЛАССАМ
   function renderChart(chartData) {
     const ctx = document.getElementById('trackingChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // Собираем ошибки по датам (для тултипа)
     const errorsByDate = {};
     allCards.forEach(c => {
       if (c.createdAt && c.errorClass && c.status !== 'pending_review') {
         const d = new Date(c.createdAt);
-        // Форматируем как "25.11"
         const dd = String(d.getDate()).padStart(2, '0');
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dateKey = `${dd}.${mm}`;
@@ -250,12 +246,12 @@
     });
   }
 
-  // СПИСОК НА РАЗБОР
   function renderQaIssues() {
     const block = document.getElementById('qaIssuesBlock');
     const list = document.getElementById('qaIssuesList');
     if (!block || !list) return;
 
+    // Оставляем только те, у которых статус pending_review
     const unprocessed = allCards.filter(c => c.status === 'pending_review');
     
     if (unprocessed.length === 0) {
@@ -286,10 +282,16 @@
 
   // ВЗЯТЬ НА РАЗБОР
   function createFromQa(trackingId) {
+    // Если карточка уже в работе - не даем создать
+    const existing = allCards.find(c => c.trackingId === trackingId && c.status === 'active');
+    if (existing) {
+      alert('Эта ошибка уже находится в работе!');
+      return;
+    }
+
     const qaCard = allCards.find(c => c.trackingId === trackingId);
     if (!qaCard) return;
 
-    // Открываем модалку новой карточки
     openModal();
     
     document.getElementById('trkClassSelect').value = qaCard.errorClass;
@@ -298,11 +300,12 @@
     document.getElementById('trkMeasures').value = '';
     document.getElementById('trkEntityId').value = qaCard.entityId || '';
     
-    document.getElementById('trkTrackingId').value = ''; 
+    // ВАЖНО: передаем trackingId из QA, чтобы сохранить связь
+    document.getElementById('trkTrackingId').value = qaCard.trackingId; 
     currentQaTrackingId = trackingId; 
   }
 
-  // РАЗОБРАЛИ (ОТКРЫВАЕМ МОДАЛКУ ВВОДА МЕР)
+  // РАЗОБРАЛИ (МОДАЛКА)
   function openDismissModal(trackingId) {
     document.getElementById('dismissTrackingId').value = trackingId;
     document.getElementById('dismissMeasures').value = '';
@@ -318,20 +321,34 @@
       return;
     }
 
+    // Если она в работе - не даем просто так отправить в архив
+    const existingActive = allCards.find(c => c.trackingId === trackingId && c.status === 'active');
+    if (existingActive) {
+      alert('Карточка находится в работе. Сначала завершите проверку!');
+      return;
+    }
+
     const qaCard = allCards.find(c => c.trackingId === trackingId);
     if (!qaCard) return;
 
-    qaCard.status = 'archived';
-    qaCard.stage = 'final';
-    qaCard.measures = measures;
+    const payload = { ...qaCard };
+    payload.status = 'archived';
+    payload.stage = 'final';
+    payload.measures = measures;
     
     try {
-      await fetch(SHEETS_URL, {
+      const res = await fetch(SHEETS_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'saveTrackingCard', payload: qaCard })
+        body: JSON.stringify({ action: 'saveTrackingCard', payload })
       });
-      document.getElementById('dismissModalOverlay').classList.remove('show');
-      loadData();
+      const json = await res.json();
+      
+      if (json.ok) {
+        document.getElementById('dismissModalOverlay').classList.remove('show');
+        loadData();
+      } else {
+        alert('Ошибка: ' + json.error);
+      }
     } catch(e) { alert('Ошибка сети'); }
   }
 
@@ -348,7 +365,6 @@
     renderCards();
   }
 
-  // РЕНДЕР КАРТОЧЕК (СЕТКА 3 В РЯД)
   function renderCards() {
     const container = document.getElementById('trackingCardsContainer');
     container.innerHTML = '';
@@ -360,7 +376,6 @@
       filteredCards = allCards.filter(c => c.status === 'archived' || c.status === 'done');
     }
 
-    // Группируем по groupId, чтобы ошибка занимала одну строку
     const groups = {};
     filteredCards.forEach(c => {
       if (!groups[c.groupId]) groups[c.groupId] = [];
@@ -401,7 +416,6 @@
         `);
       });
 
-      // Если этапов меньше 3, добавляем пустые ячейки (кнопка "Добавить этап" только для последней)
       for (let i = groupCards.length; i < 3; i++) {
         rowWrapper.insertAdjacentHTML('beforeend', `
           <div class="empty-slot" onclick="addStageToGroup('${groupId}')">
@@ -416,7 +430,6 @@
       container.appendChild(rowWrapper);
     });
 
-    // Кнопка для добавления новой ошибки (если нет строк)
     if (Object.keys(groups).length === 0) {
       container.insertAdjacentHTML('beforeend', `
         <div class="tracking-row">
@@ -444,7 +457,6 @@
     document.getElementById('trkClassSelect').value = lastCard.errorClass;
     document.getElementById('trkErrorDesc').value = lastCard.errorDesc || '';
     document.getElementById('trkEntityId').value = lastCard.entityId || '';
-    // Сохраняем groupId для новой карточки
     window._pendingGroupId = groupId;
     window._pendingStage = nextStage;
   }
@@ -484,7 +496,7 @@
     let stage = 'initial';
     let status = 'active';
     let createdAt = new Date().toISOString();
-    let groupId = trkId ? allCards.find(c => c.trackingId === trkId).groupId : 'grp_' + Date.now();
+    let groupId = 'grp_' + Date.now();
 
     if (trkId) {
       const existing = allCards.find(c => c.trackingId === trkId);
@@ -492,6 +504,7 @@
         stage = existing.stage;
         status = existing.status;
         createdAt = existing.createdAt;
+        groupId = existing.groupId;
       }
     } else {
       if (window._pendingGroupId) {
@@ -502,7 +515,7 @@
     }
 
     const payload = {
-      trackingId: trkId,
+      trackingId: trkId, // Если взяли из QA, тут будет 'qa_...'
       groupId: groupId,
       operatorId: currentOperator.id,
       operatorName: currentOperator.name,
@@ -527,14 +540,6 @@
       const json = await res.json();
       
       if (json.ok) {
-        if (currentQaTrackingId) {
-          const qaCard = allCards.find(c => c.trackingId === currentQaTrackingId);
-          if (qaCard) {
-            qaCard.status = 'archived';
-            await fetch(SHEETS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveTrackingCard', payload: qaCard }) });
-          }
-          currentQaTrackingId = null;
-        }
         document.getElementById('trackingModalOverlay').classList.remove('show');
         loadData();
       } else {
