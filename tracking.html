@@ -7,9 +7,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Huninn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-  /* Базовые стили, скопированные из основного файла для единообразия */
   :root {
     --lav-50:#f1ebfb; --lav-100:#e4d9f5; --lav-200:#d3c2ee; --lav-300:#bda5e5;
     --lav-400:#a488e3; --lav-500:#8b64d6; --lav-600:#7c4ecf; --lav-700:#6d3fd6;
@@ -69,25 +67,21 @@
     <h2 id="pageOperatorName" style="font-size: 20px; color: var(--text);">Загрузка...</h2>
   </div>
 
-  <!-- График -->
   <div class="db-card">
     <h3 style="font-size: 14px; color: var(--text-soft); margin-bottom: 15px;">Ошибки за 14 дней (по весу)</h3>
     <div class="db-chart-wrap"><canvas id="trackingChart"></canvas></div>
   </div>
 
-  <!-- Блок QA -->
   <div id="qaIssuesBlock" class="db-card" style="margin-bottom: 20px; display: none; background: var(--bg-soft); border-left: 4px solid var(--red);">
     <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text);"><i class="fas fa-clipboard-list" style="color: var(--red);"></i> Требуют разбора (QA)</h3>
     <div id="qaIssuesList"></div>
   </div>
 
-  <!-- Табы и Отработка -->
   <div class="db-card" style="background: transparent; border: none; box-shadow: none; padding: 0;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
       <h3 style="font-size: 16px;"><i class="fas fa-tasks"></i> Отработка ошибок</h3>
     </div>
-
-    <!-- ТАБЫ АРХИВ/АКТИВНЫЕ -->
+    
     <div class="tabs" style="margin-bottom: 20px; max-width: 300px; border: 1px solid var(--line); display: flex; background: var(--bg-card); border-radius: 12px; padding: 6px;">
       <button class="tab active" id="tabActive" onclick="switchView('active')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 800; color: var(--text-soft); background: transparent;">В работе</button>
       <button class="tab" id="tabArchive" onclick="switchView('archive')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 800; color: var(--text-soft); background: transparent;">Архив</button>
@@ -136,14 +130,22 @@
 </div>
 
 <script>
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlvBCm_1V7uR0jEdAVdFFyY7LxAVXzWsz2sq9htQU5t7I7Ib-h/exec'; 
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlvBCm_1V7uR0jEdAVdFFyY7LxAVXzWsz2sq9htQU5t7I7Ib-h/exec'; 
   
   let currentOperator = null;
   let chartInstance = null;
   let classes = [];
   let allCards = [];
   let currentQaTrackingId = null;
-  let currentView = 'active'; // 'active' или 'archive'
+  let currentView = 'active';
+
+  // Утилита для экранирования HTML
+  function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text).replace(/[&<>"']/g, function(m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+  }
 
   const urlParams = new URLSearchParams(window.location.search);
   const opId = urlParams.get('opId');
@@ -157,18 +159,11 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     loadData();
   }
 
-  // Утилита для экранирования HTML (защита от XSS и сбоев верстки)
-  function escapeHtml(text) {
-    if (text === null || text === undefined) return '';
-    return String(text).replace(/[&<>"']/g, function(m) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-    });
-  }
-  
   async function loadData() {
     try {
       const res = await fetch(`${SHEETS_URL}?action=getTrackingData&operatorId=${currentOperator.id}`);
       const json = await res.json();
+      
       if (!json.ok) throw new Error(json.error || 'Ошибка сервера');
       
       const data = json.data;
@@ -184,7 +179,6 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     }
   }
 
-  // --- ГРАФИК ---
   function renderChart(chartData) {
     const ctx = document.getElementById('trackingChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
@@ -207,13 +201,11 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     });
   }
 
-  // --- QA ОШИБКИ ---
   function renderQaIssues() {
     const block = document.getElementById('qaIssuesBlock');
     const list = document.getElementById('qaIssuesList');
     if (!block || !list) return;
 
-    // Ищем ошибки из QA и ручные, которые еще не разобраны
     const unprocessed = allCards.filter(c => c.status === 'pending_review');
     
     if (unprocessed.length === 0) {
@@ -222,26 +214,21 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     }
 
     block.style.display = 'block';
-    
-    // Формируем HTML для каждой карточки
     list.innerHTML = unprocessed.map(card => {
       const cls = classes.find(c => c.code === card.errorClass);
       const clsName = cls ? cls.name : (card.errorClass || 'Неизвестно');
       
       return `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-card); border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--line);">
-          
           <div style="font-size: 13px; max-width: 70%;">
             <b style="color: var(--red);">${escapeHtml(clsName)}</b> <br>
             <b>Сущность:</b> ${escapeHtml(card.entityId || '—')} <br>
             <span style="color: var(--text-soft); font-style: italic;">"${escapeHtml(card.errorDesc || 'Без комментария')}"</span>
           </div>
-          
           <div style="display: flex; gap: 8px; flex-shrink: 0; margin-left: 10px;">
             <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="dismissQaIssue('${card.trackingId}')">Разобрали</button>
             <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="createFromQa('${card.trackingId}')">Взять на разбор</button>
           </div>
-          
         </div>
       `;
     }).join('');
@@ -257,8 +244,6 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     document.getElementById('trkErrorDesc').value = qaCard.errorDesc || '';
     document.getElementById('trkCause').value = ''; 
     document.getElementById('trkMeasures').value = '';
-    
-    // 👇 ПОДСТАВЛЯЕМ СУЩНОСТЬ
     document.getElementById('trkEntityId').value = qaCard.entityId || '';
     
     document.getElementById('trkTrackingId').value = ''; 
@@ -279,11 +264,23 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     }).then(() => loadData());
   }
 
-  // --- ОТРАБОТКА ОШИБОК (АКТИВНЫЕ И АРХИВ) ---
   function switchView(view) {
     currentView = view;
     document.getElementById('tabActive').classList.toggle('active', view === 'active');
     document.getElementById('tabArchive').classList.toggle('active', view === 'archive');
+    
+    if (view === 'active') {
+      document.getElementById('tabActive').style.background = 'var(--lav-600)';
+      document.getElementById('tabActive').style.color = '#fff';
+      document.getElementById('tabArchive').style.background = 'transparent';
+      document.getElementById('tabArchive').style.color = 'var(--text-soft)';
+    } else {
+      document.getElementById('tabArchive').style.background = 'var(--lav-600)';
+      document.getElementById('tabArchive').style.color = '#fff';
+      document.getElementById('tabActive').style.background = 'transparent';
+      document.getElementById('tabActive').style.color = 'var(--text-soft)';
+    }
+    
     renderCards();
   }
 
@@ -347,7 +344,6 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
     }
   }
 
-  // --- МОДАЛКА ---
   function openModal(trackingId = null) {
     const classSelect = document.getElementById('trkClassSelect');
     classSelect.innerHTML = classes.map(c => `<option value="${c.code}">${c.name} (вес: ${c.weight})</option>`).join('');
@@ -403,7 +399,7 @@ const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbySycxvB0SYt8UXsizlv
       operatorName: currentOperator.name,
       line: currentOperator.line,
       errorClass: document.getElementById('trkClassSelect').value,
-      entityId: document.getElementById('trkEntityId').value.trim(), // <-- Берем сущность
+      entityId: document.getElementById('trkEntityId').value.trim(),
       stage: stage,
       errorDesc: document.getElementById('trkErrorDesc').value,
       cause: document.getElementById('trkCause').value,
