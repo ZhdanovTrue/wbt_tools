@@ -1355,8 +1355,8 @@
 <!-- Комментарий оставляем на всю ширину под формой -->
 <div>
             <label style="font-size: 12px; color: var(--text-soft); margin-bottom: 4px; display: block;">Комментарий</label>
-            <input type="text" id="errComment" maxlength="200" placeholder="До 200 символов" style="width: 100%;">
-            <div class="char-counter" id="errCommentCounter" style="text-align: left; margin-top: 4px;">0 / 200</div>
+            <input type="text" id="errComment" maxlength="400" placeholder="До 400 символов" style="width: 100%;">
+            <div class="char-counter" id="errCommentCounter" style="text-align: left; margin-top: 4px;">0 / 400</div>
           </div>
 
         <div class="db-card" style="background: var(--bg-soft); border: 1px solid var(--line);" id="qaBlock">
@@ -1501,8 +1501,8 @@
       </div>
       <div class="form-group">
         <label>Комментарий</label>
-        <input type="text" id="qaReviewComment" maxlength="200" placeholder="До 200 символов">
-        <div class="char-counter" id="qaReviewCommentCounter">0 / 200</div>
+        <input type="text" id="qaReviewComment" maxlength="400" placeholder="До 400 символов">
+        <div class="char-counter" id="qaReviewCommentCounter">0 / 400</div>
       </div>
       <div class="form-group">
         <label>Потери, ₽ (если есть)</label>
@@ -4325,8 +4325,8 @@ const Errors = (() => {
     if (!el || !cnt) return;
     const len = el.value.length;
     cnt.textContent = len + ' / 200';
-    cnt.classList.toggle('warn', len > 160 && len <= 200);
-    cnt.classList.toggle('over', len > 200);
+    cnt.classList.toggle('warn', len > 300 && len <= 400);
+    cnt.classList.toggle('over', len > 400);
   }
 
   function switchErrTab(tab) {
