@@ -921,6 +921,8 @@
     <button class="main-tab hidden" data-tab="errors" id="tabErrorsBtn" onclick="switchMainTab('errors')">
       <i class="fas fa-exclamation-triangle"></i> Ошибки
     </button>
+	<button class="main-tab hidden" data-tab="analytics" id="tabAnalyticsBtn" onclick="switchMainTab('analytics')">
+  <i class="fas fa-chart-area"></i> Аналитика РГ
   </div>
 
   <!-- ЗАКЛАДКИ -->
@@ -1213,6 +1215,63 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- АНАЛИТИКА РГ -->
+<div id="tabContentAnalytics" style="display:none;">
+  <div class="dashboard-wrap">
+    
+    <!-- Подтабы -->
+    <div class="tabs" style="margin-bottom: 24px; max-width: 400px;">
+      <button class="tab active" id="rgTabProd" onclick="RG.switchTab('prod')">📈 Продуктивность</button>
+      <button class="tab" id="rgTabQual" onclick="RG.switchTab('qual')">⚠️ Качество</button>
+    </div>
+
+    <!-- Продуктивность (аналог дашборда) -->
+    <div id="rgContentProd">
+      <div class="db-toolbar">
+        <div class="db-filters">
+          <button class="db-filter-btn active" data-rg-period="today" onclick="RG.setPeriod('today')">Сегодня</button>
+          <button class="db-filter-btn" data-rg-period="week" onclick="RG.setPeriod('week')">Неделя</button>
+          <button class="db-filter-btn" data-rg-period="month" onclick="RG.setPeriod('month')">Месяц</button>
+        </div>
+      </div>
+      <div class="db-summary" id="rgSummary"></div>
+      
+      <div class="db-card" style="margin-top: 20px;">
+        <h3><i class="fas fa-chart-bar"></i> Активность по часам</h3>
+        <div class="db-chart-wrap"><canvas id="rgChartHourly"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Качество (сводка ошибок) -->
+    <div id="rgContentQual" style="display:none;">
+      <div class="db-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+          <h3 style="margin:0;"><i class="fas fa-exclamation-triangle"></i> Качество работы</h3>
+          <button class="btn btn-outline" onclick="RG.reloadQuality()"><i class="fas fa-sync"></i> Обновить</button>
+        </div>
+        <div class="db-summary" id="rgCombinedSummary"></div>
+        
+        <div class="db-table-wrap" style="margin-top:20px;">
+          <table class="db-table" id="rgErrByOperatorTable">
+            <thead>
+              <tr>
+                <th>Оператор</th>
+                <th>Линия</th>
+                <th style="text-align:right;">Проверено</th>
+                <th style="text-align:right;">С ошибками / Разобрано</th>
+                <th style="text-align:right;">Потери, ₽</th>
+                <th style="text-align:center;">Действие</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
           
@@ -2035,15 +2094,16 @@ const Auth = (() => {
   function renderDashboardTab() {
     const dashBtn = document.getElementById('tabDashboardBtn');
     const errBtn = document.getElementById('tabErrorsBtn');
+    const analBtn = document.getElementById('tabAnalyticsBtn'); // <-- НОВАЯ
     
     const op = getOperator();
     const isSup = isSupervisor();
     const isLine3 = op && op.line === 'line3';
+    const isRG = op && op.line === 'rg'; // <-- ПРОВЕРКА РОЛИ
 
-    // Дашборд — только для СВ
     if (dashBtn) dashBtn.classList.toggle('hidden', !isSup);
-    // Ошибки — для СВ и Line3
     if (errBtn) errBtn.classList.toggle('hidden', !(isSup || isLine3));
+    if (analBtn) analBtn.classList.toggle('hidden', !isRG); // <-- ПОКАЗЫВАЕМ ТОЛЬКО РГ
   }
   
 
@@ -2100,13 +2160,13 @@ const Bookmarks = (() => {
   function save() { Storage.set(STORAGE_KEY, bookmarks); }
 
   function switchTab(tab) {
+    // 1. Если line3 пытается зайти на дашборд — перекидываем на ошибки
     const op = Auth.getOperator();
-    
-    // Если line3 пытается зайти на дашборд — перекидываем на ошибки
     if (tab === 'dashboard' && op && op.line === 'line3') {
        tab = 'errors'; 
     }
     
+    // 2. Старая проверка для остальных (если не СВ, то на главную)
     if (tab === 'dashboard' && !Auth.isSupervisor()) tab = 'all';
     
     currentTab = tab;
@@ -2118,19 +2178,24 @@ const Bookmarks = (() => {
     const isTracker = tab === 'tracker';
     const isDashboard = tab === 'dashboard';
     const isErrors = tab === 'errors';
+    const isAnalytics = tab === 'analytics'; // 👈 НОВАЯ СТРОКА
     
     const cardsEl = document.getElementById('tabContentCards');
     const notesEl = document.getElementById('tabContentNotes');
     const trackerEl = document.getElementById('tabContentTracker');
     const dashEl = document.getElementById('tabContentDashboard');
     const errorsEl = document.getElementById('tabContentErrors');
+    const analEl = document.getElementById('tabContentAnalytics'); // 👈 НОВАЯ СТРОКА
 
-    if (cardsEl) cardsEl.style.display = (isNotes || isTracker || isDashboard || isErrors) ? 'none' : '';
+    // Скрываем все контейнеры
+    if (cardsEl) cardsEl.style.display = (isNotes || isTracker || isDashboard || isErrors || isAnalytics) ? 'none' : '';
     if (notesEl) notesEl.style.display = isNotes ? '' : 'none';
     if (trackerEl) trackerEl.style.display = isTracker ? '' : 'none';
     if (dashEl) dashEl.style.display = isDashboard ? '' : 'none';
     if (errorsEl) errorsEl.style.display = isErrors ? '' : 'none';
+    if (analEl) analEl.style.display = isAnalytics ? '' : 'none'; // 👈 НОВАЯ СТРОКА
 
+    // Инициализация нужной вкладки
     if (isNotes) {
       if (typeof Stickers !== 'undefined') Stickers.render();
     } else if (isTracker) {
@@ -2139,15 +2204,17 @@ const Bookmarks = (() => {
     } else if (isDashboard) {
       if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
     } else if (isErrors) {
-      // Просто вызываем инициализацию, вся логика теперь внутри неё
       if (typeof Errors !== 'undefined' && Errors.init) Errors.init();
       if (typeof Qa !== 'undefined' && Qa.init) Qa.init();
+    } else if (isAnalytics) { // 👈 НОВЫЙ БЛОК
+      if (typeof RG !== 'undefined' && RG.switchTab) RG.switchTab('prod');
     } else {
       render();
     }
+    
     updateCounters();
   }
-
+	
   function render() {
     const grid = document.getElementById('cardsGrid');
     if (!grid) return;
@@ -4768,6 +4835,107 @@ const tabWatcher = setInterval(() => {
     clearInterval(tabWatcher); // Останавливаем проверку, как только всё сделали
   }
 }, 500);
+
+const RG = (() => {
+  let period = 'today';
+  let currentTab = 'prod';
+
+  function setPeriod(p) {
+    period = p;
+    document.querySelectorAll('[data-rg-period]').forEach(b => 
+      b.classList.toggle('active', b.dataset.rgPeriod === p));
+    if (currentTab === 'prod') loadProd();
+    else loadQual();
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('rgTabProd').classList.toggle('active', tab === 'prod');
+    document.getElementById('rgTabQual').classList.toggle('active', tab === 'qual');
+    document.getElementById('rgContentProd').style.display = tab === 'prod' ? '' : 'none';
+    document.getElementById('rgContentQual').style.display = tab === 'qual' ? '' : 'none';
+    
+    if (tab === 'prod') loadProd();
+    else loadQual();
+  }
+
+  async function loadProd() {
+    // Используем тот же API, что и Дашборд
+    try {
+      const data = await API.get('dashboard', { token: Auth.getToken(), period: period, line: 'all' });
+      if (!data.ok) return;
+      
+      const s = data.summary || {};
+      document.getElementById('rgSummary').innerHTML = `
+        <div class="db-kpi"><div class="label">Активных операторов</div><div class="value">${s.activeOperators || 0}</div></div>
+        <div class="db-kpi"><div class="label">Всего активностей</div><div class="value">${s.totalActivities || 0}</div></div>
+        <div class="db-kpi"><div class="label">Нагрузка</div><div class="value">${s.totalMinutes || 0}<span class="unit">мин</span></div></div>
+        <div class="db-kpi"><div class="label">Смен</div><div class="value">${s.shifts || 0}</div></div>
+      `;
+      
+      // Рисуем график (упрощенно)
+      const ctx = document.getElementById('rgChartHourly').getContext('2d');
+      if (window.rgChart) window.rgChart.destroy();
+      
+      const labels = (data.hourly || []).map(h => h.hour + ':00');
+      const values = (data.hourly || []).map(h => h.activities);
+      
+      window.rgChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{ label: 'Активности', data: values, backgroundColor: '#8b64d6', borderRadius: 4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    } catch(e) { console.warn(e); }
+  }
+
+  async function loadQual() {
+    try {
+      const data = await API.get('errors_combined_stats', { token: Auth.getToken(), period: period });
+      if (!data.ok) return;
+      
+      const s = data.summary || {};
+      document.getElementById('rgCombinedSummary').innerHTML = `
+        <div class="db-kpi"><div class="label">Всего на проверку</div><div class="value">${s.totalToReview || 0}</div></div>
+        <div class="db-kpi"><div class="label">С ошибками</div><div class="value" style="color:red;">${s.withErrors || 0}</div></div>
+        <div class="db-kpi"><div class="label">Доля ошибок</div><div class="value">${s.errorRate || 0}%</div></div>
+      `;
+      
+      const tbody = document.querySelector('#rgErrByOperatorTable tbody');
+      const rows = data.byOperator || [];
+      
+      tbody.innerHTML = rows.map(r => {
+        // ТУТ МЫ ДЕЛАЕМ ФОРМАТ "ВСЕГО / РАЗОБРАНО"
+        const total = r.withErrors || 0;
+        const archived = r.archived || 0; // Пока предполагаем, что бэкенд это отдает
+        const errorsStr = `${total} / ${archived}`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(r.operatorName || '')}</td>
+            <td><span class="err-row-badge">${r.line}</span></td>
+            <td class="num">${r.reviewed || 0}</td>
+            <td class="num" style="color:var(--red); font-weight:700;">${errorsStr}</td>
+            <td class="num">${r.loss || 0} ₽</td>
+            <td style="text-align:center;">
+              <a href="tracking.html?opId=${r.operatorId || r.operatorName}&name=${encodeURIComponent(r.operatorName)}&line=${r.line}" class="btn btn-outline" style="padding:4px 8px; font-size:11px;">
+                <i class="fas fa-chart-line"></i> Динамика
+              </a>
+            </td>
+          </tr>`;
+      }).join('');
+    } catch(e) { console.warn(e); }
+  }
+
+  function reloadQuality() {
+    loadQual();
+    showToast('Данные обновлены');
+  }
+
+  return { setPeriod, switchTab, loadProd, loadQual, reloadQuality };
+})();
 
 </script>
 </body>
