@@ -1219,6 +1219,7 @@
 </div>
 
 <!-- АНАЛИТИКА РГ -->
+<!-- АНАЛИТИКА РГ -->
 <div id="tabContentAnalytics" style="display:none;">
   <div class="dashboard-wrap">
     
@@ -1228,7 +1229,7 @@
       <button class="tab" id="rgTabQual" onclick="RG.switchTab('qual')">⚠️ Качество</button>
     </div>
 
-    <!-- Продуктивность (аналог дашборда) -->
+    <!-- ПРОДУКТИВНОСТЬ (как дашборд) -->
     <div id="rgContentProd">
       <div class="db-toolbar">
         <div class="db-filters">
@@ -1236,38 +1237,91 @@
           <button class="db-filter-btn" data-rg-period="week" onclick="RG.setPeriod('week')">Неделя</button>
           <button class="db-filter-btn" data-rg-period="month" onclick="RG.setPeriod('month')">Месяц</button>
         </div>
+        <div class="db-actions">
+          <button class="btn btn-outline" onclick="RG.loadProd()"><i class="fas fa-sync"></i> Обновить</button>
+        </div>
       </div>
-      <div class="db-summary" id="rgSummary"></div>
       
-      <div class="db-card" style="margin-top: 20px;">
+      <div class="db-summary" id="rgSummary" style="margin-bottom: 20px;"></div>
+      
+      <div class="db-card" style="margin-bottom: 20px;">
         <h3><i class="fas fa-chart-bar"></i> Активность по часам</h3>
         <div class="db-chart-wrap"><canvas id="rgChartHourly"></canvas></div>
       </div>
+
+      <div class="db-grid-2">
+        <div class="db-card">
+          <h3><i class="fas fa-chart-pie"></i> По активностям (Линия 1)</h3>
+          <div class="db-chart-wrap"><canvas id="rgChartLine1"></canvas></div>
+        </div>
+        <div class="db-card">
+          <h3><i class="fas fa-chart-pie"></i> По активностям (Линия 2)</h3>
+          <div class="db-chart-wrap"><canvas id="rgChartLine2"></canvas></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Качество (сводка ошибок) -->
+    <!-- КАЧЕСТВО (сводка ошибок) -->
     <div id="rgContentQual" style="display:none;">
-      <div class="db-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-          <h3 style="margin:0;"><i class="fas fa-exclamation-triangle"></i> Качество работы</h3>
-          <button class="btn btn-outline" onclick="RG.reloadQuality()"><i class="fas fa-sync"></i> Обновить</button>
+      <div class="db-toolbar" style="margin-bottom: 20px;">
+        <div class="db-filters">
+          <button class="db-filter-btn active" data-rg-q-period="today" onclick="RG.setQualPeriod('today')">Сегодня</button>
+          <button class="db-filter-btn" data-rg-q-period="week" onclick="RG.setQualPeriod('week')">Неделя</button>
+          <button class="db-filter-btn" data-rg-q-period="month" onclick="RG.setQualPeriod('month')">Месяц</button>
         </div>
-        <div class="db-summary" id="rgCombinedSummary"></div>
-        
-        <div class="db-table-wrap" style="margin-top:20px;">
-          <table class="db-table" id="rgErrByOperatorTable">
-            <thead>
-              <tr>
-                <th>Оператор</th>
-                <th>Линия</th>
-                <th style="text-align:right;">Проверено</th>
-                <th style="text-align:right;">С ошибками / Разобрано</th>
-                <th style="text-align:right;">Потери, ₽</th>
-                <th style="text-align:center;">Действие</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <div class="db-actions">
+          <button class="btn btn-outline" onclick="RG.loadQual()"><i class="fas fa-sync"></i> Обновить</button>
+          <button class="btn" onclick="RG.exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+        </div>
+      </div>
+
+      <div class="db-summary" id="rgCombinedSummary" style="margin-bottom: 20px;"></div>
+
+      <div class="db-grid-2" style="margin-bottom: 20px;">
+        <div class="db-card">
+          <h3><i class="fas fa-chart-pie"></i> Ошибки по линиям</h3>
+          <div class="db-chart-wrap"><canvas id="rgChartErrLines"></canvas></div>
+        </div>
+        <div class="db-card">
+          <h3><i class="fas fa-chart-pie"></i> Ошибки по классам (по весу)</h3>
+          <div class="db-chart-wrap"><canvas id="rgChartErrClasses"></canvas></div>
+        </div>
+      </div>
+      
+      <div class="db-grid-2">
+        <div class="db-card">
+          <h3><i class="fas fa-users"></i> По операторам</h3>
+          <div class="db-table-wrap">
+            <table class="db-table" id="rgErrByOperatorTable">
+              <thead>
+                <tr>
+                  <th>Оператор</th>
+                  <th>Линия</th>
+                  <th style="text-align:right;">Проверено</th>
+                  <th style="text-align:right;">С ошибками / Разобрано</th>
+                  <th style="text-align:right;">Потери, ₽</th>
+                  <th style="text-align:center;">Действие</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="db-card">
+          <h3><i class="fas fa-tags"></i> По классам</h3>
+          <div class="db-table-wrap">
+            <table class="db-table" id="rgErrByClassTable">
+              <thead>
+                <tr>
+                  <th>Класс</th>
+                  <th style="text-align:right;">Ошибок</th>
+                  <th style="text-align:right;">Вес</th>
+                  <th style="text-align:right;">Потери, ₽</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -4837,16 +4891,12 @@ const tabWatcher = setInterval(() => {
 }, 500);
 
 const RG = (() => {
-  let period = 'today';
+  let prodPeriod = 'today';
+  let qualPeriod = 'today';
   let currentTab = 'prod';
-
-  function setPeriod(p) {
-    period = p;
-    document.querySelectorAll('[data-rg-period]').forEach(b => 
-      b.classList.toggle('active', b.dataset.rgPeriod === p));
-    if (currentTab === 'prod') loadProd();
-    else loadQual();
-  }
+  let prodCharts = { hourly: null, line1: null, line2: null };
+  let qualCharts = { lines: null, classes: null };
+  let lastQualData = null;
 
   function switchTab(tab) {
     currentTab = tab;
@@ -4859,10 +4909,24 @@ const RG = (() => {
     else loadQual();
   }
 
+  function setPeriod(p) {
+    prodPeriod = p;
+    document.querySelectorAll('[data-rg-period]').forEach(b => 
+      b.classList.toggle('active', b.dataset.rgPeriod === p));
+    loadProd();
+  }
+
+  function setQualPeriod(p) {
+    qualPeriod = p;
+    document.querySelectorAll('[data-rg-q-period]').forEach(b => 
+      b.classList.toggle('active', b.dataset.rgQPeriod === p));
+    loadQual();
+  }
+
+  // --- ПРОДУКТИВНОСТЬ ---
   async function loadProd() {
-    // Используем тот же API, что и Дашборд
     try {
-      const data = await API.get('dashboard', { token: Auth.getToken(), period: period, line: 'all' });
+      const data = await API.get('dashboard', { token: Auth.getToken(), period: prodPeriod, line: 'all' });
       if (!data.ok) return;
       
       const s = data.summary || {};
@@ -4871,53 +4935,123 @@ const RG = (() => {
         <div class="db-kpi"><div class="label">Всего активностей</div><div class="value">${s.totalActivities || 0}</div></div>
         <div class="db-kpi"><div class="label">Нагрузка</div><div class="value">${s.totalMinutes || 0}<span class="unit">мин</span></div></div>
         <div class="db-kpi"><div class="label">Смен</div><div class="value">${s.shifts || 0}</div></div>
+        <div class="db-kpi"><div class="label">Ср. смена</div><div class="value">${s.avgShiftMin || 0}<span class="unit">мин</span></div></div>
       `;
-      
-      // Рисуем график (упрощенно)
-      const ctx = document.getElementById('rgChartHourly').getContext('2d');
-      if (window.rgChart) window.rgChart.destroy();
-      
-      const labels = (data.hourly || []).map(h => h.hour + ':00');
-      const values = (data.hourly || []).map(h => h.activities);
-      
-      window.rgChart = new Chart(ctx, {
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const tickColor = isDark ? '#b8a8d9' : '#5b4b85';
+      const legendColor = isDark ? '#ece5fb' : '#2f2350';
+
+      // График по часам
+      const ctxH = document.getElementById('rgChartHourly').getContext('2d');
+      if (prodCharts.hourly) prodCharts.hourly.destroy();
+      prodCharts.hourly = new Chart(ctxH, {
         type: 'bar',
         data: {
-          labels: labels,
-          datasets: [{ label: 'Активности', data: values, backgroundColor: '#8b64d6', borderRadius: 4 }]
+          labels: (data.hourly || []).map(h => h.hour + ':00'),
+          datasets: [
+            { label: 'Линия 1 (мин)', data: (data.hourly || []).map(h => h.byLine?.line1 || 0), backgroundColor: '#7c4ecf', borderRadius: 6 },
+            { label: 'Линия 2 (мин)', data: (data.hourly || []).map(h => h.byLine?.line2 || 0), backgroundColor: '#ec4899', borderRadius: 6 },
+            { label: 'Активностей', data: (data.hourly || []).map(h => h.activities), type: 'line', borderColor: '#10b981', yAxisID: 'y1', tension: 0.3 }
+          ]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { 
+            x: { ticks: { color: tickColor } }, 
+            y: { beginAtZero: true, ticks: { color: tickColor } },
+            y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: tickColor } }
+          },
+          plugins: { legend: { labels: { color: legendColor } } }
+        }
       });
-    } catch(e) { console.warn(e); }
+
+      // Графики по активностям (Пироги)
+      function drawPie(canvasId, dataArr, chartKey) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        if (prodCharts[chartKey]) prodCharts[chartKey].destroy();
+        if (!dataArr || dataArr.length === 0) {
+          prodCharts[chartKey] = new Chart(ctx, {
+            type: 'doughnut', data: { labels: ['Нет данных'], datasets: [{ data: [1], backgroundColor: ['#e4d9f5'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+          });
+          return;
+        }
+        prodCharts[chartKey] = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: dataArr.map(d => d.name),
+            datasets: [{ data: dataArr.map(d => d.minutes), backgroundColor: ['#7c4ecf', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } }
+        });
+      }
+      drawPie('rgChartLine1', data.byActivityLine1, 'line1');
+      drawPie('rgChartLine2', data.byActivityLine2, 'line2');
+
+    } catch(e) { console.warn("RG Prod Error:", e); }
   }
 
+  // --- КАЧЕСТВО ---
   async function loadQual() {
     try {
-      const data = await API.get('errors_combined_stats', { token: Auth.getToken(), period: period });
+      const data = await API.get('errors_combined_stats', { token: Auth.getToken(), period: qualPeriod });
       if (!data.ok) return;
+      lastQualData = data;
       
       const s = data.summary || {};
       document.getElementById('rgCombinedSummary').innerHTML = `
         <div class="db-kpi"><div class="label">Всего на проверку</div><div class="value">${s.totalToReview || 0}</div></div>
-        <div class="db-kpi"><div class="label">С ошибками</div><div class="value" style="color:red;">${s.withErrors || 0}</div></div>
+        <div class="db-kpi"><div class="label">Проверено</div><div class="value">${s.reviewed || 0}</div></div>
+        <div class="db-kpi"><div class="label">С ошибками</div><div class="value" style="color:#e11d48;">${s.withErrors || 0}</div></div>
         <div class="db-kpi"><div class="label">Доля ошибок</div><div class="value">${s.errorRate || 0}%</div></div>
       `;
-      
+
+      // Графики качества
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const legendColor = isDark ? '#ece5fb' : '#2f2350';
+
+      // Ошибки по линиям
+      let line1Count = 0, line2Count = 0;
+      (data.byOperator || []).forEach(op => {
+        if (op.line === 'line1') line1Count += op.withErrors || 0;
+        if (op.line === 'line2') line2Count += op.withErrors || 0;
+      });
+      const ctxLines = document.getElementById('rgChartErrLines').getContext('2d');
+      if (qualCharts.lines) qualCharts.lines.destroy();
+      qualCharts.lines = new Chart(ctxLines, {
+        type: 'doughnut',
+        data: { labels: ['Линия 1', 'Линия 2'], datasets: [{ data: [line1Count, line2Count], backgroundColor: ['#7c4ecf', '#ec4899'] }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } }
+      });
+
+      // Ошибки по классам
+      const classData = data.byClass || [];
+      const ctxClasses = document.getElementById('rgChartErrClasses').getContext('2d');
+      if (qualCharts.classes) qualCharts.classes.destroy();
+      qualCharts.classes = new Chart(ctxClasses, {
+        type: 'doughnut',
+        data: {
+          labels: classData.map(c => c.className),
+          datasets: [{ data: classData.map(c => c.weight), backgroundColor: ['#7c4ecf', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: legendColor, boxWidth: 12 } } } }
+      });
+
+      // Таблица операторов (с форматом Всего / Разобрано)
       const tbody = document.querySelector('#rgErrByOperatorTable tbody');
       const rows = data.byOperator || [];
-      
       tbody.innerHTML = rows.map(r => {
-        // ТУТ МЫ ДЕЛАЕМ ФОРМАТ "ВСЕГО / РАЗОБРАНО"
         const total = r.withErrors || 0;
-        const archived = r.archived || 0; // Пока предполагаем, что бэкенд это отдает
-        const errorsStr = `${total} / ${archived}`;
+        const archived = r.archived || 0; // Если бэкенд еще не отдает - будет 0
+        const errorsStr = `<b>${total}</b> / ${archived}`;
 
         return `
           <tr>
             <td>${escapeHtml(r.operatorName || '')}</td>
             <td><span class="err-row-badge">${r.line}</span></td>
             <td class="num">${r.reviewed || 0}</td>
-            <td class="num" style="color:var(--red); font-weight:700;">${errorsStr}</td>
+            <td class="num" style="color:var(--red);">${errorsStr}</td>
             <td class="num">${r.loss || 0} ₽</td>
             <td style="text-align:center;">
               <a href="tracking.html?opId=${r.operatorId || r.operatorName}&name=${encodeURIComponent(r.operatorName)}&line=${r.line}" class="btn btn-outline" style="padding:4px 8px; font-size:11px;">
@@ -4926,15 +5060,28 @@ const RG = (() => {
             </td>
           </tr>`;
       }).join('');
-    } catch(e) { console.warn(e); }
+
+      // Таблица классов
+      const tbodyC = document.querySelector('#rgErrByClassTable tbody');
+      tbodyC.innerHTML = (data.byClass || []).map(c => `
+        <tr>
+          <td>${escapeHtml(c.className || '')}</td>
+          <td class="num">${c.count || 0}</td>
+          <td class="num">${c.weight || 0}</td>
+          <td class="num">${c.loss || 0} ₽</td>
+        </tr>
+      `).join('');
+
+    } catch(e) { console.warn("RG Qual Error:", e); }
   }
 
-  function reloadQuality() {
-    loadQual();
-    showToast('Данные обновлены');
+  function exportCSV() {
+    if (!lastQualData) return showToast('Нет данных для экспорта');
+    // Логика экспорта такая же, как в Errors.exportCombinedCSV
+    showToast('Экспорт CSV пока в разработке');
   }
 
-  return { setPeriod, switchTab, loadProd, loadQual, reloadQuality };
+  return { switchTab, setPeriod, setQualPeriod, loadProd, loadQual, exportCSV };
 })();
 
 </script>
