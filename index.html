@@ -4123,8 +4123,6 @@ const Errors = (() => {
     return v.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
   }
 
-  // ─── ЗАГРУЗКА ДАННЫХ ───
-
   async function loadOperators() {
     if (operatorsCache) return operatorsCache;
     try {
@@ -4151,8 +4149,6 @@ const Errors = (() => {
     }
   }
 
-  // ─── ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ───
-
   async function init() {
     renderDashboardTab();
     
@@ -4163,7 +4159,7 @@ const Errors = (() => {
     if (!isSup && !isLine3) return;
     
     if (initialized) { 
-      reload(); 
+      await reload(); 
       return; 
     }
     initialized = true;
@@ -4177,11 +4173,8 @@ const Errors = (() => {
   async function reload() {
     const op = Auth.getOperator();
     if (!Auth.isSupervisor() && (!op || op.line !== 'line3')) return;
-    
     await reloadCombined();
   }
-
-  // ─── ОТРИСОВКА ВКЛАДКИ ───
 
   function renderDashboardTab() {
     const btn = document.getElementById('tabErrorsBtn');
@@ -4197,15 +4190,16 @@ const Errors = (() => {
     const sel = document.getElementById('errOperator');
     if (!sel) return;
 
-    // Фильтруем только операторов линий 1 и 2
     const lineOps = ops.filter(o => o.line === 'line1' || o.line === 'line2');
     
+    // Сортировка по алфавиту
+    lineOps.sort((a, b) => a.name.localeCompare(b.name));
+
     sel.innerHTML = lineOps.map(function(o) {
       const lineLabel = o.line === 'line1' ? 'Линия 1' : 'Линия 2';
       return `<option value="${escapeHtml(o.id)}" data-line="${escapeHtml(o.line)}" data-sup="${escapeHtml(o.supervisor || '')}">${escapeHtml(o.name)} · ${lineLabel}</option>`;
     }).join('');
 
-    // Заполняем список супервайзеров
     const allSups = [...new Set(ops.map(o => String(o.supervisor || '').trim()).filter(Boolean))];
     const supSel = document.getElementById('errSupervisor');
     
@@ -4213,7 +4207,6 @@ const Errors = (() => {
       supSel.innerHTML = allSups.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
     }
 
-    // Обработчик
     sel.onchange = function() {
       const opt = sel.options[sel.selectedIndex];
       if (!opt) return;
@@ -4226,7 +4219,6 @@ const Errors = (() => {
       reloadClassesForLine(line);
     };
 
-    // Инициализация первого оператора
     if (sel.options.length > 0) {
       const firstOpt = sel.options[0];
       if (supSel && firstOpt.dataset.sup) supSel.value = firstOpt.dataset.sup;
@@ -4250,29 +4242,26 @@ const Errors = (() => {
     }
   }
 
-  // ─── СВОДКА ───
-
   async function reloadCombined() {
-	  showToast('⏳ Обновление сводки...'); // 👈 ДОБАВИТЬ ЗДЕСЬ
+    showToast('⏳ Обновление сводки...');
     try {
       const data = await API.get('errors_combined_stats', {
         token: Auth.getToken(),
         period: period
       });
       if (!data || !data.ok) {
-		  showToast('❌ Ошибка загрузки данных'); // 👈 ДОБАВИТЬ ЗДЕСЬ
-		  return;
-	  }
+        showToast('❌ Ошибка загрузки данных');
+        return;
+      }
       combinedStats = data;
       renderCombinedSummary();
       renderCombinedByOperator();
       renderCombinedByClass();
       try { renderErrCharts(); } catch(e) {}
-
-		showToast('✅ Сводка обновлена'); // 👈 ДОБАВИТЬ ЗДЕСЬ
+      showToast('✅ Сводка обновлена');
     } catch (e) {
       console.warn('Errors: reloadCombined error', e);
-		showToast('❌ Ошибка сети'); // 👈 ДОБАВИТЬ ЗДЕСЬ
+      showToast('❌ Ошибка сети');
     }
   }
 
@@ -4311,7 +4300,7 @@ const Errors = (() => {
           <td>${escapeHtml(r.operatorName || '')}</td>
           <td><span class="err-row-badge">${escapeHtml(lineLabel)}</span></td>
           <td class="num">${r.reviewed || 0}</td>
-          <td class="num">${r.withErrors || 0}</td>
+          <td class="num">${r.withErrors || 0} / ${r.archived || 0}</td>
           <td class="num">${lossCell}</td>
           <td style="text-align:center;">
             <a href="${trackingUrl}" class="btn btn-outline" style="padding:4px 8px; font-size:11px; text-decoration:none;">
@@ -4389,9 +4378,7 @@ const Errors = (() => {
     }
   }
 
-  // ─── ДОБАВЛЕНИЕ ОШИБКИ ───
-
- async function add() {
+  async function add() {
     const op = Auth.getOperator();
     if (!Auth.isSupervisor() && (!op || op.line !== 'line3')) { 
         showToast('У вас нет прав'); return; 
@@ -4447,21 +4434,19 @@ const Errors = (() => {
     }
   }
 
-  // 👇 ВОТ ЕЕ НЕ ХВАТАЛО 👇
   function setPeriod(p) {
     period = p;
     document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
       b.classList.toggle('active', b.dataset.errPeriod === p));
     reload();
   }
-  // 👆 ----------------- 👆
 
   function updateCommentCounter() {
     const el = document.getElementById('errComment');
     const cnt = document.getElementById('errCommentCounter');
     if (!el || !cnt) return;
     const len = el.value.length;
-    cnt.textContent = len + ' / 400'; // Обновил на 400
+    cnt.textContent = len + ' / 400'; 
     cnt.classList.toggle('warn', len > 300 && len <= 400);
     cnt.classList.toggle('over', len > 400);
   }
