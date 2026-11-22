@@ -1262,6 +1262,7 @@
     </div>
 
     <!-- КАЧЕСТВО (сводка ошибок) -->
+    <!-- КАЧЕСТВО (Сводка по СВ для РГ) -->
     <div id="rgContentQual" style="display:none;">
       <div class="db-toolbar" style="margin-bottom: 20px;">
         <div class="db-filters">
@@ -1271,9 +1272,12 @@
         </div>
         <div class="db-actions">
           <button class="btn btn-outline" onclick="RG.loadQual()"><i class="fas fa-sync"></i> Обновить</button>
-          <button class="btn" onclick="RG.exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
         </div>
       </div>
+
+      <!-- Контейнер для блоков СВ -->
+      <div id="rgSupervisorsList"></div>
+    </div>
 
       <div class="db-summary" id="rgCombinedSummary" style="margin-bottom: 20px;"></div>
 
@@ -4993,84 +4997,52 @@ const RG = (() => {
   }
 
   // --- КАЧЕСТВО ---
-  async function loadQual() {
+    async function loadQual() {
     try {
       const data = await API.get('errors_combined_stats', { token: Auth.getToken(), period: qualPeriod });
       if (!data.ok) return;
-      lastQualData = data;
       
-      const s = data.summary || {};
-      document.getElementById('rgCombinedSummary').innerHTML = `
-        <div class="db-kpi"><div class="label">Всего на проверку</div><div class="value">${s.totalToReview || 0}</div></div>
-        <div class="db-kpi"><div class="label">Проверено</div><div class="value">${s.reviewed || 0}</div></div>
-        <div class="db-kpi"><div class="label">С ошибками</div><div class="value" style="color:#e11d48;">${s.withErrors || 0}</div></div>
-        <div class="db-kpi"><div class="label">Доля ошибок</div><div class="value">${s.errorRate || 0}%</div></div>
-      `;
+      const container = document.getElementById('rgSupervisorsList');
+      const sups = data.bySupervisor || [];
 
-      // Графики качества
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const legendColor = isDark ? '#ece5fb' : '#2f2350';
+      if (sups.length === 0) {
+        container.innerHTML = '<div class="db-empty">Нет данных за период</div>';
+        return;
+      }
 
-      // Ошибки по линиям
-      let line1Count = 0, line2Count = 0;
-      (data.byOperator || []).forEach(op => {
-        if (op.line === 'line1') line1Count += op.withErrors || 0;
-        if (op.line === 'line2') line2Count += op.withErrors || 0;
-      });
-      const ctxLines = document.getElementById('rgChartErrLines').getContext('2d');
-      if (qualCharts.lines) qualCharts.lines.destroy();
-      qualCharts.lines = new Chart(ctxLines, {
-        type: 'doughnut',
-        data: { labels: ['Линия 1', 'Линия 2'], datasets: [{ data: [line1Count, line2Count], backgroundColor: ['#7c4ecf', '#ec4899'] }] },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } }
-      });
-
-      // Ошибки по классам
-      const classData = data.byClass || [];
-      const ctxClasses = document.getElementById('rgChartErrClasses').getContext('2d');
-      if (qualCharts.classes) qualCharts.classes.destroy();
-      qualCharts.classes = new Chart(ctxClasses, {
-        type: 'doughnut',
-        data: {
-          labels: classData.map(c => c.className),
-          datasets: [{ data: classData.map(c => c.weight), backgroundColor: ['#7c4ecf', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: legendColor, boxWidth: 12 } } } }
-      });
-
-      // Таблица операторов (с форматом Всего / Разобрано)
-      const tbody = document.querySelector('#rgErrByOperatorTable tbody');
-      const rows = data.byOperator || [];
-      tbody.innerHTML = rows.map(r => {
-        const total = r.withErrors || 0;
-        const archived = r.archived || 0; // Если бэкенд еще не отдает - будет 0
-        const errorsStr = `<b>${total}</b> / ${archived}`;
+      container.innerHTML = sups.map(sup => {
+        const total = sup.withErrors;
+        const archived = sup.archived;
+        
+        // Формируем список классов
+        const classesHtml = sup.classes.map(c => `
+          <div style="display:flex; justify-content:space-between; padding: 8px 12px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 8px; font-size: 13px;">
+            <span>${escapeHtml(c.name)}</span>
+            <span style="font-weight: 800; color: var(--red);">${c.count} шт.</span>
+          </div>
+        `).join('');
 
         return `
-          <tr>
-            <td>${escapeHtml(r.operatorName || '')}</td>
-            <td><span class="err-row-badge">${r.line}</span></td>
-            <td class="num">${r.reviewed || 0}</td>
-            <td class="num" style="color:var(--red);">${errorsStr}</td>
-            <td class="num">${r.loss || 0} ₽</td>
-            <td style="text-align:center;">
-              <a href="tracking.html?opId=${r.operatorId || r.operatorName}&name=${encodeURIComponent(r.operatorName)}&line=${r.line}" class="btn btn-outline" style="padding:4px 8px; font-size:11px;">
-                <i class="fas fa-chart-line"></i> Динамика
-              </a>
-            </td>
-          </tr>`;
-      }).join('');
+          <div class="db-card" style="margin-bottom: 20px; border-left: 5px solid var(--lav-500);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+              <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-user-tie"></i> ${escapeHtml(sup.supervisorName)}</h3>
+              <button class="btn btn-outline" onclick="RG.reloadQual()"><i class="fas fa-sync"></i> Обновить</button>
+            </div>
 
-      // Таблица классов
-      const tbodyC = document.querySelector('#rgErrByClassTable tbody');
-      tbodyC.innerHTML = (data.byClass || []).map(c => `
-        <tr>
-          <td>${escapeHtml(c.className || '')}</td>
-          <td class="num">${c.count || 0}</td>
-          <td class="num">${c.weight || 0}</td>
-          <td class="num">${c.loss || 0} ₽</td>
-        </tr>
-      `).join('');
+            <div class="db-summary" style="margin-bottom: 20px;">
+              <div class="db-kpi"><div class="label">Осталось проверить</div><div class="value">${sup.totalToReview}</div></div>
+              <div class="db-kpi"><div class="label">Всего проверено</div><div class="value">${sup.reviewed}</div></div>
+              <div class="db-kpi"><div class="label">С ошибками / Разобрано</div><div class="value" style="color:var(--red);">${total} / ${archived}</div></div>
+              <div class="db-kpi"><div class="label">Доля ошибок</div><div class="value">${sup.errorRate}%</div></div>
+            </div>
+
+            <h4 style="font-size: 14px; color: var(--text-soft); margin-bottom: 12px;">Частые классы ошибок (ТОП):</h4>
+            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
+              ${classesHtml || '<div style="color:var(--text-soft); font-size:13px;">Ошибок нет</div>'}
+            </div>
+          </div>
+        `;
+      }).join('');
 
     } catch(e) { console.warn("RG Qual Error:", e); }
   }
@@ -5081,7 +5053,7 @@ const RG = (() => {
     showToast('Экспорт CSV пока в разработке');
   }
 
-  return { switchTab, setPeriod, setQualPeriod, loadProd, loadQual, exportCSV };
+  return { switchTab, setPeriod, setQualPeriod, loadProd, , exportCSV };
 })();
 
 </script>
