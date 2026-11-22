@@ -1010,7 +1010,7 @@
               <span class="section-counter" id="stickersCount">0</span>
             </div>
             <div class="stickers-actions">
-              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="openStickerModal('add')">
+              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="Stickers.openModal('add')">
                 <i class="fas fa-plus"></i> Добавить
               </button>
               <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="voiceSticker()">
@@ -1534,9 +1534,9 @@
         <textarea id="bmDesc" rows="3" placeholder="Краткое описание..."></textarea>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-cancel" onclick="closeBookmarkModal()">Отмена</button>
-        <button type="submit" class="btn">Сохранить</button>
-      </div>
+  <button type="button" class="btn btn-cancel" onclick="Stickers.closeModal()">Отмена</button>
+  <button type="button" class="btn" id="stickerSaveBtn" onclick="Stickers.saveFromModal()">Сохранить</button>
+</div>
     </form>
   </div>
 </div>
@@ -3643,15 +3643,6 @@ const Stickers = (() => {
     
     const ta = document.getElementById('stickerText');
     if (ta) ta.addEventListener('input', updateWordCount);
-    
-    // Привязка кнопки "Сохранить"
-    const saveBtn = document.getElementById('stickerSaveBtn');
-    if (saveBtn) {
-      // Удаляем старые обработчики, чтобы не было дублей
-      saveBtn.replaceWith(saveBtn.cloneNode(true));
-      const newSaveBtn = document.getElementById('stickerSaveBtn');
-      newSaveBtn.addEventListener('click', saveFromModal);
-    }
     
     const overlay = document.getElementById('stickerModalOverlay');
     if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
