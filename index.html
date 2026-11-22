@@ -930,9 +930,7 @@
     <div class="cards-grid" id="cardsGrid"></div>
   </div>
 
-  <!-- ЗАМЕТКИ -->
-
-    <!-- ЗАМЕТКИ -->
+ <!-- ЗАМЕТКИ -->
   <div id="tabContentNotes" style="display:none;">
     <div class="notes-layout">
       
@@ -1001,7 +999,7 @@
 
       </div>
 
-      <!-- ПРАВАЯ КОЛОНКА: Стикеры (остаются как были) -->
+      <!-- ПРАВАЯ КОЛОНКА: Стикеры -->
       <div class="notes-right">
         <div class="stickers-wrap">
           <div class="stickers-toolbar">
@@ -1010,10 +1008,12 @@
               <span class="section-counter" id="stickersCount">0</span>
             </div>
             <div class="stickers-actions">
+              <!-- ВАЖНО: вызов Stickers.openModal -->
               <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="Stickers.openModal('add')">
                 <i class="fas fa-plus"></i> Добавить
               </button>
-              <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="voiceSticker()">
+              <!-- ВАЖНО: вызов Stickers.voiceSticker -->
+              <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="Stickers.voiceSticker()">
                 <i class="fas fa-microphone"></i> <span id="stickerVoiceText">Диктовать</span>
               </button>
             </div>
@@ -1035,7 +1035,7 @@
 
     </div>
   </div>
-
+	  
   <!-- ТРЕКЕР -->
   <div id="tabContentTracker" style="display:none;">
     <div class="trackercard">
@@ -3436,12 +3436,6 @@ const Stickers = (() => {
   }
   function count() { return stickers.length; }
 
-  function normalizeVoiceText(raw) {
-    let s = String(raw || '');
-    for (let i = 0; i < 3; i++) s = s.replace(/(\d)[\s,.](\d)/g, '$1$2');
-    return s.replace(/\s+/g, ' ').trim();
-  }
-
   function render() {
     const grid = document.getElementById('stickersGrid');
     if (!grid) return;
@@ -3488,6 +3482,8 @@ const Stickers = (() => {
     const overlay = document.getElementById('stickerModalOverlay');
     const ta = document.getElementById('stickerText');
     const colorSel = document.getElementById('stickerColor');
+    if (!overlay || !ta || !colorSel) return;
+    
     if (mode === 'edit' && id) {
       const s = stickers.find(x => x.id === id); if (!s) return;
       editingId = id;
@@ -3502,8 +3498,10 @@ const Stickers = (() => {
     overlay.classList.add('show');
     setTimeout(() => ta.focus(), 100);
   }
+  
   function closeModal() { 
-    document.getElementById('stickerModalOverlay').classList.remove('show'); 
+    const overlay = document.getElementById('stickerModalOverlay');
+    if (overlay) overlay.classList.remove('show'); 
     editingId = null; 
   }
 
@@ -3519,6 +3517,8 @@ const Stickers = (() => {
   function saveFromModal() {
     const ta = document.getElementById('stickerText');
     const colorSel = document.getElementById('stickerColor');
+    if (!ta || !colorSel) return;
+    
     const text = ta.value.trim();
     if (!text) { showToast('Введите текст'); return; }
     
@@ -3544,7 +3544,6 @@ const Stickers = (() => {
     const s = stickers.find(x => x.id === id); if (!s) return;
     const preview = s.text.length > 60 ? s.text.slice(0, 60) + '…' : s.text;
     
-    // Если Confirm не работает (сломан), используем стандартный confirm
     if (typeof Confirm === 'undefined' || !Confirm.open) {
       if (window.confirm(`Удалить стикер? \n«${preview}»`)) {
         stickers = stickers.filter(x => x.id !== id);
@@ -3591,7 +3590,7 @@ const Stickers = (() => {
     const txt = document.getElementById('stickerVoiceText');
     if (isListening) {
       if (recognition) { try { recognition.stop(); } catch (e) {} }
-      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
+      isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать';
       return;
     }
     if (!window.isSecureContext) { showToast('Микрофон недоступен без HTTPS/localhost'); return; }
@@ -3608,9 +3607,9 @@ const Stickers = (() => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
       }
-      final = normalizeVoiceText(final);
-      if (final.trim()) {
-        const words = final.trim().split(/\s+/).filter(Boolean);
+      final = final.replace(/\s+/g, ' ').trim();
+      if (final) {
+        const words = final.split(/\s+/).filter(Boolean);
         stickers.push({
           id: 'st_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
           text: words.slice(0, MAX_WORDS).join(' '),
@@ -3622,18 +3621,18 @@ const Stickers = (() => {
         save(); render();
       }
     };
-    recognition.onend = () => { isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать'; };
+    recognition.onend = () => { isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать'; };
     recognition.onerror = (e) => {
       if (e.error !== 'aborted') showToast('Ошибка распознавания: ' + e.error);
-      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
+      isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать';
     };
     try {
       recognition.start();
-      isListening = true; btn.classList.add('recording'); txt.textContent = 'Готово';
+      isListening = true; if(btn) btn.classList.add('recording'); if(txt) txt.textContent = 'Готово';
       showToast('Диктуйте стикер...');
     } catch (e) {
       showToast('Не удалось запустить распознавание');
-      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
+      isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать';
     }
   }
 
