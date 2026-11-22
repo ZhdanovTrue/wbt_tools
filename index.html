@@ -3428,7 +3428,12 @@ const Stickers = (() => {
     const saved = Storage.get(STORAGE_KEY, []);
     stickers = Array.isArray(saved) ? saved : [];
   }
-  function save() { Storage.set(STORAGE_KEY, stickers); Bookmarks.updateCounters(); }
+  function save() { 
+    Storage.set(STORAGE_KEY, stickers); 
+    if (typeof Bookmarks !== 'undefined' && Bookmarks.updateCounters) {
+      Bookmarks.updateCounters(); 
+    }
+  }
   function count() { return stickers.length; }
 
   function normalizeVoiceText(raw) {
@@ -3497,7 +3502,10 @@ const Stickers = (() => {
     overlay.classList.add('show');
     setTimeout(() => ta.focus(), 100);
   }
-  function closeModal() { document.getElementById('stickerModalOverlay').classList.remove('show'); editingId = null; }
+  function closeModal() { 
+    document.getElementById('stickerModalOverlay').classList.remove('show'); 
+    editingId = null; 
+  }
 
   function updateWordCount() {
     const ta = document.getElementById('stickerText');
@@ -3513,19 +3521,21 @@ const Stickers = (() => {
     const colorSel = document.getElementById('stickerColor');
     const text = ta.value.trim();
     if (!text) { showToast('Введите текст'); return; }
+    
     const words = text.split(/\s+/).filter(Boolean);
     const capped = words.slice(0, MAX_WORDS).join(' ');
     const wordCount = Math.min(words.length, MAX_WORDS);
+    
     if (editingId) {
       const s = stickers.find(x => x.id === editingId);
       if (s) { s.text = capped; s.wordCount = wordCount; s.color = colorSel.value; s.lastPlayed = 0; }
-      showToast('Стикер обновлён');
+      showToast('✅ Стикер обновлён');
     } else {
       stickers.push({
         id: 'st_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
         text: capped, color: colorSel.value, created: Date.now(), lastPlayed: 0, wordCount
       });
-      showToast('Стикер добавлен');
+      showToast('✅ Стикер добавлен');
     }
     save(); render(); closeModal();
   }
@@ -3533,6 +3543,16 @@ const Stickers = (() => {
   function confirmDelete(id) {
     const s = stickers.find(x => x.id === id); if (!s) return;
     const preview = s.text.length > 60 ? s.text.slice(0, 60) + '…' : s.text;
+    
+    // Если Confirm не работает (сломан), используем стандартный confirm
+    if (typeof Confirm === 'undefined' || !Confirm.open) {
+      if (window.confirm(`Удалить стикер? \n«${preview}»`)) {
+        stickers = stickers.filter(x => x.id !== id);
+        save(); render(); showToast('Стикер удалён');
+      }
+      return;
+    }
+
     Confirm.open('Удалить стикер?', `«${preview}» будет удалён.`, () => {
       stickers = stickers.filter(x => x.id !== id);
       save(); render(); showToast('Стикер удалён');
@@ -3620,15 +3640,24 @@ const Stickers = (() => {
   function init() {
     load(); render();
     setInterval(tick, 5000);
+    
     const ta = document.getElementById('stickerText');
     if (ta) ta.addEventListener('input', updateWordCount);
+    
+    // Привязка кнопки "Сохранить"
     const saveBtn = document.getElementById('stickerSaveBtn');
-    if (saveBtn) saveBtn.addEventListener('click', saveFromModal);
+    if (saveBtn) {
+      // Удаляем старые обработчики, чтобы не было дублей
+      saveBtn.replaceWith(saveBtn.cloneNode(true));
+      const newSaveBtn = document.getElementById('stickerSaveBtn');
+      newSaveBtn.addEventListener('click', saveFromModal);
+    }
+    
     const overlay = document.getElementById('stickerModalOverlay');
     if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
   }
 
-  return { load, render, count, init, openModal, closeModal, voiceSticker, saveFromModal }; // 👈 ДОБАВИТЬ saveFromModal
+  return { load, render, count, init, openModal, closeModal, voiceSticker, saveFromModal };
 })();
 
 /* ══════════════════════════════════════════════
