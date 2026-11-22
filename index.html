@@ -1275,12 +1275,10 @@
         </div>
       </div>
 
-      <!-- Контейнер для блоков СВ -->
-      <div id="rgSupervisorsList"></div>
-    </div>
+      <!-- Блоки по супервайзерам -->
+      <div id="rgSupervisorsList" style="margin-bottom: 30px;"></div>
 
-      <div class="db-summary" id="rgCombinedSummary" style="margin-bottom: 20px;"></div>
-
+      <!-- Общие графики -->
       <div class="db-grid-2" style="margin-bottom: 20px;">
         <div class="db-card">
           <h3><i class="fas fa-chart-pie"></i> Ошибки по линиям</h3>
@@ -1291,7 +1289,8 @@
           <div class="db-chart-wrap"><canvas id="rgChartErrClasses"></canvas></div>
         </div>
       </div>
-      
+
+      <!-- Таблицы -->
       <div class="db-grid-2">
         <div class="db-card">
           <h3><i class="fas fa-users"></i> По операторам</h3>
@@ -5002,45 +5001,108 @@ const RG = (() => {
       const data = await API.get('errors_combined_stats', { token: Auth.getToken(), period: qualPeriod });
       if (!data.ok) return;
       
+      // 1. Рендерим блоки супервайзеров
       const container = document.getElementById('rgSupervisorsList');
       const sups = data.bySupervisor || [];
 
       if (sups.length === 0) {
         container.innerHTML = '<div class="db-empty">Нет данных за период</div>';
-        return;
+      } else {
+        container.innerHTML = sups.map(sup => {
+          const total = sup.withErrors;
+          const archived = sup.archived;
+          
+          const classesHtml = sup.classes.map(c => `
+            <div style="display:flex; justify-content:space-between; padding: 8px 12px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 8px; font-size: 13px;">
+              <span>${escapeHtml(c.name)}</span>
+              <span style="font-weight: 800; color: var(--red);">${c.count} шт.</span>
+            </div>
+          `).join('');
+
+          return `
+            <div class="db-card" style="margin-bottom: 20px; border-left: 5px solid var(--lav-500);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-user-tie"></i> ${escapeHtml(sup.supervisorName)}</h3>
+              </div>
+
+              <div class="db-summary" style="margin-bottom: 20px;">
+                <div class="db-kpi"><div class="label">Осталось проверить</div><div class="value">${sup.totalToReview}</div></div>
+                <div class="db-kpi"><div class="label">Всего проверено</div><div class="value">${sup.reviewed}</div></div>
+                <div class="db-kpi"><div class="label">С ошибками / Разобрано</div><div class="value" style="color:var(--red);">${total} / ${archived}</div></div>
+                <div class="db-kpi"><div class="label">Доля ошибок</div><div class="value">${sup.errorRate}%</div></div>
+              </div>
+
+              <h4 style="font-size: 14px; color: var(--text-soft); margin-bottom: 12px;">Частые классы ошибок (ТОП):</h4>
+              <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
+                ${classesHtml || '<div style="color:var(--text-soft); font-size:13px;">Ошибок нет</div>'}
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
-      container.innerHTML = sups.map(sup => {
-        const total = sup.withErrors;
-        const archived = sup.archived;
-        
-        const classesHtml = sup.classes.map(c => `
-          <div style="display:flex; justify-content:space-between; padding: 8px 12px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 8px; font-size: 13px;">
-            <span>${escapeHtml(c.name)}</span>
-            <span style="font-weight: 800; color: var(--red);">${c.count} шт.</span>
-          </div>
-        `).join('');
+      // 2. Рисуем общие графики
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const legendColor = isDark ? '#ece5fb' : '#2f2350';
+
+      // Ошибки по линиям
+      let line1Count = 0, line2Count = 0;
+      (data.byOperator || []).forEach(op => {
+        if (op.line === 'line1') line1Count += op.withErrors || 0;
+        if (op.line === 'line2') line2Count += op.withErrors || 0;
+      });
+      const ctxLines = document.getElementById('rgChartErrLines').getContext('2d');
+      if (window.rgChartLines) window.rgChartLines.destroy();
+      window.rgChartLines = new Chart(ctxLines, {
+        type: 'doughnut',
+        data: { labels: ['Линия 1', 'Линия 2'], datasets: [{ data: [line1Count, line2Count], backgroundColor: ['#7c4ecf', '#ec4899'] }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: legendColor } } } }
+      });
+
+      // Ошибки по классам (по весу)
+      const classData = data.byClass || [];
+      const ctxClasses = document.getElementById('rgChartErrClasses').getContext('2d');
+      if (window.rgChartClasses) window.rgChartClasses.destroy();
+      window.rgChartClasses = new Chart(ctxClasses, {
+        type: 'doughnut',
+        data: {
+          labels: classData.map(c => c.className),
+          datasets: [{ data: classData.map(c => c.weight), backgroundColor: ['#7c4ecf', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { color: legendColor, boxWidth: 12 } } } }
+      });
+
+      // 3. Заполняем таблицы
+      const tbodyOp = document.querySelector('#rgErrByOperatorTable tbody');
+      tbodyOp.innerHTML = (data.byOperator || []).map(r => {
+        const total = r.withErrors || 0;
+        const archived = r.archived || 0;
+        const errorsStr = `<b>${total}</b> / ${archived}`;
 
         return `
-          <div class="db-card" style="margin-bottom: 20px; border-left: 5px solid var(--lav-500);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-              <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-user-tie"></i> ${escapeHtml(sup.supervisorName)}</h3>
-            </div>
-
-            <div class="db-summary" style="margin-bottom: 20px;">
-              <div class="db-kpi"><div class="label">Осталось проверить</div><div class="value">${sup.totalToReview}</div></div>
-              <div class="db-kpi"><div class="label">Всего проверено</div><div class="value">${sup.reviewed}</div></div>
-              <div class="db-kpi"><div class="label">С ошибками / Разобрано</div><div class="value" style="color:var(--red);">${total} / ${archived}</div></div>
-              <div class="db-kpi"><div class="label">Доля ошибок</div><div class="value">${sup.errorRate}%</div></div>
-            </div>
-
-            <h4 style="font-size: 14px; color: var(--text-soft); margin-bottom: 12px;">Частые классы ошибок (ТОП):</h4>
-            <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
-              ${classesHtml || '<div style="color:var(--text-soft); font-size:13px;">Ошибок нет</div>'}
-            </div>
-          </div>
-        `;
+          <tr>
+            <td>${escapeHtml(r.operatorName || '')}</td>
+            <td><span class="err-row-badge">${r.line}</span></td>
+            <td class="num">${r.reviewed || 0}</td>
+            <td class="num" style="color:var(--red);">${errorsStr}</td>
+            <td class="num">${r.loss || 0} ₽</td>
+            <td style="text-align:center;">
+              <a href="tracking.html?opId=${r.operatorId || r.operatorName}&name=${encodeURIComponent(r.operatorName)}&line=${r.line}" class="btn btn-outline" style="padding:4px 8px; font-size:11px;">
+                <i class="fas fa-chart-line"></i> Динамика
+              </a>
+            </td>
+          </tr>`;
       }).join('');
+
+      const tbodyClass = document.querySelector('#rgErrByClassTable tbody');
+      tbodyClass.innerHTML = (data.byClass || []).map(c => `
+        <tr>
+          <td>${escapeHtml(c.className || '')}</td>
+          <td class="num">${c.count || 0}</td>
+          <td class="num">${c.weight || 0}</td>
+          <td class="num">${c.loss || 0} ₽</td>
+        </tr>
+      `).join('');
 
     } catch(e) { console.warn("RG Qual Error:", e); }
   }
