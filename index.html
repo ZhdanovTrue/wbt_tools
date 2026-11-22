@@ -4391,7 +4391,7 @@ const Errors = (() => {
 
   // ─── ДОБАВЛЕНИЕ ОШИБКИ ───
 
-  async function add() {
+ async function add() {
     const op = Auth.getOperator();
     if (!Auth.isSupervisor() && (!op || op.line !== 'line3')) { 
         showToast('У вас нет прав'); return; 
@@ -4403,7 +4403,7 @@ const Errors = (() => {
     const entityId   = document.getElementById('errEntityId').value.trim();
     const commentEl  = document.getElementById('errComment');
     const lossEl     = document.getElementById('errLossAmount');
-    const comment    = (commentEl.value || '').trim().slice(0, 400); // Увеличил до 400
+    const comment    = (commentEl.value || '').trim().slice(0, 400);
     const lossRaw    = (lossEl.value || '').trim();
     let lossAmount   = 0;
     
@@ -4419,7 +4419,7 @@ const Errors = (() => {
     const sup = operatorsCache.find(o => String(o.supervisor).trim() === supName && o.line === 'sv') || operatorsCache.find(o => o.name === supName);
     const supId = sup ? sup.id : 'sv_unknown';
 
-    showToast('⏳ Фиксация ошибки...'); // Уведомление о начале
+    showToast('⏳ Фиксация ошибки...');
 
     try {
       const data = await API.post('errors_add', {
@@ -4433,7 +4433,7 @@ const Errors = (() => {
       });
       
       if (data && data.ok) {
-        showToast('✅ Ошибка зафиксирована'); // Уведомление об успехе
+        showToast('✅ Ошибка зафиксирована');
         commentEl.value = '';
         if (lossEl) lossEl.value = '';
         document.getElementById('errEntityId').value = '';
@@ -4447,12 +4447,21 @@ const Errors = (() => {
     }
   }
 
+  // 👇 ВОТ ЕЕ НЕ ХВАТАЛО 👇
+  function setPeriod(p) {
+    period = p;
+    document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
+      b.classList.toggle('active', b.dataset.errPeriod === p));
+    reload();
+  }
+  // 👆 ----------------- 👆
+
   function updateCommentCounter() {
     const el = document.getElementById('errComment');
     const cnt = document.getElementById('errCommentCounter');
     if (!el || !cnt) return;
     const len = el.value.length;
-    cnt.textContent = len + ' / 200';
+    cnt.textContent = len + ' / 400'; // Обновил на 400
     cnt.classList.toggle('warn', len > 300 && len <= 400);
     cnt.classList.toggle('over', len > 400);
   }
