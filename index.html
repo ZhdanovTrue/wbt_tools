@@ -4403,7 +4403,7 @@ const Errors = (() => {
     const entityId   = document.getElementById('errEntityId').value.trim();
     const commentEl  = document.getElementById('errComment');
     const lossEl     = document.getElementById('errLossAmount');
-    const comment    = (commentEl.value || '').trim().slice(0, 200);
+    const comment    = (commentEl.value || '').trim().slice(0, 400); // Увеличил до 400
     const lossRaw    = (lossEl.value || '').trim();
     let lossAmount   = 0;
     
@@ -4419,39 +4419,7 @@ const Errors = (() => {
     const sup = operatorsCache.find(o => String(o.supervisor).trim() === supName && o.line === 'sv') || operatorsCache.find(o => o.name === supName);
     const supId = sup ? sup.id : 'sv_unknown';
 
-    try {
-      const data = await API.post('errors_add', {
-        token: Auth.getToken(),
-        operatorId: operatorId,
-        supervisorId: supId,
-        classCode: classCode,
-        entityId: entityId,
-        comment: comment,
-        lossAmount: lossAmount
-      });
-      
-      if (data && data.ok) {
-        showToast('Ошибка зафиксирована');
-        commentEl.value = '';
-        if (lossEl) lossEl.value = '';
-        document.getElementById('errEntityId').value = '';
-        updateCommentCounter();
-        await reloadCombined();
-      } else {
-        showToast('Ошибка: ' + (data && data.error || ''));
-      }
-    } catch (e) { showToast('Ошибка сети'); }
-  }
-
-  function setPeriod(p) {
-    period = p;
-    document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
-      b.classList.toggle('active', b.dataset.errPeriod === p));
-    reload();
-  }
-
-  // 👇 ДОБАВИТЬ ПЕРЕД ОТПРАВКОЙ
-    showToast('⏳ Фиксация ошибки...');
+    showToast('⏳ Фиксация ошибки...'); // Уведомление о начале
 
     try {
       const data = await API.post('errors_add', {
@@ -4465,20 +4433,16 @@ const Errors = (() => {
       });
       
       if (data && data.ok) {
-        // 👇 ДОБАВИТЬ ПРИ УСПЕХЕ
-        showToast('✅ Ошибка зафиксирована');
-        
+        showToast('✅ Ошибка зафиксирована'); // Уведомление об успехе
         commentEl.value = '';
         if (lossEl) lossEl.value = '';
         document.getElementById('errEntityId').value = '';
         updateCommentCounter();
         await reloadCombined();
       } else {
-        // 👇 ДОБАВИТЬ ПРИ ОШИБКЕ СЕРВЕРА
         showToast('❌ Ошибка: ' + (data && data.error || ''));
       }
     } catch (e) { 
-      // 👇 ДОБАВИТЬ ПРИ ОШИБКЕ СЕТИ
       showToast('❌ Ошибка сети'); 
     }
   }
