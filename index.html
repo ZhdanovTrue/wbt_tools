@@ -5014,7 +5014,6 @@ const RG = (() => {
         const total = sup.withErrors;
         const archived = sup.archived;
         
-        // Формируем список классов
         const classesHtml = sup.classes.map(c => `
           <div style="display:flex; justify-content:space-between; padding: 8px 12px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 8px; font-size: 13px;">
             <span>${escapeHtml(c.name)}</span>
@@ -5026,7 +5025,6 @@ const RG = (() => {
           <div class="db-card" style="margin-bottom: 20px; border-left: 5px solid var(--lav-500);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
               <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-user-tie"></i> ${escapeHtml(sup.supervisorName)}</h3>
-              <button class="btn btn-outline" onclick="RG.reloadQual()"><i class="fas fa-sync"></i> Обновить</button>
             </div>
 
             <div class="db-summary" style="margin-bottom: 20px;">
@@ -5046,6 +5044,14 @@ const RG = (() => {
 
     } catch(e) { console.warn("RG Qual Error:", e); }
   }
+
+  // Автообновление раз в 30 минут (30 * 60 * 1000 = 1800000)
+  setInterval(() => {
+    if (currentTab === 'qual') {
+      console.log("Автообновление данных РГ...");
+      loadQual();
+    }
+  }, 1800000);
 
   function exportCSV() {
     if (!lastQualData) return showToast('Нет данных для экспорта');
