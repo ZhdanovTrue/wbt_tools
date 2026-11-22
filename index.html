@@ -930,56 +930,78 @@
     <div class="cards-grid" id="cardsGrid"></div>
   </div>
 
-   <!-- ЗАМЕТКИ -->
+  <!-- ЗАМЕТКИ -->
+
+    <!-- ЗАМЕТКИ -->
   <div id="tabContentNotes" style="display:none;">
     <div class="notes-layout">
       
       <!-- ЛЕВАЯ КОЛОНКА: Чек-листы и Дневник -->
       <div class="notes-left" style="display:flex; flex-direction:column; gap:20px;">
         
+        <!-- БЛОК 1: ЧЕК-ЛИСТЫ (Заглушка) -->
         <div class="db-card">
           <h3><i class="fas fa-tasks"></i> Чек-листы смены</h3>
-          <p style="color:var(--text-soft); font-size:13px; margin-bottom:15px;">Здесь будут списки задач для разных линий. Пока в разработке.</p>
+          <p style="color:var(--text-soft); font-size:13px; margin-bottom:15px;">
+            Здесь будут списки задач для разных линий. Пока в разработке.
+          </p>
           <div style="background:var(--bg-soft); padding:16px; border-radius:12px; border:1px dashed var(--line); text-align:center;">
             <i class="fas fa-clipboard-list" style="font-size:24px; color:var(--lav-400); margin-bottom:8px;"></i>
             <div style="font-weight:700; color:var(--text); margin-bottom:4px;">Чек-лист для Линии 2</div>
             <div style="font-size:12px; color:var(--text-soft);">(Пример: Проверить очередь, закрыть старые тикеты)</div>
-            <button class="btn btn-outline" style="margin:12px auto 0; font-size:12px; padding:6px 12px;" onclick="showToast('Чек-листы будут добавлены позже')">Начать проверку</button>
+            <button class="btn btn-outline" style="margin:12px auto 0; font-size:12px; padding:6px 12px;" onclick="showToast('Чек-листы будут добавлены позже')">
+              Начать проверку
+            </button>
           </div>
         </div>
 
+        <!-- БЛОК 2: ДНЕВНИК РЕФЛЕКСИИ -->
         <div class="db-card">
           <div class="tabs" style="margin-bottom: 16px;">
-            <button class="tab active" id="diaryTab1" onclick="Diary.switchPage(1)"><i class="fas fa-check-circle"></i> Что получилось</button>
-            <button class="tab" id="diaryTab2" onclick="Diary.switchPage(2)"><i class="fas fa-lightbulb"></i> Что улучшить</button>
+            <button class="tab active" id="diaryTab1" onclick="Diary.switchPage(1)">
+              <i class="fas fa-check-circle"></i> Что получилось
+            </button>
+            <button class="tab" id="diaryTab2" onclick="Diary.switchPage(2)">
+              <i class="fas fa-lightbulb"></i> Что улучшить
+            </button>
           </div>
 
+          <!-- Страница 1 -->
           <div id="diaryPage1">
             <div class="form-group">
               <label>Запишите, что сегодня получилось лучше всего (текст или голос)</label>
               <div style="position:relative;">
                 <textarea id="diaryText1" rows="4" placeholder="Например: Быстро закрыла все чаты по турам..." style="width:100%; padding:10px 40px 10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--bg-input); color:var(--text); font-family:inherit; font-size:14px; outline:none; resize:vertical;"></textarea>
-                <button class="btn-sticker-voice" id="diaryVoiceBtn1" onclick="Diary.voice(1)" style="position:absolute; right:8px; bottom:8px; padding:8px; border-radius:50%;"><i class="fas fa-microphone"></i></button>
+                <button class="btn-sticker-voice" id="diaryVoiceBtn1" onclick="Diary.voice(1)" style="position:absolute; right:8px; bottom:8px; padding:8px; border-radius:50%;" title="Голосовой ввод">
+                  <i class="fas fa-microphone"></i>
+                </button>
               </div>
             </div>
-            <button class="btn" onclick="Diary.save(1)" style="margin-left:auto; font-size:13px; padding:8px 16px;"><i class="fas fa-save"></i> Сохранить</button>
+            <button class="btn" onclick="Diary.save(1)" style="margin-left:auto; font-size:13px; padding:8px 16px;">
+              <i class="fas fa-save"></i> Сохранить
+            </button>
           </div>
 
+          <!-- Страница 2 -->
           <div id="diaryPage2" style="display:none;">
             <div class="form-group">
               <label>Что можно было сделать иначе? Какие выводы на завтра?</label>
               <div style="position:relative;">
                 <textarea id="diaryText2" rows="4" placeholder="Например: В следующий раз уточню статус брони в самом начале..." style="width:100%; padding:10px 40px 10px 14px; border:1px solid var(--line); border-radius:10px; background:var(--bg-input); color:var(--text); font-family:inherit; font-size:14px; outline:none; resize:vertical;"></textarea>
-                <button class="btn-sticker-voice" id="diaryVoiceBtn2" onclick="Diary.voice(2)" style="position:absolute; right:8px; bottom:8px; padding:8px; border-radius:50%;"><i class="fas fa-microphone"></i></button>
+                <button class="btn-sticker-voice" id="diaryVoiceBtn2" onclick="Diary.voice(2)" style="position:absolute; right:8px; bottom:8px; padding:8px; border-radius:50%;" title="Голосовой ввод">
+                  <i class="fas fa-microphone"></i>
+                </button>
               </div>
             </div>
-            <button class="btn" onclick="Diary.save(2)" style="margin-left:auto; font-size:13px; padding:8px 16px;"><i class="fas fa-save"></i> Сохранить</button>
+            <button class="btn" onclick="Diary.save(2)" style="margin-left:auto; font-size:13px; padding:8px 16px;">
+              <i class="fas fa-save"></i> Сохранить
+            </button>
           </div>
         </div>
 
       </div>
 
-      <!-- ПРАВАЯ КОЛОНКА: Стикеры -->
+      <!-- ПРАВАЯ КОЛОНКА: Стикеры (остаются как были) -->
       <div class="notes-right">
         <div class="stickers-wrap">
           <div class="stickers-toolbar">
@@ -988,22 +1010,32 @@
               <span class="section-counter" id="stickersCount">0</span>
             </div>
             <div class="stickers-actions">
-              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="Stickers.openModal('add')"><i class="fas fa-plus"></i> Добавить</button>
-              <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="Stickers.voiceSticker()"><i class="fas fa-microphone"></i> <span id="stickerVoiceText">Диктовать</span></button>
+              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="openStickerModal('add')">
+                <i class="fas fa-plus"></i> Добавить
+              </button>
+              <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="voiceSticker()">
+                <i class="fas fa-microphone"></i> <span id="stickerVoiceText">Диктовать</span>
+              </button>
             </div>
           </div>
           <div class="stickers-grid" id="stickersGrid"></div>
           <div class="sticker-legend">
-            <div class="legend-row"><span class="legend-dot yellow"></span> Жёлтый — каждые 2 часа</div>
-            <div class="legend-row"><span class="legend-dot pink"></span> Розовый — каждые 10 минут</div>
-            <div class="legend-row"><span class="legend-dot green"></span> Зелёный — к завершению смены</div>
+            <div class="legend-row">
+              <span class="legend-dot yellow"></span> Жёлтый — каждые 2 часа
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot pink"></span> Розовый — каждые 10 минут
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot green"></span> Зелёный — к завершению смены
+            </div>
           </div>
         </div>
       </div>
 
     </div>
   </div>
-	  
+
   <!-- ТРЕКЕР -->
   <div id="tabContentTracker" style="display:none;">
     <div class="trackercard">
@@ -1502,9 +1534,9 @@
         <textarea id="bmDesc" rows="3" placeholder="Краткое описание..."></textarea>
       </div>
       <div class="modal-actions">
-  <button type="button" class="btn btn-cancel" onclick="Stickers.closeModal()">Отмена</button>
-  <button type="button" class="btn" id="stickerSaveBtn" onclick="Stickers.saveFromModal()">Сохранить</button>
-</div>
+        <button type="button" class="btn btn-cancel" onclick="closeBookmarkModal()">Отмена</button>
+        <button type="submit" class="btn">Сохранить</button>
+      </div>
     </form>
   </div>
 </div>
@@ -3404,6 +3436,12 @@ const Stickers = (() => {
   }
   function count() { return stickers.length; }
 
+  function normalizeVoiceText(raw) {
+    let s = String(raw || '');
+    for (let i = 0; i < 3; i++) s = s.replace(/(\d)[\s,.](\d)/g, '$1$2');
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
   function render() {
     const grid = document.getElementById('stickersGrid');
     if (!grid) return;
@@ -3450,8 +3488,6 @@ const Stickers = (() => {
     const overlay = document.getElementById('stickerModalOverlay');
     const ta = document.getElementById('stickerText');
     const colorSel = document.getElementById('stickerColor');
-    if (!overlay || !ta || !colorSel) return;
-    
     if (mode === 'edit' && id) {
       const s = stickers.find(x => x.id === id); if (!s) return;
       editingId = id;
@@ -3466,10 +3502,8 @@ const Stickers = (() => {
     overlay.classList.add('show');
     setTimeout(() => ta.focus(), 100);
   }
-  
   function closeModal() { 
-    const overlay = document.getElementById('stickerModalOverlay');
-    if (overlay) overlay.classList.remove('show'); 
+    document.getElementById('stickerModalOverlay').classList.remove('show'); 
     editingId = null; 
   }
 
@@ -3485,8 +3519,6 @@ const Stickers = (() => {
   function saveFromModal() {
     const ta = document.getElementById('stickerText');
     const colorSel = document.getElementById('stickerColor');
-    if (!ta || !colorSel) return;
-    
     const text = ta.value.trim();
     if (!text) { showToast('Введите текст'); return; }
     
@@ -3512,6 +3544,7 @@ const Stickers = (() => {
     const s = stickers.find(x => x.id === id); if (!s) return;
     const preview = s.text.length > 60 ? s.text.slice(0, 60) + '…' : s.text;
     
+    // Если Confirm не работает (сломан), используем стандартный confirm
     if (typeof Confirm === 'undefined' || !Confirm.open) {
       if (window.confirm(`Удалить стикер? \n«${preview}»`)) {
         stickers = stickers.filter(x => x.id !== id);
@@ -3558,7 +3591,7 @@ const Stickers = (() => {
     const txt = document.getElementById('stickerVoiceText');
     if (isListening) {
       if (recognition) { try { recognition.stop(); } catch (e) {} }
-      isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать';
+      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
       return;
     }
     if (!window.isSecureContext) { showToast('Микрофон недоступен без HTTPS/localhost'); return; }
@@ -3575,9 +3608,9 @@ const Stickers = (() => {
       for (let i = e.resultIndex; i < e.results.length; i++) {
         if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
       }
-      final = final.replace(/\s+/g, ' ').trim();
-      if (final) {
-        const words = final.split(/\s+/).filter(Boolean);
+      final = normalizeVoiceText(final);
+      if (final.trim()) {
+        const words = final.trim().split(/\s+/).filter(Boolean);
         stickers.push({
           id: 'st_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
           text: words.slice(0, MAX_WORDS).join(' '),
@@ -3589,18 +3622,18 @@ const Stickers = (() => {
         save(); render();
       }
     };
-    recognition.onend = () => { isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать'; };
+    recognition.onend = () => { isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать'; };
     recognition.onerror = (e) => {
       if (e.error !== 'aborted') showToast('Ошибка распознавания: ' + e.error);
-      isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать';
+      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
     };
     try {
       recognition.start();
-      isListening = true; if(btn) btn.classList.add('recording'); if(txt) txt.textContent = 'Готово';
+      isListening = true; btn.classList.add('recording'); txt.textContent = 'Готово';
       showToast('Диктуйте стикер...');
     } catch (e) {
       showToast('Не удалось запустить распознавание');
-      isListening = false; if(btn) btn.classList.remove('recording'); if(txt) txt.textContent = 'Диктовать';
+      isListening = false; btn.classList.remove('recording'); txt.textContent = 'Диктовать';
     }
   }
 
@@ -3610,6 +3643,15 @@ const Stickers = (() => {
     
     const ta = document.getElementById('stickerText');
     if (ta) ta.addEventListener('input', updateWordCount);
+    
+    // Привязка кнопки "Сохранить"
+    const saveBtn = document.getElementById('stickerSaveBtn');
+    if (saveBtn) {
+      // Удаляем старые обработчики, чтобы не было дублей
+      saveBtn.replaceWith(saveBtn.cloneNode(true));
+      const newSaveBtn = document.getElementById('stickerSaveBtn');
+      newSaveBtn.addEventListener('click', saveFromModal);
+    }
     
     const overlay = document.getElementById('stickerModalOverlay');
     if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
