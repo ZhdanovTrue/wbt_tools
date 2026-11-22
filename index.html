@@ -1565,7 +1565,7 @@
     </div>
     <div class="modal-actions">
       <button type="button" class="btn btn-cancel" onclick="closeStickerModal()">Отмена</button>
-      <button type="button" class="btn" id="stickerSaveBtn">Сохранить</button>
+      <button type="button" class="btn" id="stickerSaveBtn" onclick="Stickers.saveFromModal()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -3628,7 +3628,7 @@ const Stickers = (() => {
     if (overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closeModal(); });
   }
 
-  return { load, render, count, init, openModal, closeModal, voiceSticker };
+  return { load, render, count, init, openModal, closeModal, voiceSticker, saveFromModal }; // 👈 ДОБАВИТЬ saveFromModal
 })();
 
 /* ══════════════════════════════════════════════
@@ -4253,19 +4253,26 @@ const Errors = (() => {
   // ─── СВОДКА ───
 
   async function reloadCombined() {
+	  showToast('⏳ Обновление сводки...'); // 👈 ДОБАВИТЬ ЗДЕСЬ
     try {
       const data = await API.get('errors_combined_stats', {
         token: Auth.getToken(),
         period: period
       });
-      if (!data || !data.ok) return;
+      if (!data || !data.ok) {
+		  showToast('❌ Ошибка загрузки данных'); // 👈 ДОБАВИТЬ ЗДЕСЬ
+		  return;
+	  }
       combinedStats = data;
       renderCombinedSummary();
       renderCombinedByOperator();
       renderCombinedByClass();
       try { renderErrCharts(); } catch(e) {}
+
+		showToast('✅ Сводка обновлена'); // 👈 ДОБАВИТЬ ЗДЕСЬ
     } catch (e) {
       console.warn('Errors: reloadCombined error', e);
+		showToast('❌ Ошибка сети'); // 👈 ДОБАВИТЬ ЗДЕСЬ
     }
   }
 
@@ -4441,6 +4448,39 @@ const Errors = (() => {
     document.querySelectorAll('.db-filter-btn[data-err-period]').forEach(b =>
       b.classList.toggle('active', b.dataset.errPeriod === p));
     reload();
+  }
+
+  // 👇 ДОБАВИТЬ ПЕРЕД ОТПРАВКОЙ
+    showToast('⏳ Фиксация ошибки...');
+
+    try {
+      const data = await API.post('errors_add', {
+        token: Auth.getToken(),
+        operatorId: operatorId,
+        supervisorId: supId,
+        classCode: classCode,
+        entityId: entityId,
+        comment: comment,
+        lossAmount: lossAmount
+      });
+      
+      if (data && data.ok) {
+        // 👇 ДОБАВИТЬ ПРИ УСПЕХЕ
+        showToast('✅ Ошибка зафиксирована');
+        
+        commentEl.value = '';
+        if (lossEl) lossEl.value = '';
+        document.getElementById('errEntityId').value = '';
+        updateCommentCounter();
+        await reloadCombined();
+      } else {
+        // 👇 ДОБАВИТЬ ПРИ ОШИБКЕ СЕРВЕРА
+        showToast('❌ Ошибка: ' + (data && data.error || ''));
+      }
+    } catch (e) { 
+      // 👇 ДОБАВИТЬ ПРИ ОШИБКЕ СЕТИ
+      showToast('❌ Ошибка сети'); 
+    }
   }
 
   function updateCommentCounter() {
