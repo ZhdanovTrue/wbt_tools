@@ -178,11 +178,14 @@
     try {
       const res = await fetch(`${SHEETS_URL}?action=getTrackingData&operatorId=${currentOperator.id}`);
       const json = await res.json();
+      
       if (!json.ok) throw new Error(json.error || 'Ошибка сервера');
       
       const data = json.data;
       classes = data.classes || [];
       allCards = data.cards || [];
+      
+      console.log("Загруженные карточки:", allCards); // Для отладки
       
       renderChart(data.chartData);
       renderQaIssues();
@@ -236,7 +239,6 @@
                 const date = context[0].label;
                 const errs = errorsByDate[date];
                 if (!errs || errs.length === 0) return 'Ошибок нет';
-                
                 return errs.map(e => `• ${e.name} (вес: ${e.weight})`);
               }
             }
@@ -297,8 +299,6 @@
     document.getElementById('trkMeasures').value = '';
     document.getElementById('trkEntityId').value = qaCard.entityId || '';
     
-    // Очищаем ID, чтобы создалась новая карточка. 
-    // В groupId передаем исходный ID, чтобы сохранить связь.
     document.getElementById('trkTrackingId').value = ''; 
     window._pendingGroupId = qaCard.groupId; 
   }
