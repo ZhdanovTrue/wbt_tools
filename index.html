@@ -845,7 +845,21 @@
     border: 1px solid var(--line) !important; /* Легкая рамка */
     box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
   }
-
+/* Правильная адаптация таблиц и графиков */
+  .db-table-wrap { 
+    width: 100%; 
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
+  }
+  .db-grid-2 { 
+    width: 100%; 
+    min-width: 0; 
+  }
+  .db-chart-wrap { 
+    width: 100%; 
+    max-width: 100%; 
+    position: relative; 
+  }
 </style>
 </head>
 <body>
