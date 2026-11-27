@@ -845,21 +845,7 @@
     border: 1px solid var(--line) !important; /* Легкая рамка */
     box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
   }
-/* Правильная адаптация таблиц и графиков */
-  .db-table-wrap { 
-    width: 100%; 
-    overflow-x: auto; 
-    -webkit-overflow-scrolling: touch;
-  }
-  .db-grid-2 { 
-    width: 100%; 
-    min-width: 0; 
-  }
-  .db-chart-wrap { 
-    width: 100%; 
-    max-width: 100%; 
-    position: relative; 
-  }
+
 </style>
 </head>
 <body>
@@ -1024,9 +1010,9 @@
               <span class="section-counter" id="stickersCount">0</span>
             </div>
             <div class="stickers-actions">
-              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="Stickers.openModal('add')">
-  			<i class="fas fa-plus"></i> Добавить
-			  </button>
+              <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;" onclick="openStickerModal('add')">
+                <i class="fas fa-plus"></i> Добавить
+              </button>
               <button class="btn btn-sticker-voice" id="stickerVoiceBtn" onclick="voiceSticker()">
                 <i class="fas fa-microphone"></i> <span id="stickerVoiceText">Диктовать</span>
               </button>
@@ -1548,7 +1534,7 @@
         <textarea id="bmDesc" rows="3" placeholder="Краткое описание..."></textarea>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn btn-cancel" onclick="Stickers.closeModal()">Отмена</button>
+        <button type="button" class="btn btn-cancel" onclick="closeBookmarkModal()">Отмена</button>
         <button type="submit" class="btn">Сохранить</button>
       </div>
     </form>
@@ -2532,7 +2518,6 @@ const Tracker = (() => {
         ? 'Последнее: ' + formatClock(state.lastActivityAt[a.id])
         : 'Нет действий';
       const minusBg = hexWithOpacity(a.color, 0.25);
-      
       return `
         <div class="activity-card" data-act="${a.id}">
           <div class="accent" style="background:${a.color};"></div>
@@ -2542,12 +2527,11 @@ const Tracker = (() => {
           <div class="counter">
             <div class="count-value" id="cnt_${a.id}">${count}</div>
             <div class="btn-group">
-              <button class="btn-minus" onclick="Tracker.changeActivity('${a.id}', -1)" 
+              <button class="btn-minus" data-act="${a.id}" data-delta="-1"
                 style="background:${minusBg};color:${a.color};"
                 ${enabled && count > 0 ? '' : 'disabled'}>−</button>
-              <button class="btn-plus" onclick="Tracker.changeActivity('${a.id}', 1)" 
-                style="background:${a.color};" 
-                ${enabled ? '' : 'disabled'}>+</button>
+              <button class="btn-plus" data-act="${a.id}" data-delta="1"
+                style="background:${a.color};" ${enabled ? '' : 'disabled'}>+</button>
             </div>
           </div>
           <div class="last" id="last_${a.id}">${last}</div>
@@ -4702,15 +4686,13 @@ const Qa = (() => {
 
   async function submitReview() {
     if (!reviewSample) return;
-	const entityId = reviewSample.entityId || '';
     if (!reviewResult) { showToast('Выберите: «Ошибки нет» или «Есть ошибка»'); return; }
 
     const sampleId = reviewSample.id;
     const payload = {
       token: Auth.getToken(),
       sampleId: sampleId,
-      status: reviewResult,
-	  entityId: entityId
+      status: reviewResult
     };
 
     if (reviewResult === 'error') {
