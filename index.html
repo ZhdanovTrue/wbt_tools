@@ -4688,62 +4688,44 @@ const Qa = (() => {
     if (!reviewSample) return;
     if (!reviewResult) { showToast('Выберите: «Ошибки нет» или «Есть ошибка»'); return; }
 
+    // Блокируем кнопку "Сохранить"
+    const saveBtn = document.querySelector('#qaReviewModalOverlay .btn:last-child');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Сохранение...'; }
+
     const sampleId = reviewSample.id;
     const payload = {
       token: Auth.getToken(),
       sampleId: sampleId,
-      status: reviewResult
+      status: reviewResult,
+      entityId: reviewSample.entityId || '' // <-- ПЕРЕДАЕМ СУЩНОСТЬ
     };
 
     if (reviewResult === 'error') {
       const classSel = document.getElementById('qaReviewClass');
-      const classCode = classSel.value;
-      if (!classCode) { showToast('Выберите класс ошибки'); return; }
-      payload.classCode = classCode;
-
-      const commentEl = document.getElementById('qaReviewComment');
-      payload.comment = (commentEl.value || '').trim().slice(0, 200);
-
-      const lossEl = document.getElementById('qaReviewLoss');
-      const lossRaw = (lossEl.value || '').trim();
-      let lossAmount = 0;
-      if (lossRaw !== '') {
-        const n = Number(lossRaw.replace(',', '.'));
-        if (!isFinite(n) || n < 0) { showToast('Сумма потерь должна быть числом ≥ 0'); return; }
-        lossAmount = n;
+      if (!classSel.value) { 
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Сохранить'; }
+        return showToast('Выберите класс ошибки'); 
       }
-      payload.lossAmount = lossAmount;
+      payload.classCode = classSel.value;
+      payload.comment = document.getElementById('qaReviewComment').value.trim();
+      payload.lossAmount = Number(document.getElementById('qaReviewLoss').value) || 0;
     }
 
     try {
       const data = await API.post('qa_review', payload);
       if (data && data.ok) {
-        showToast(reviewResult === 'no_error' ? 'Отмечено: без ошибки' : 'Ошибка зафиксирована');
+        showToast('Разметка сохранена');
         closeReviewModal();
-        await reload();
-        if (typeof Errors !== 'undefined' && Errors.reloadCombined) {
-          Errors.reloadCombined();
-        }
+        await reload(); // Обновляем список QA
+        if (typeof Errors !== 'undefined') Errors.reloadCombined(); // Обновляем сводку ошибок
       } else {
-        const map = {
-          'forbidden_not_supervisor': 'Только супервайзер',
-          'no_sample_id': 'Нет ID сэмпла',
-          'invalid_status': 'Неверный статус',
-          'no_class_code': 'Выберите класс',
-          'class_not_found': 'Класс не найден',
-          'class_inactive': 'Класс отключён',
-          'class_line_mismatch': 'Класс не соответствует линии оператора',
-          'no_classes_sheet': 'Нет листа Error_Classes',
-          'no_samples_sheet': 'Нет листа QA_Samples',
-          'sample_not_found': 'Сэмпл не найден',
-          'not_your_sample': 'Этот сэмпл принадлежит другому супервайзеру',
-          'loss_too_large': 'Слишком большая сумма потерь'
-        };
-        showToast('Не удалось: ' + (map[data && data.error] || (data && data.error) || 'ошибка'));
+        showToast('Ошибка: ' + (data.error || ''));
       }
-    } catch (e) {
-      console.warn('Qa: submitReview error', e);
-      showToast('Ошибка сети');
+    } catch (e) { 
+      showToast('Ошибка сети'); 
+    } finally {
+      // Разблокируем кнопку в любом случае
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Сохранить'; }
     }
   }
 
